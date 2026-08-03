@@ -215,7 +215,7 @@ namespace NumericSelectorLib
 				nameof(ControlBorderColor),
 				typeof(Brush),
 				typeof(NumericSelector),
-				new PropertyMetadata(Brushes.Black, OnVisualPropertyChanged)); // Asociar callback para redibujar si cambia.
+				new PropertyMetadata(Brushes.Black));
 
 		/// <summary>
 		/// Obtiene o establece el color del borde del control.
@@ -267,7 +267,7 @@ namespace NumericSelectorLib
 				nameof(BarFillColor),
 				typeof(Brush),
 				typeof(NumericSelector),
-				new PropertyMetadata(Brushes.Orange, OnVisualPropertyChanged)); // Callback para actualizar visual
+				new PropertyMetadata(Brushes.Orange));
 
 		/// <summary>
 		/// Obtiene o establece el color de relleno de la barra (la porción que representa el valor).
@@ -284,7 +284,7 @@ namespace NumericSelectorLib
 				nameof(BarBorderColor),
 				typeof(Brush),
 				typeof(NumericSelector),
-				new PropertyMetadata(Brushes.Black, OnVisualPropertyChanged)); // Callback para actualizar visual
+				new PropertyMetadata(Brushes.Black));
 
 		/// <summary>
 		/// Obtiene o establece el color del contorno de la barra.
@@ -570,15 +570,11 @@ namespace NumericSelectorLib
 			OnValueChangedHandler(Value);
 		}
 
-		// Callback para propiedades visuales que requieren redibujo.
-		private static void OnVisualPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (d is NumericSelector selector)
-			{
-				// Forzar un redibujado del control cuando cambian propiedades visuales.
-				selector.InvalidateVisual();
-			}
-		}
+		// Los colores NO necesitan callback de redibujo: los tres (ControlBorderColor,
+		// BarFillColor y BarBorderColor) llegan a la plantilla por TemplateBinding, y cada
+		// elemento se repinta solo cuando su brocha cambia. El InvalidateVisual() que había
+		// acá forzaba el redibujo del control, que al ser lookless no dibuja nada propio
+		// (no sobrescribe OnRender): era trabajo sin destinatario.
 
 		// Callback para propiedades que afectan el layout.
 		private static void OnLayoutPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
