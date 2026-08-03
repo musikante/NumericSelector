@@ -1,0 +1,43 @@
+NOTA HISTÓRICA — NO DESCRIBE EL CONTROL ACTUAL
+===============================================
+
+Este archivo estaba en la carpeta del proyecto NumericSelectorLib con el nombre
+"Anotaciones útiles.txt". Se conserva acá porque documenta el linaje del control,
+pero el ciclo de vida que describe corresponde a un diseño ANTERIOR (la etapa
+RangeSlider / UserControl), no al NumericSelector actual.
+
+Diferencias con el control de hoy, para que nadie lo lea como referencia vigente:
+
+  - No existe ningún "thumb" ni OnThumbDragDelta. El valor se elige por posición
+    del click/arrastre sobre la barra (ver BarGrid_MouseLeftButtonDown y
+    OrientationAxis.PositionToRatio).
+  - El constructor NO hace DataContext = this. La plantilla se enlaza con
+    TemplateBinding y RelativeSource TemplatedParent, que es lo que permite que
+    un consumidor use su propio DataContext sin conflicto.
+  - No hay un UpdateVisuals() único. El repintado está repartido en métodos
+    acotados: UpdateBarFill, UpdateMinimumRequiredWidth, UpdateDividerThickness y
+    UpdateCursors, cada uno disparado por lo que realmente le incumbe.
+  - El relleno de la barra vive dentro de un Canvas a propósito, para que su
+    tamaño no participe de la medición del control.
+
+Contenido original, sin modificar:
+
+------------------------------------------------------------------------------
+
+Ciclo de vida de las instancias
+
+[1] static ctor → registra clave de estilo
+       ↓
+[2] instance ctor → DataContext = this
+       ↓
+[3] WPF carga estilo y aplica ControlTemplate
+       ↓
+[4] OnApplyTemplate() → obtiene PARTs, suscribe eventos, llama a UpdateVisuals()
+       ↓
+[5] UpdateVisuals() → dibuja track, posiciona thumb, actualiza textos
+       ↓
+[6] Usuario interactúa → arrastra thumb → OnThumbDragDelta → actualiza Value → dispara OnValueChanged → UpdateVisuals()
+       ↓
+[7] Cambios de propiedad o tamaño → On[Prop]Changed / OnSizeChanged → UpdateVisuals()
+       ↓
+[8] Ciclo continuo de actualización visual mientras el usuario interactúa o cambian propiedades.

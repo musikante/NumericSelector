@@ -1,0 +1,290 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:NumericSelectorLib">
+
+    <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+    <Style TargetType="{x:Type local:NumericSelector}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:NumericSelector}">
+                    <!-- MEDIDORES OCULTOS ("sizers"): los TextBlock con Visibility="Hidden"
+                         no se dibujan pero SÍ ocupan lugar en el layout (a diferencia de
+                         Collapsed). Poniendo uno con el texto de Minimum y otro con el de
+                         Maximum en la misma celda que el valor visible, la celda mide el
+                         MÁXIMO de los tres: WPF calcula el max() por nosotros y el ancho
+                         queda reservado para el número más largo posible, sin depender del
+                         valor actual (si no, la columna temblaría al pasar de 99 a 100).
+                         Ventaja sobre medir a mano: lo mide el mismo motor que lo dibuja,
+                         así que reacciona solo a fuente, DPI y cultura. -->
+                    <Border x:Name="PART_MainBorder"
+                            BorderBrush="{TemplateBinding ControlBorderColor}"
+                            BorderThickness="{TemplateBinding ControlBorderPixels}"
+                            Background="{TemplateBinding Background}">
+
+                        <Grid x:Name="PART_MainGrid">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Fila superior: título. En WithTitle comparte la línea con el
+                                 valor: el valor reserva su ancho y el título recibe el resto. -->
+                            <Grid Grid.Row="0" x:Name="PART_TopRow"
+                                  Visibility="{Binding Path=ShowTitleText, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock x:Name="PART_TitleText"
+                                           Grid.Column="0"
+                                           Text="{TemplateBinding TitleText}"
+                                           Foreground="{TemplateBinding Foreground}"
+                                           FontSize="{TemplateBinding FontSize}"
+                                           FontFamily="{TemplateBinding FontFamily}"
+                                           FontStyle="{TemplateBinding FontStyle}"
+                                           FontWeight="{TemplateBinding FontWeight}"
+                                           TextAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           Padding="1,0,1,1"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Stretch"/>
+
+                                <!-- Celda del valor en la fila superior (modo WithTitle) -->
+                                <Grid Grid.Column="1">
+                                    <TextBlock x:Name="PART_TopSizerMin" Visibility="Collapsed"
+                                               Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontFamily="{TemplateBinding FontFamily}"
+                                               FontStyle="{TemplateBinding FontStyle}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               Padding="4,0,4,1"/>
+                                    <TextBlock x:Name="PART_TopSizerMax" Visibility="Collapsed"
+                                               Text="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontFamily="{TemplateBinding FontFamily}"
+                                               FontStyle="{TemplateBinding FontStyle}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               Padding="4,0,4,1"/>
+                                    <TextBlock x:Name="PART_ValueWithTitle"
+                                               Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontFamily="{TemplateBinding FontFamily}"
+                                               FontStyle="{TemplateBinding FontStyle}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Stretch"
+                                               TextAlignment="Right"
+                                               Background="Transparent"
+                                               Padding="4,0,4,1"
+                                               Visibility="Collapsed"/>
+                                </Grid>
+                            </Grid>
+
+                            <Grid Grid.Row="2" x:Name="PART_BarAndValueGrid">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" x:Name="PART_BarColumn"/>
+                                    <ColumnDefinition Width="Auto" x:Name="PART_ValueColumn"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- LA BARRA, en 2 columnas: el valor (si va sobre la barra)
+                                     reserva su ancho en la columna Auto y la leyenda recibe
+                                     el resto en la columna *. Así no pueden solaparse: la
+                                     leyenda se recorta con elipsis antes de llegar al número.
+                                     El relleno y la capa clara ocupan AMBAS columnas. -->
+                                <!-- Sin Cursor acá: lo fija el code-behind (UpdateCursors),
+                                     porque depende del eje, del modo y del foco. -->
+                                <Grid Grid.Column="0" x:Name="PART_BarGrid"
+                                      VerticalAlignment="Stretch"
+                                      Background="Transparent"
+                                      ClipToBounds="True">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- (1) Relleno: abarca toda la barra. Va DENTRO de un Canvas
+                                         a propósito: el Canvas mide 0 sin importar sus hijos, así
+                                         que el ancho del rectángulo (que el code-behind calcula a
+                                         partir del ancho de la barra) NO entra en la medición del
+                                         contenido. Si entrara, el ancho natural del control
+                                         dependería de su propio ancho y en AutoGrow crecería sin
+                                         parar. El relleno es decoración: no debe dimensionar nada. -->
+                                    <Canvas Grid.ColumnSpan="2" ClipToBounds="True">
+                                        <Border x:Name="PART_BarRect"
+                                                Background="{TemplateBinding BarFillColor}"
+                                                BorderBrush="{TemplateBinding BarBorderColor}"
+                                                BorderThickness="0,0,1,0"
+                                                Width="0"/>
+                                    </Canvas>
+
+                                    <!-- (2) Leyenda: encima del relleno, recibe el espacio restante -->
+                                    <TextBlock x:Name="PART_LegendText"
+                                               Grid.Column="0"
+                                               Text="{TemplateBinding LegendText}"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontFamily="{TemplateBinding FontFamily}"
+                                               FontStyle="{TemplateBinding FontStyle}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Stretch"
+                                               TextAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"
+                                               Padding="0,0,0,1"
+                                               Margin="10,0,10,0"/>
+
+                                    <!-- (3) Valor sobre la barra: capa base oscura + medidores.
+                                         Los medidores pasan a Hidden solo en modo OnBar. -->
+                                    <Grid Grid.Column="1">
+                                        <TextBlock x:Name="PART_BarSizerMin" Visibility="Collapsed"
+                                                   Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                                   FontSize="{TemplateBinding FontSize}"
+                                                   FontFamily="{TemplateBinding FontFamily}"
+                                                   FontStyle="{TemplateBinding FontStyle}"
+                                                   FontWeight="{TemplateBinding FontWeight}"
+                                                   Padding="0,0,0,1"
+                                                   Margin="0,0,8,0"/>
+                                        <TextBlock x:Name="PART_BarSizerMax" Visibility="Collapsed"
+                                                   Text="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                                   FontSize="{TemplateBinding FontSize}"
+                                                   FontFamily="{TemplateBinding FontFamily}"
+                                                   FontStyle="{TemplateBinding FontStyle}"
+                                                   FontWeight="{TemplateBinding FontWeight}"
+                                                   Padding="0,0,0,1"
+                                                   Margin="0,0,8,0"/>
+                                        <TextBlock x:Name="PART_ValueOnBarBase"
+                                                   Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                                   Foreground="{TemplateBinding Foreground}"
+                                                   FontSize="{TemplateBinding FontSize}"
+                                                   FontFamily="{TemplateBinding FontFamily}"
+                                                   FontStyle="{TemplateBinding FontStyle}"
+                                                   FontWeight="{TemplateBinding FontWeight}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Right"
+                                                   Padding="0,0,0,1"
+                                                   Margin="0,0,8,0"
+                                                   Visibility="Collapsed"/>
+                                    </Grid>
+
+                                    <!-- (4) Valor: capa clara recortada al relleno (el Clip lo fija el
+                                         code-behind). Abarca AMBAS columnas para que el recorte use el
+                                         mismo sistema de coordenadas que la barra. -->
+                                    <Grid x:Name="PART_ValueFillLayer" Grid.ColumnSpan="2">
+                                        <TextBlock x:Name="PART_ValueOnBarFill"
+                                                   Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                                   Foreground="{TemplateBinding FillForeground}"
+                                                   FontSize="{TemplateBinding FontSize}"
+                                                   FontFamily="{TemplateBinding FontFamily}"
+                                                   FontStyle="{TemplateBinding FontStyle}"
+                                                   FontWeight="{TemplateBinding FontWeight}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Right"
+                                                   Padding="0,0,0,1"
+                                                   Margin="0,0,8,0"
+                                                   Visibility="Collapsed"/>
+                                    </Grid>
+                                </Grid>
+
+                                <!-- Casillero del valor (modo BesideBar) + sus medidores.
+                                     Acá los medidores están siempre Hidden: cuando el valor no
+                                     va en el casillero, el code-behind fuerza la columna a 0. -->
+                                <Grid Grid.Column="1">
+                                    <TextBlock x:Name="PART_ValueSizerMin" Visibility="Hidden"
+                                               Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontFamily="{TemplateBinding FontFamily}"
+                                               FontStyle="{TemplateBinding FontStyle}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               Padding="4,0,4,1"/>
+                                    <TextBlock x:Name="PART_ValueSizerMax" Visibility="Hidden"
+                                               Text="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontFamily="{TemplateBinding FontFamily}"
+                                               FontStyle="{TemplateBinding FontStyle}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               Padding="4,0,4,1"/>
+                                    <TextBlock x:Name="PART_ValueText"
+                                               Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontFamily="{TemplateBinding FontFamily}"
+                                               FontStyle="{TemplateBinding FontStyle}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Stretch"
+                                               TextAlignment="Right"
+                                               Background="Transparent"
+                                               Padding="4,0,4,1"/>
+                                </Grid>
+                            </Grid>
+
+                            <!-- Trazo divisor entre el título y la barra (solo en ShowTitleText).
+                                 Fila propia (ya no comparte la del título): su Height no compite
+                                 por el Auto de PART_TopRow. El code-behind lo actualiza para que
+                                 su grosor siga a ControlBorderPixels (ver UpdateDividerThickness).
+                                 Se tiñe junto con el borde al enfocar. -->
+                            <Rectangle x:Name="PART_Divider"
+                                       Grid.Row="1"
+                                       Height="1"
+                                       HorizontalAlignment="Stretch"
+                                       Fill="{TemplateBinding ControlBorderColor}"
+                                       SnapsToDevicePixels="True"
+                                       Visibility="{Binding Path=ShowTitleText, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Foco: el borde externo (y el divisor) cambian de color. -->
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="PART_MainBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_Divider" Property="Fill" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        </Trigger>
+                        <!-- OnBar: valor sobre la barra (dos capas) y sus medidores reservando
+                             ancho; sin casillero. La barra sigue ocupando todo el ancho. -->
+                        <Trigger Property="ValuePlacement" Value="OnBar">
+                            <Setter TargetName="PART_ValueColumn" Property="Width" Value="0"/>
+                            <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="PART_ValueOnBarBase" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_ValueOnBarFill" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_BarSizerMin" Property="Visibility" Value="Hidden"/>
+                            <Setter TargetName="PART_BarSizerMax" Property="Visibility" Value="Hidden"/>
+                        </Trigger>
+                        <!-- WithTitle: valor en la línea superior junto al título, con sus medidores.
+                             Requiere ShowTitleText. -->
+                        <!-- En AutoGrow el control se ensancha para que el texto entre, así
+                             que recortarlo no tiene sentido. -->
+                        <Trigger Property="StretchMode" Value="AutoGrow">
+                            <Setter TargetName="PART_LegendText" Property="TextTrimming" Value="None"/>
+                            <Setter TargetName="PART_TitleText" Property="TextTrimming" Value="None"/>
+                        </Trigger>
+                        <Trigger Property="ValuePlacement" Value="WithTitle">
+                            <Setter TargetName="PART_ValueColumn" Property="Width" Value="0"/>
+                            <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="PART_ValueWithTitle" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_TopSizerMin" Property="Visibility" Value="Hidden"/>
+                            <Setter TargetName="PART_TopSizerMax" Property="Visibility" Value="Hidden"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+        <Setter Property="Width" Value="300" />
+        <!-- Sin Height fijo: el control se auto-dimensiona a su contenido (compacto).
+             Poné Height en la instancia si querés forzar una altura mayor. -->
+        <Setter Property="Focusable" Value="True" />
+        <!-- Sin el recuadro punteado por defecto de WPF: el foco lo indica el borde. -->
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="TitleText" Value="DefaultTitle" />
+        <Setter Property="LegendText" Value="DefaultLegend" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+</ResourceDictionary>

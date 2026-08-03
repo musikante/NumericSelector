@@ -1,0 +1,29 @@
+# Normaliza los finales de línea: en el repositorio siempre LF, en el disco de
+# cada quien los de su plataforma. Sin esto, un colaborador en otro sistema puede
+# generar diffs de archivo entero por un cambio de CRLF a LF.
+* text=auto
+
+# Código y marcado: texto, con diff especializado donde Git lo ofrece.
+*.cs      text diff=csharp
+*.xaml    text
+*.csproj  text
+*.slnx    text
+*.props   text
+*.targets text
+*.json    text
+*.md      text
+*.txt     text
+*.svg     text
+
+# Binarios: que Git no intente normalizarlos ni mostrar diffs de texto.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.docx binary
+
+# Archivos de Windows que exigen CRLF para funcionar.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf

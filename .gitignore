@@ -1,0 +1,40 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio and user-specific files
+.vs/
+*.user
+*.userosscache
+*.suo
+*.rsuser
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Test and coverage output
+TestResults/
+coverage/
+coverage*.xml
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+!packages/build/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.Local.json

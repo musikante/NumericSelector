@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="NumericSelectorLib/NumericSelectorLib.csproj" />
+  <Project Path="NumericSelectorLib_Test/NumericSelectorLib_Test.csproj" />
+  <Project Path="NumericSelectorLib.Tests/NumericSelectorLib.Tests.csproj" />
+</Solution>
