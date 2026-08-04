@@ -2,7 +2,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 
-namespace NumericSelectorLib_Test
+namespace NumericSelector.Demo
 {
 	public partial class MainWindow : Window
 	{

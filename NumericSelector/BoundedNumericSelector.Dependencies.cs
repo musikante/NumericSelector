@@ -6,30 +6,30 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-namespace NumericSelectorLib
+namespace NumericSelector
 {
 	// La clase es 'partial' y pertenece al mismo namespace.
-	public partial class NumericSelector : Control
+	public partial class BoundedNumericSelector : Control
 	{
 		// --- Constructor Estático (si es necesario) ---
 		// Este constructor estático se ejecuta una sola vez cuando la clase es cargada por primera vez.
 		// Es el lugar ideal para registrar el estilo por defecto.
-		static NumericSelector()
+		static BoundedNumericSelector()
 		{
-			DefaultStyleKeyProperty.OverrideMetadata(typeof(NumericSelector),
-				new FrameworkPropertyMetadata(typeof(NumericSelector)));
+			DefaultStyleKeyProperty.OverrideMetadata(typeof(BoundedNumericSelector),
+				new FrameworkPropertyMetadata(typeof(BoundedNumericSelector)));
 
 			// En IsDisplayOnly el control no debe poder recibir el foco. Se hace por
 			// COERCIÓN y no asignando Focusable: así el valor de abajo (el del estilo, o el
 			// que haya puesto el consumidor) queda intacto y vuelve solo al salir del modo.
 			// Asignarlo obligaría a recordar a qué valor volver, y pisaría a quien tuviera
 			// sus propias razones para dejarlo en false.
-			FocusableProperty.OverrideMetadata(typeof(NumericSelector),
+			FocusableProperty.OverrideMetadata(typeof(BoundedNumericSelector),
 				new FrameworkPropertyMetadata(true, null, CoerceFocusable));
 		}
 
 		private static object CoerceFocusable(DependencyObject d, object baseValue) =>
-			((NumericSelector)d).IsDisplayOnly ? false : baseValue;
+			((BoundedNumericSelector)d).IsDisplayOnly ? false : baseValue;
 
 		// --- Evento Ruteado ValueChanged ---
 		// Equivalente moderno del evento Change del control original en VB6.
@@ -38,7 +38,7 @@ namespace NumericSelectorLib
 				nameof(ValueChanged),
 				RoutingStrategy.Bubble,
 				typeof(RoutedPropertyChangedEventHandler<int>),
-				typeof(NumericSelector));
+				typeof(BoundedNumericSelector));
 
 		/// <summary>
 		/// Se produce cuando cambia el valor del selector.
@@ -67,7 +67,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(TitleText),
 				typeof(string),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata("Default Title Text")); // Valor por defecto.
 
 		/// <summary>
@@ -84,7 +84,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(LegendText),
 				typeof(string),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata("Legend")); // Valor por defecto.
 
 		/// <summary>
@@ -103,7 +103,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(Value),
 				typeof(int),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new FrameworkPropertyMetadata(
 					0, // Valor por defecto
 					FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, // Para TwoWay binding
@@ -127,7 +127,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(Minimum),
 				typeof(int),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(0, OnMinimumChanged, CoerceMinimum)); // Valor por defecto
 
 		/// <summary>
@@ -144,7 +144,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(Maximum),
 				typeof(int),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(100, OnMaximumChanged, CoerceMaximum)); // Valor por defecto
 
 		/// <summary>
@@ -161,7 +161,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(SmallChange),
 				typeof(int),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(1, null, CoerceStep)); // Valor por defecto; nunca < 1
 
 		/// <summary>
@@ -179,7 +179,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(LargeChange),
 				typeof(int),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(10, null, CoerceStep)); // Valor por defecto; nunca < 1
 
 		/// <summary>
@@ -197,7 +197,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(ResetValue),
 				typeof(int),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(50, null, CoerceIntoRange)); // Valor por defecto; acotado al rango
 
 		/// <summary>
@@ -214,7 +214,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(ControlBorderColor),
 				typeof(Brush),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(Brushes.Black));
 
 		/// <summary>
@@ -231,7 +231,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(FocusBorderColor),
 				typeof(Brush),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(Brushes.DodgerBlue));
 
 		/// <summary>
@@ -249,7 +249,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(ControlBorderPixels),
 				typeof(Thickness), // Usar Thickness para el grosor del borde
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(new Thickness(1), OnLayoutPropertyChanged)); // Asociar callback para redibujar si cambia.
 
 		/// <summary>
@@ -266,7 +266,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(BarFillColor),
 				typeof(Brush),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(Brushes.Orange));
 
 		/// <summary>
@@ -283,7 +283,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(BarBorderColor),
 				typeof(Brush),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(Brushes.Black));
 
 		/// <summary>
@@ -300,7 +300,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(FillForeground),
 				typeof(Brush),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(Brushes.White));
 
 		/// <summary>
@@ -318,7 +318,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(ShowTitleText),
 				typeof(bool),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(false, OnShowTitleTextChanged)); // Coacciona ValuePlacement + actualiza layout
 
 		/// <summary>
@@ -336,7 +336,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(ValuePlacement),
 				typeof(ValuePlacement),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(
 					ValuePlacement.BesideBar, // Valor por defecto (comportamiento clásico)
 					OnLayoutPropertyChanged,    // al cambiar, re-evaluar el layout
@@ -358,7 +358,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(StretchMode),
 				typeof(StretchMode),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(StretchMode.Fixed, OnStretchModeChanged));
 
 		/// <summary>
@@ -376,7 +376,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(ValueChangeMode),
 				typeof(ValueChangeMode),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				// Default ChangeOnClick: es el comportamiento que el control ya tenía.
 				new PropertyMetadata(ValueChangeMode.ChangeOnClick));
 
@@ -396,7 +396,7 @@ namespace NumericSelectorLib
 			DependencyProperty.Register(
 				nameof(IsDisplayOnly),
 				typeof(bool),
-				typeof(NumericSelector),
+				typeof(BoundedNumericSelector),
 				new PropertyMetadata(false, OnIsDisplayOnlyChanged));
 
 		/// <summary>
@@ -417,7 +417,7 @@ namespace NumericSelectorLib
 
 		private static void OnIsDisplayOnlyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			var selector = (NumericSelector)d;
+			var selector = (BoundedNumericSelector)d;
 
 			// Re-evaluar Focusable con el modo nuevo (ver CoerceFocusable).
 			selector.CoerceValue(FocusableProperty);
@@ -441,7 +441,7 @@ namespace NumericSelectorLib
 		{
 			// El valor ya llega acotado por CoerceValueCallback; aquí refrescamos la
 			// parte visual y notificamos el cambio con el evento ValueChanged.
-			if (d is NumericSelector selector)
+			if (d is BoundedNumericSelector selector)
 			{
 				int newValue = (int)e.NewValue;
 				selector.OnValueChangedHandler(newValue);
@@ -455,7 +455,7 @@ namespace NumericSelectorLib
 		// aplicarse el que el usuario había asignado (no se pierde su intención).
 		private static object CoerceIntoRange(DependencyObject d, object baseValue)
 		{
-			if (d is NumericSelector selector)
+			if (d is BoundedNumericSelector selector)
 			{
 				// El Math.Max es defensivo: Math.Clamp lanza ArgumentException si min > max,
 				// y aunque la coerción de Maximum ya impide ese estado, no queremos que un
@@ -477,7 +477,7 @@ namespace NumericSelectorLib
 		private static object CoerceMaximum(DependencyObject d, object baseValue)
 		{
 			long v = (int)baseValue;
-			if (d is NumericSelector selector)
+			if (d is BoundedNumericSelector selector)
 				v = Math.Max(v, (long)selector.Minimum + 1);
 			return (int)Math.Clamp(v, int.MinValue + 1, int.MaxValue);
 		}
@@ -485,7 +485,7 @@ namespace NumericSelectorLib
 		private static object CoerceMinimum(DependencyObject d, object baseValue)
 		{
 			long v = (int)baseValue;
-			if (d is NumericSelector selector)
+			if (d is BoundedNumericSelector selector)
 				v = Math.Min(v, (long)selector.Maximum - 1);
 			return (int)Math.Clamp(v, int.MinValue, int.MaxValue - 1);
 		}
@@ -497,7 +497,7 @@ namespace NumericSelectorLib
 		{
 			int step = Math.Max((int)baseValue, 1);
 
-			if (d is NumericSelector selector)
+			if (d is BoundedNumericSelector selector)
 			{
 				long span = (long)selector.Maximum - selector.Minimum;
 				if (span >= 1) step = (int)Math.Min(step, span);
@@ -511,7 +511,7 @@ namespace NumericSelectorLib
 		// NaN rompería la conversión de un binding sobre Width).
 		private static void OnStretchModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			if (d is not NumericSelector selector) return;
+			if (d is not BoundedNumericSelector selector) return;
 
 			if ((StretchMode)e.NewValue == StretchMode.AutoGrow)
 			{
@@ -528,7 +528,7 @@ namespace NumericSelectorLib
 		// Al cambiar Minimum hay que re-evaluar Maximum (que se apoya en él) y luego Value.
 		private static void OnMinimumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			if (d is NumericSelector selector)
+			if (d is BoundedNumericSelector selector)
 			{
 				selector.CoerceValue(MaximumProperty);
 				selector.RefreshAfterRangeChange();
@@ -537,7 +537,7 @@ namespace NumericSelectorLib
 
 		private static void OnMaximumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			if (d is NumericSelector selector)
+			if (d is BoundedNumericSelector selector)
 			{
 				// Simétrico a OnMinimumChanged: al separarse Maximum, Minimum puede recuperar
 				// el valor base que se le había pedido y que había quedado topeado.
@@ -573,7 +573,7 @@ namespace NumericSelectorLib
 		// Callback para propiedades que afectan el layout.
 		private static void OnLayoutPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			if (d is NumericSelector selector)
+			if (d is BoundedNumericSelector selector)
 			{
 				// Forzar una reevaluación del layout.
 				selector.InvalidateMeasure(); // Indica que la medida del control puede haber cambiado.
@@ -586,7 +586,7 @@ namespace NumericSelectorLib
 		// cuando ShowTitleText vuelve a activarse (comportamiento A: recuerda).
 		private static object CoerceValuePlacement(DependencyObject d, object baseValue)
 		{
-			if (d is NumericSelector selector &&
+			if (d is BoundedNumericSelector selector &&
 				(ValuePlacement)baseValue == ValuePlacement.WithTitle &&
 				!selector.ShowTitleText)
 			{
@@ -599,7 +599,7 @@ namespace NumericSelectorLib
 		// WithTitle según corresponda) y luego actualiza el layout.
 		private static void OnShowTitleTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			if (d is NumericSelector selector)
+			if (d is BoundedNumericSelector selector)
 			{
 				selector.CoerceValue(ValuePlacementProperty);
 				selector.InvalidateMeasure();

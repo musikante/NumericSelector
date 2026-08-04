@@ -1,7 +1,7 @@
-﻿<Application x:Class="NumericSelectorLib_Test.App"
+﻿<Application x:Class="NumericSelector.Demo.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:NumericSelectorLib_Test"
+             xmlns:local="clr-namespace:NumericSelector.Demo"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

@@ -1,4 +1,4 @@
-namespace NumericSelectorLib
+namespace NumericSelector
 {
 	/// <summary>
 	/// Cómo se comporta el ancho del control frente a su contenido.

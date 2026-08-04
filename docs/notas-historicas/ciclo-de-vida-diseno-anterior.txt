@@ -1,7 +1,7 @@
 NOTA HISTÓRICA — NO DESCRIBE EL CONTROL ACTUAL
 ===============================================
 
-Este archivo estaba en la carpeta del proyecto NumericSelectorLib con el nombre
+Este archivo estaba en la carpeta del proyecto NumericSelectorLib (hoy NumericSelector) con el nombre
 "Anotaciones útiles.txt". Se conserva acá porque documenta el linaje del control,
 pero el ciclo de vida que describe corresponde a un diseño ANTERIOR (la etapa
 RangeSlider / UserControl), no al NumericSelector actual.

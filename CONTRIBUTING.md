@@ -14,10 +14,10 @@ Se necesita Windows, el SDK indicado en `global.json` y soporte WPF.
 
 ```powershell
 dotnet build .\NumericSelector.slnx --configuration Release
-dotnet run --project .\NumericSelectorLib_Test\NumericSelectorLib_Test.csproj
+dotnet run --project .\NumericSelector.Demo\NumericSelector.Demo.csproj
 ```
 
-La aplicación `NumericSelectorLib_Test` es el banco de pruebas manual de la experiencia del control.
+La aplicación `NumericSelector.Demo` es el banco de pruebas manual de la experiencia del control.
 
 ## Criterios para un pull request
 

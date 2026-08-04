@@ -1,16 +1,16 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace NumericSelectorLib.Tests;
+namespace NumericSelector.Tests;
 
 [TestClass]
-public class NumericSelectorLogicTests
+public class BoundedNumericSelectorLogicTests
 {
 	[TestMethod]
 	public void Defaults_match_the_documented_public_contract()
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new NumericSelector();
+			var selector = new BoundedNumericSelector();
 
 			Assert.AreEqual(0, selector.Minimum);
 			Assert.AreEqual(100, selector.Maximum);
@@ -26,7 +26,7 @@ public class NumericSelectorLogicTests
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new NumericSelector { Minimum = 10, Maximum = 20 };
+			var selector = new BoundedNumericSelector { Minimum = 10, Maximum = 20 };
 
 			selector.Value = -100;
 			selector.ResetValue = 500;
@@ -45,7 +45,7 @@ public class NumericSelectorLogicTests
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new NumericSelector { Minimum = 10, Maximum = 20 };
+			var selector = new BoundedNumericSelector { Minimum = 10, Maximum = 20 };
 
 			selector.Maximum = 10;
 			Assert.AreEqual(11, selector.Maximum);
@@ -60,7 +60,7 @@ public class NumericSelectorLogicTests
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new NumericSelector { Minimum = -2, Maximum = 3 };
+			var selector = new BoundedNumericSelector { Minimum = -2, Maximum = 3 };
 
 			selector.SmallChange = 100;
 			selector.LargeChange = 100;
@@ -75,7 +75,7 @@ public class NumericSelectorLogicTests
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new NumericSelector();
+			var selector = new BoundedNumericSelector();
 
 			selector.ValuePlacement = ValuePlacement.WithTitle;
 			Assert.AreEqual(ValuePlacement.BesideBar, selector.ValuePlacement);
@@ -93,7 +93,7 @@ public class NumericSelectorLogicTests
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new NumericSelector();
+			var selector = new BoundedNumericSelector();
 			var changes = new List<(int OldValue, int NewValue)>();
 			selector.ValueChanged += (_, args) => changes.Add((args.OldValue, args.NewValue));
 

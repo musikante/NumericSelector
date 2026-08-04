@@ -21,7 +21,16 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 - Documentación de `StretchMode.AutoGrow` alineada con el comportamiento actual de crecimiento del control.
 - El valor predeterminado efectivo de `ResetValue` pasa a ser `50`, coherente con la API documentada.
 - `README.md` documenta que `SmallChange` y `LargeChange` se coaccionan también por arriba, hasta el ancho del rango, y que esa coacción es silenciosa.
-- La nota `Anotaciones útiles.txt` sale de `NumericSelectorLib/` y pasa a `docs/notas-historicas/`, con una cabecera que aclara que describe el diseño anterior (etapa RangeSlider) y no el control actual.
+- La nota `Anotaciones útiles.txt` sale de la carpeta de la librería y pasa a `docs/notas-historicas/`, con una cabecera que aclara que describe el diseño anterior (etapa RangeSlider) y no el control actual.
+
+### Changed — renombrado de la API pública
+
+- El control pasa a llamarse **`BoundedNumericSelector`** (antes `NumericSelector`). El nombre destaca la propiedad que define al control: el valor está **acotado** al rango y no hay forma de que el control entregue uno fuera de él, así que el consumidor no necesita validar la entrada. Se eligió *Bounded* sobre *Limited* porque en inglés "limited" connota capacidad reducida.
+- El ensamblado y el espacio de nombres pasan de `NumericSelectorLib` a **`NumericSelector`**: el sufijo `Lib` no es idiomático en .NET, y con la clase renombrada el tipo ya no colisiona con el espacio de nombres que lo contiene.
+- El banco de pruebas manual pasa de `NumericSelectorLib_Test` a **`NumericSelector.Demo`**: no es un proyecto de pruebas —es una aplicación de demostración— y su nombre anterior se confundía con el de pruebas automatizadas, que ahora es `NumericSelector.Tests`.
+- Los nombres de las partes de la plantilla (`PART_*`) **no cambian**.
+
+Se hace antes de la primera publicación, que es el único momento en que estos cambios no rompen a ningún consumidor.
 
 ### Fixed
 
@@ -40,7 +49,7 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 
 ### Added
 
-- Control WPF `NumericSelector` para valores enteros discretos y acotados.
+- Control WPF `BoundedNumericSelector` para valores enteros discretos y acotados.
 - Interacción por barra, arrastre vertical del valor, rueda y teclado.
 - Modos de presentación `BesideBar`, `OnBar` y `WithTitle`.
 - Modos de interacción `ChangeOnClick`, `MustFocusFirst` e `IsDisplayOnly`.

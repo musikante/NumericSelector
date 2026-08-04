@@ -7,10 +7,10 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace NumericSelectorLib
+namespace NumericSelector
 {
 	// Usamos 'partial' para indicar que esta clase se define en múltiples archivos.
-	public partial class NumericSelector : Control
+	public partial class BoundedNumericSelector : Control
 	{
 		// --- Campos de Instancia ---
 		private Grid? _mainGrid;
@@ -45,7 +45,7 @@ namespace NumericSelectorLib
 		private bool _hadFocusOnPress;
 
 		// --- Constructor de Instancia ---
-		public NumericSelector()
+		public BoundedNumericSelector()
 		{
 			// WPF formatea los bindings según FrameworkElement.Language, cuyo valor por
 			// defecto es "en-US" sin importar la configuración regional de Windows: por eso

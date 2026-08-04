@@ -3,11 +3,11 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace NumericSelectorLib_Test
+namespace NumericSelector.Demo
 {
 	/// <summary>
 	/// Convierte un Thickness uniforme a int y viceversa, para poder manejar
-	/// ControlBorderPixels con un NumericSelector (que trabaja con enteros).
+	/// ControlBorderPixels con un BoundedNumericSelector (que trabaja con enteros).
 	/// </summary>
 	public class ThicknessToIntConverter : IValueConverter
 	{

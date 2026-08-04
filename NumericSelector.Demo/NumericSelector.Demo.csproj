@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NumericSelectorLib\NumericSelectorLib.csproj" />
+    <ProjectReference Include="..\NumericSelector\NumericSelector.csproj" />
   </ItemGroup>
 
 </Project>

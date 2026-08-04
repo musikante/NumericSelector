@@ -5,10 +5,10 @@
 		<OutputType>Library</OutputType>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<AssemblyName>NumericSelectorLib</AssemblyName>
-		<RootNamespace>NumericSelectorLib</RootNamespace>
+		<AssemblyName>NumericSelector</AssemblyName>
+		<RootNamespace>NumericSelector</RootNamespace>
 		<Authors>Jorge Rogelio Zir</Authors>
-		<Description>Control deslizante numérico con rango limitado y etiquetas personalizadas.</Description>
+		<Description>Control WPF para ingresar un valor entero acotado a un rango: no hay forma de obtener un valor fuera de [Minimum, Maximum], así que no hace falta validar la entrada.</Description>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />

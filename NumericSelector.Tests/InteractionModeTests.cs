@@ -4,7 +4,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace NumericSelectorLib.Tests;
+namespace NumericSelector.Tests;
 
 /// <summary>
 /// Pruebas de los dos modos de interacción: ValueChangeMode e IsDisplayOnly.
@@ -22,9 +22,9 @@ public class InteractionModeTests
 	/// Incluye un botón aparte para poder sacarle el foco al control cuando la prueba
 	/// necesita el escenario "sin foco previo".
 	/// </summary>
-	private static Escenario Host(Action<NumericSelector>? configurar = null)
+	private static Escenario Host(Action<BoundedNumericSelector>? configurar = null)
 	{
-		var selector = new NumericSelector { Minimum = 0, Maximum = 100, Value = 50 };
+		var selector = new BoundedNumericSelector { Minimum = 0, Maximum = 100, Value = 50 };
 		configurar?.Invoke(selector);
 
 		var otro = new Button { Content = "otro" };
@@ -49,7 +49,7 @@ public class InteractionModeTests
 	}
 
 	private sealed record Escenario(
-		Window Window, NumericSelector Selector, FrameworkElement Bar, Button Otro);
+		Window Window, BoundedNumericSelector Selector, FrameworkElement Bar, Button Otro);
 
 	/// <summary>
 	/// Click izquierdo completo: primero la fase túnel (donde el control toma el foco y
@@ -104,7 +104,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new NumericSelector();
+			var selector = new BoundedNumericSelector();
 
 			Assert.AreEqual(ValueChangeMode.ChangeOnClick, selector.ValueChangeMode);
 			Assert.IsFalse(selector.IsDisplayOnly);
@@ -211,7 +211,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new NumericSelector();
+			var selector = new BoundedNumericSelector();
 			Assert.IsTrue(selector.Focusable);
 
 			selector.IsDisplayOnly = true;
@@ -229,7 +229,7 @@ public class InteractionModeTests
 		{
 			// La focusabilidad se quita por coerción, no por asignación, justamente para
 			// no pisar la decisión de quien usa el control.
-			var selector = new NumericSelector { Focusable = false };
+			var selector = new BoundedNumericSelector { Focusable = false };
 
 			selector.IsDisplayOnly = true;
 			selector.IsDisplayOnly = false;
@@ -384,7 +384,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new NumericSelector { IsDisplayOnly = true };
+			var selector = new BoundedNumericSelector { IsDisplayOnly = true };
 			var cambios = new List<(int OldValue, int NewValue)>();
 			selector.ValueChanged += (_, args) => cambios.Add((args.OldValue, args.NewValue));
 

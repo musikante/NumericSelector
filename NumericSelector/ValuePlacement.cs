@@ -1,4 +1,4 @@
-namespace NumericSelectorLib
+namespace NumericSelector
 {
 	/// <summary>
 	/// Ubicación del número (Value) dentro del control. Las tres opciones son

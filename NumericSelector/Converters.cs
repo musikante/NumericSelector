@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace NumericSelectorLib
+namespace NumericSelector
 {
 	/// <summary>
 	/// Devuelve el mismo <see cref="Thickness"/> recibido pero con el lado inferior en cero.

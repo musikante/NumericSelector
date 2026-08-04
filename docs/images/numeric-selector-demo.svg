@@ -16,7 +16,7 @@
   <rect x="36" y="28" width="1128" height="44" rx="10" fill="#20507a"/>
   <rect x="36" y="55" width="1128" height="17" fill="#20507a"/>
   <circle cx="68" cy="50" r="6" fill="#ffcc5c"/><circle cx="88" cy="50" r="6" fill="#f36b60"/><circle cx="108" cy="50" r="6" fill="#64c466"/>
-  <text x="136" y="56" class="ui small" fill="#fff">NumericSelectorLib_Test — demo interactivo</text>
+  <text x="136" y="56" class="ui small" fill="#fff">NumericSelector.Demo — demo interactivo</text>
 
   <text x="70" y="113" class="ui title">MasterNumericSelector</text>
   <rect x="70" y="132" width="1060" height="106" rx="5" fill="#f6fafd" stroke="#bfd4e6"/>

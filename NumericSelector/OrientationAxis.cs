@@ -2,7 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 
-namespace NumericSelectorLib
+namespace NumericSelector
 {
 	/// <summary>
 	/// Abstrae el "eje principal" del control para que la lógica de interacción y de

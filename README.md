@@ -1,6 +1,8 @@
 # NumericSelector
 
-Control WPF *lookless* para seleccionar un valor entero dentro de un rango limitado. La barra permite elegir el valor; la leyenda se escribe sobre ella y el número permanece siempre legible.
+Control WPF *lookless* para seleccionar un valor entero **acotado a un rango**: no hay forma de que el control entregue un valor fuera de `[Minimum, Maximum]`, así que el consumidor no necesita validar la entrada. La barra permite elegir el valor; la leyenda se escribe sobre ella y el número permanece siempre legible.
+
+El control se llama **`BoundedNumericSelector`** y vive en el ensamblado `NumericSelector`.
 
 > Estado: en desarrollo activo. La API ya es utilizable, pero puede evolucionar antes de una primera versión estable.
 
@@ -15,21 +17,21 @@ Control WPF *lookless* para seleccionar un valor entero dentro de un rango limit
 - Modo de sólo visualización que conserva la apariencia y sigue reflejando cambios hechos por código.
 - Plantilla y colores personalizables, sin heredar la semántica de `Slider`.
 
-| Plataforma | Ensamblado | Valor |
-| --- | --- | --- |
-| .NET 10 · WPF · Windows | `NumericSelectorLib` | `int` |
+| Plataforma | Ensamblado | Control | Valor |
+| --- | --- | --- | --- |
+| .NET 10 · WPF · Windows | `NumericSelector` | `BoundedNumericSelector` | `int` |
 
 ## Instalación y uso rápido
 
-Por ahora, agregá una referencia al proyecto `NumericSelectorLib` desde tu aplicación WPF. El paquete NuGet está planificado, pero todavía no se publica.
+Por ahora, agregá una referencia al proyecto `NumericSelector` desde tu aplicación WPF. El paquete NuGet está planificado, pero todavía no se publica.
 
 ```xml
 <Window
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ns="clr-namespace:NumericSelectorLib;assembly=NumericSelectorLib">
+    xmlns:ns="clr-namespace:NumericSelector;assembly=NumericSelector">
 
-    <ns:NumericSelector
+    <ns:BoundedNumericSelector
         Minimum="0"
         Maximum="100"
         Value="50"
@@ -140,10 +142,10 @@ El control calcula un `MinWidth` a partir del mayor número que el rango puede p
 
 ## Aplicación de demostración
 
-El proyecto `NumericSelectorLib_Test` permite probar visualmente todas las propiedades, fuentes, colores, rangos y gestos.
+El proyecto `NumericSelector.Demo` permite probar visualmente todas las propiedades, fuentes, colores, rangos y gestos.
 
 ```powershell
-dotnet run --project .\NumericSelectorLib_Test\NumericSelectorLib_Test.csproj
+dotnet run --project .\NumericSelector.Demo\NumericSelector.Demo.csproj
 ```
 
 Para compilar toda la solución:

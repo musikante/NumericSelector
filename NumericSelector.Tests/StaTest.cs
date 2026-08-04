@@ -1,6 +1,6 @@
 using System.Runtime.ExceptionServices;
 
-namespace NumericSelectorLib.Tests;
+namespace NumericSelector.Tests;
 
 /// <summary>
 /// Ejecuta pruebas que crean controles WPF en un hilo STA aislado.

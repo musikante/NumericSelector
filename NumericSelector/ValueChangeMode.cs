@@ -1,4 +1,4 @@
-namespace NumericSelectorLib
+namespace NumericSelector
 {
 	/// <summary>
 	/// Qué hace falta para que los gestos de mouse cambien el valor.
