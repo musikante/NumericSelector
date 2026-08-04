@@ -244,11 +244,35 @@
                         </Border>
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <!-- Foco: los marcos de ambas secciones cambian de color a la vez. -->
+                        <!-- Foco: la sección de datos siempre se tiñe. -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="PART_TitleBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                             <Setter TargetName="PART_DataBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </Trigger>
+
+                        <!-- La del título, sólo si tiene marco. Va como MultiTrigger y no
+                             confiando en el orden de declaración: si el marco del título está
+                             apagado, el foco no debe encenderlo de sorpresa, y esa regla tiene
+                             que estar escrita en la condición, no en la posición del bloque. -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True"/>
+                                <Condition Property="ShowTitleFrame" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_TitleBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        </MultiTrigger>
+
+                        <!-- Título sin marco: se apaga lo que se PINTA, no el grosor, así que la
+                             geometría queda idéntica y activar o desactivar el modo no mueve nada
+                             de lugar. Transparent y NO x:Null: transparente igual pinta, y por eso
+                             sigue recibiendo los clics que dan el foco; con nulo la fila del
+                             título dejaría de ser alcanzable por el mouse.
+                             La independencia respecto del orden está verificada: con este bloque
+                             declarado ANTES de los triggers de foco, las pruebas siguen pasando. -->
+                        <Trigger Property="ShowTitleFrame" Value="False">
+                            <Setter TargetName="PART_TitleBorder" Property="BorderBrush" Value="Transparent"/>
+                            <Setter TargetName="PART_TitleBorder" Property="Background" Value="Transparent"/>
+                        </Trigger>
+
                         <!-- OnBar: valor sobre la barra (dos capas) y sus medidores reservando
                              ancho; sin casillero. La barra sigue ocupando todo el ancho. -->
                         <Trigger Property="ValuePlacement" Value="OnBar">

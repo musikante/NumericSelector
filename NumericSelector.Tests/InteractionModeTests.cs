@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -294,6 +295,102 @@ public class InteractionModeTests
 				// Y que el sondeo no haya sido degenerado: el gesto sí producía un cambio.
 				Assert.AreNotEqual(esperado, distinto,
 					"Si el gesto no cambiaba nada de entrada, la prueba no estaría probando el bloqueo.");
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	// --- ShowTitleFrame ---
+	// Es una propiedad de apariencia, pero sus pruebas viven acá porque la regla que
+	// importa es su interacción con el FOCO, y para eso hace falta una ventana real.
+
+	private static Border MarcoDelTitulo(BoundedNumericSelector selector) =>
+		(Border)selector.Template.FindName("PART_TitleBorder", selector);
+
+	// Se compara el COLOR y no la instancia de la brocha: el convertidor de XAML puede
+	// devolver una instancia propia para "Transparent" y una comparación por referencia
+	// sería frágil sin agregar nada.
+	private static void AssertTransparente(Brush brocha, string mensaje) =>
+		Assert.AreEqual(Colors.Transparent, ((SolidColorBrush)brocha).Color, mensaje);
+
+	[TestMethod]
+	public void Title_frame_is_drawn_by_default()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s => s.ShowTitleText = true);
+			try
+			{
+				Assert.IsTrue(e.Selector.ShowTitleFrame, "El default conserva el aspecto de siempre.");
+				Assert.AreEqual(e.Selector.ControlBorderColor, MarcoDelTitulo(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.Background, MarcoDelTitulo(e.Selector).Background);
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	[TestMethod]
+	public void Turning_off_the_title_frame_makes_border_and_background_transparent()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s => { s.ShowTitleText = true; s.ShowTitleFrame = false; });
+			try
+			{
+				var marco = MarcoDelTitulo(e.Selector);
+
+				// Transparent y NO nulo: con nulo la fila del título dejaría de recibir los
+				// clics que dan el foco, porque una brocha nula no pinta y no se golpea.
+				AssertTransparente(marco.BorderBrush, "El borde del título tiene que quedar transparente.");
+				AssertTransparente(marco.Background, "El fondo del título tiene que quedar transparente.");
+
+				// La geometría no se toca: sólo cambia lo que se pinta.
+				Assert.AreEqual(new Thickness(1, 1, 1, 0), marco.BorderThickness,
+					"Apagar el marco no debe alterar el grosor reservado.");
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	[TestMethod]
+	public void Focus_does_not_light_up_a_title_that_has_no_frame()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s => { s.ShowTitleText = true; s.ShowTitleFrame = false; });
+			try
+			{
+				e.Selector.Focus();
+				Assert.IsTrue(e.Selector.IsKeyboardFocused);
+
+				// La regla acordada: si el marco del título está apagado, el foco no se lo
+				// devuelve de sorpresa. Está escrita en la condición de un MultiTrigger y no
+				// en el orden de declaración, justamente para que esta prueba la sostenga.
+				AssertTransparente(MarcoDelTitulo(e.Selector).BorderBrush,
+					"Con el marco apagado, el foco no debe encender el borde del título.");
+
+				var datos = (Border)e.Selector.Template.FindName("PART_DataBorder", e.Selector);
+				Assert.AreEqual(e.Selector.FocusBorderColor, datos.BorderBrush,
+					"La sección de datos sigue siendo la que señala el foco.");
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	[TestMethod]
+	public void Focus_still_lights_up_a_title_that_has_a_frame()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s => s.ShowTitleText = true);
+			try
+			{
+				e.Selector.Focus();
+
+				// Contrapunto de la prueba anterior: sin ésta, apagar por error el teñido
+				// del título en TODOS los casos pasaría inadvertido.
+				Assert.AreEqual(e.Selector.FocusBorderColor, MarcoDelTitulo(e.Selector).BorderBrush,
+					"Con marco, el título se sigue tiñendo al enfocar.");
 			}
 			finally { e.Window.Close(); }
 		});

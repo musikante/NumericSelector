@@ -114,6 +114,7 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 | `TitleText` | `string` | `DefaultTitle` | Texto de la fila superior. |
 | `LegendText` | `string` | `DefaultLegend` | Leyenda sobre la barra. |
 | `ShowTitleText` | `bool` | `false` | Muestra la fila de título. |
+| `ShowTitleFrame` | `bool` | `true` | Dibuja el marco y el fondo de la sección del título. Con `false`, el título queda como etiqueta suelta sobre la sección de datos. |
 | `ValuePlacement` | `enum` | `BesideBar` | Ubicación del valor. |
 | `StretchMode` | `enum` | `Fixed` | Estrategia de ancho. |
 | `ControlBorderPixels` | `Thickness` | `1` | Grosor de los marcos. El lado `Top` es además el grosor de la línea que separa el título de la barra. |

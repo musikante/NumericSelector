@@ -32,6 +32,13 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 
 Se hace antes de la primera publicación, que es el único momento en que estos cambios no rompen a ningún consumidor.
 
+### Added — `ShowTitleFrame`
+
+- Nueva propiedad `bool ShowTitleFrame` (predeterminada `true`, el aspecto de siempre). Con `false`, el borde y el fondo de la sección del título pasan a transparentes y el título se lee como una etiqueta suelta por encima de la sección de datos, que conserva su marco.
+- **No altera la geometría**: se apaga lo que se pinta, no el grosor, que se sigue reservando. Activar o desactivar el modo no mueve nada de lugar, verificado por comparación de píxeles.
+- **El foco no enciende el marco del título mientras esté apagado.** La regla vive en la condición de un `MultiTrigger` y no en el orden de declaración de los triggers; se comprobó declarando el bloque antes de los del foco y confirmando que el comportamiento no cambia. El foco lo sigue señalando el marco de la sección de datos.
+- Los brochazos son `Transparent` y no nulos a propósito: una brocha transparente igual pinta, y por eso la fila del título sigue recibiendo los clics que dan el foco. Con `x:Null` dejaría de ser alcanzable por el mouse.
+
 ### Fixed
 
 - **Un control deshabilitado seguía respondiendo al teclado.** `IsEnabled = false` impide *ganar* el foco, pero no suelta el que ya estuviera puesto: al deshabilitar un control enfocado, éste conservaba `IsKeyboardFocused` y, como las teclas se rutean al elemento enfocado y no al que está bajo el puntero, las flechas seguían moviendo el valor. Además el marco de foco quedaba encendido en un control deshabilitado. Ahora el foco se suelta al deshabilitar, con una guarda adicional en el manejo de teclas. El mouse y la rueda no requerían tratamiento: con `IsEnabled = false` el hit-test de entrada ya deja de devolver partes del control, y la rueda se rutea por el mismo camino. Cubierto por tres pruebas nuevas, verificadas por mutación.

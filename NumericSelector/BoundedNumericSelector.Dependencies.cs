@@ -331,6 +331,35 @@ namespace NumericSelector
 			set => SetValue(ShowTitleTextProperty, value);
 		}
 
+		// Propiedad para el marco de la sección del título.
+		// Sin callback y sin coerción a propósito: sólo cambia lo que se pinta, no la
+		// geometría (el grosor del borde se sigue reservando), así que no hay layout que
+		// invalidar. Y como bool no tiene estado inválido: si ShowTitleText está en false
+		// la sección entera está colapsada y esta propiedad simplemente no se nota, sin
+		// necesidad de degradarla ni de recordar nada (a diferencia de ValuePlacement).
+		public static readonly DependencyProperty ShowTitleFrameProperty =
+			DependencyProperty.Register(
+				nameof(ShowTitleFrame),
+				typeof(bool),
+				typeof(BoundedNumericSelector),
+				new PropertyMetadata(true)); // true = el aspecto de siempre
+
+		/// <summary>
+		/// Obtiene o establece si la sección del título dibuja su marco y su fondo.
+		/// Con <c>false</c> ambos pasan a transparente y el título se lee como una etiqueta
+		/// suelta por encima de la sección de datos, que conserva su marco.
+		/// No altera la geometría: el grosor del borde se sigue reservando, así que activarlo
+		/// o desactivarlo no mueve nada de lugar.
+		/// El foco NO enciende el marco del título mientras esta propiedad esté en false; lo
+		/// señala el marco de la sección de datos.
+		/// Sólo se nota con <see cref="ShowTitleText"/> activo.
+		/// </summary>
+		public bool ShowTitleFrame
+		{
+			get => (bool)GetValue(ShowTitleFrameProperty);
+			set => SetValue(ShowTitleFrameProperty, value);
+		}
+
 		// Propiedad para la ubicación del número (Value) dentro del control.
 		public static readonly DependencyProperty ValuePlacementProperty =
 			DependencyProperty.Register(
