@@ -179,8 +179,13 @@ namespace NumericSelector
 
 			// +1 de tolerancia, en el espíritu del LNSlider: que sobre no molesta, que falte
 			// corta el número. FormattedText y TextBlock pueden diferir por fracciones.
+			// El último sumando es el trazo que separa la barra del casillero. Sólo se dibuja
+			// en BesideBar, pero el piso se calcula igual para todos los modos: reservar de
+			// más no molesta —la barra absorbe la diferencia— y así el piso no depende de la
+			// disposición ni hay que recalcularlo al cambiarla.
 			double piso = Math.Ceiling(texto) + 1 + ValueBoxPadding
-						+ ControlBorderPixels.Left + ControlBorderPixels.Right;
+						+ ControlBorderPixels.Left + ControlBorderPixels.Right
+						+ ControlBorderPixels.Left;
 
 			SetCurrentValue(MinWidthProperty, piso);
 		}

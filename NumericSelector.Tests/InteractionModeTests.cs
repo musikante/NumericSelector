@@ -396,6 +396,67 @@ public class InteractionModeTests
 		});
 	}
 
+	// --- Trazo separador del casillero del valor ---
+
+	private static Border TrazoDelValor(BoundedNumericSelector selector) =>
+		(Border)selector.Template.FindName("PART_ValueBorder", selector);
+
+	[TestMethod]
+	public void Beside_bar_separates_the_value_box_from_the_bar()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s => s.ControlBorderPixels = new Thickness(2));
+			try
+			{
+				// Sólo el lado izquierdo: los otros tres los pone el marco de la sección de
+				// datos, y dibujarlos otra vez daría línea doble.
+				Assert.AreEqual(new Thickness(2, 0, 0, 0), TrazoDelValor(e.Selector).BorderThickness);
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	[TestMethod]
+	public void The_separator_disappears_where_the_value_column_collapses()
+	{
+		StaTest.Run(() =>
+		{
+			// En OnBar y WithTitle la columna del valor mide 0. Sin esto quedaría un trazo
+			// vertical suelto pegado al final de la barra.
+			foreach (var donde in new[] { ValuePlacement.OnBar, ValuePlacement.WithTitle })
+			{
+				var e = Host(s => { s.ShowTitleText = true; s.ValuePlacement = donde; });
+				try
+				{
+					Assert.AreEqual(new Thickness(0), TrazoDelValor(e.Selector).BorderThickness,
+						$"En {donde} no debe quedar trazo separador.");
+				}
+				finally { e.Window.Close(); }
+			}
+		});
+	}
+
+	[TestMethod]
+	public void The_separator_follows_the_focus_colour()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host();
+			try
+			{
+				Assert.AreEqual(e.Selector.ControlBorderColor, TrazoDelValor(e.Selector).BorderBrush);
+
+				e.Selector.Focus();
+
+				// Es parte del mismo marco: si no se tiñera, al enfocar se vería un recuadro
+				// azul con una raya negra en el medio.
+				Assert.AreEqual(e.Selector.FocusBorderColor, TrazoDelValor(e.Selector).BorderBrush);
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
 	// --- IsEnabled ---
 	// IsEnabled no es una propiedad del control sino de UIElement, pero el consumidor la
 	// puede usar igual y el control tiene que comportarse. WPF impide GANAR el foco estando

@@ -5,6 +5,7 @@
 
     <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     <local:ThicknessWithoutBottomConverter x:Key="ThicknessWithoutBottom" />
+    <local:ThicknessLeftOnlyConverter x:Key="ThicknessLeftOnly" />
 
     <Style TargetType="{x:Type local:BoundedNumericSelector}">
         <Setter Property="Template">
@@ -211,8 +212,18 @@
 
                                 <!-- Casillero del valor (modo BesideBar) + sus medidores.
                                      Acá los medidores están siempre Hidden: cuando el valor no
-                                     va en el casillero, el code-behind fuerza la columna a 0. -->
-                                <Grid Grid.Column="1">
+                                     va en el casillero, un trigger fuerza la columna a 0.
+                                     El Border aporta el trazo que separa la barra del número.
+                                     Sólo el lado izquierdo: los otros tres los pone el marco de
+                                     la sección de datos, y volver a dibujarlos daría línea doble.
+                                     Arranca en cero y lo enciende el trigger de BesideBar, para
+                                     que en los modos donde la columna mide 0 no quede un trazo
+                                     vertical huérfano pegado al final de la barra. -->
+                                <Border x:Name="PART_ValueBorder"
+                                        Grid.Column="1"
+                                        BorderBrush="{TemplateBinding ControlBorderColor}"
+                                        BorderThickness="0">
+                                <Grid>
                                     <TextBlock x:Name="PART_ValueSizerMin" Visibility="Hidden"
                                                Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
                                                FontSize="{TemplateBinding FontSize}"
@@ -240,13 +251,24 @@
                                                Background="Transparent"
                                                Padding="4,0,4,1"/>
                                 </Grid>
+                                </Border>
                             </Grid>
                         </Border>
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <!-- Foco: la sección de datos siempre se tiñe. -->
+                        <!-- BesideBar: el casillero del valor se separa de la barra con un trazo.
+                             Va en un trigger del modo, y no fijo en el Border, porque en OnBar y
+                             en WithTitle la columna del valor mide 0 y el trazo quedaría suelto. -->
+                        <Trigger Property="ValuePlacement" Value="BesideBar">
+                            <Setter TargetName="PART_ValueBorder" Property="BorderThickness"
+                                    Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessLeftOnly}}"/>
+                        </Trigger>
+
+                        <!-- Foco: la sección de datos siempre se tiñe, y con ella el trazo que
+                             separa la barra del número, que es parte del mismo marco. -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="PART_DataBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_ValueBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </Trigger>
 
                         <!-- La del título, sólo si tiene marco. Va como MultiTrigger y no

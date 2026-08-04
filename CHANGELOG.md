@@ -32,6 +32,13 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 
 Se hace antes de la primera publicación, que es el único momento en que estos cambios no rompen a ningún consumidor.
 
+### Changed — trazo separador del valor
+
+- En `ValuePlacement.BesideBar`, el casillero del valor se separa de la barra con un trazo vertical del mismo grosor que el borde del control (`ControlBorderPixels.Left`), que se tiñe junto con el marco al recibir el foco. No es opcional: es una línea de tabla, no un modo de presentación.
+- **Sólo el lado izquierdo.** Los otros tres los aporta el marco de la sección de datos; dibujarlos otra vez daría línea doble.
+- El trazo **no aparece en `OnBar` ni en `WithTitle`**, donde la columna del valor mide 0 y quedaría como un trazo suelto pegado al final de la barra. Verificado por comparación de píxeles: esos dos modos rinden idénticos a antes del cambio.
+- El piso de ancho suma ahora el grosor del trazo. Se calcula igual para todos los modos aunque sólo se dibuje en uno: reservar de más no molesta —la barra absorbe la diferencia— y así el piso no depende de la disposición.
+
 ### Added — `ShowTitleFrame`
 
 - Nueva propiedad `bool ShowTitleFrame` (predeterminada `true`, el aspecto de siempre). Con `false`, el borde y el fondo de la sección del título pasan a transparentes y el título se lee como una etiqueta suelta por encima de la sección de datos, que conserva su marco.
