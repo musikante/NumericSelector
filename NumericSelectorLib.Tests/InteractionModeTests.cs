@@ -299,6 +299,86 @@ public class InteractionModeTests
 		});
 	}
 
+	// --- IsEnabled ---
+	// IsEnabled no es una propiedad del control sino de UIElement, pero el consumidor la
+	// puede usar igual y el control tiene que comportarse. WPF impide GANAR el foco estando
+	// deshabilitado, pero no suelta el que ya estuviera puesto, y las teclas se rutean al
+	// elemento enfocado: sin tratamiento, un control deshabilitado seguía respondiendo.
+
+	[TestMethod]
+	public void Disabling_releases_the_focus_it_already_had()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host();
+			try
+			{
+				e.Selector.Focus();
+				Assert.IsTrue(e.Selector.IsKeyboardFocused);
+
+				e.Selector.IsEnabled = false;
+
+				// Si esto se rompe, el control deshabilitado queda con el marco de foco
+				// encendido —que además miente— y con el teclado y la rueda vivos.
+				Assert.IsFalse(e.Selector.IsKeyboardFocused,
+					"Deshabilitar tiene que soltar el foco que ya estuviera puesto.");
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	[TestMethod]
+	public void Disabled_control_ignores_the_keyboard()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host();
+			try
+			{
+				e.Selector.Focus();
+				e.Selector.IsEnabled = false;
+
+				int antes = e.Selector.Value;
+				var fuente = PresentationSource.FromVisual(e.Window)!;
+				e.Selector.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, fuente, 0, Key.Right)
+				{ RoutedEvent = Keyboard.PreviewKeyDownEvent });
+
+				// Se levanta el evento directamente sobre el control para saltear el ruteo:
+				// así la prueba verifica la GUARDA, no que WPF no haya entregado la tecla.
+				// Las dos defensas importan y ésta es la que queda si el foco llega por otro lado.
+				Assert.AreEqual(antes, e.Selector.Value,
+					"Con el control deshabilitado, el teclado no debe mover el valor.");
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	[TestMethod]
+	public void Re_enabling_leaves_the_keyboard_working_again()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host();
+			try
+			{
+				e.Selector.IsEnabled = false;
+				e.Selector.IsEnabled = true;
+				e.Selector.Focus();
+
+				int antes = e.Selector.Value;
+				var fuente = PresentationSource.FromVisual(e.Window)!;
+				e.Selector.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, fuente, 0, Key.Right)
+				{ RoutedEvent = Keyboard.PreviewKeyDownEvent });
+
+				// El bloqueo no debe dejar secuelas: la guarda mira IsEnabled en vivo y el
+				// foco se puede volver a tomar.
+				Assert.AreEqual(antes + e.Selector.SmallChange, e.Selector.Value,
+					"Al rehabilitar, el teclado tiene que volver a funcionar.");
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
 	[TestMethod]
 	public void Display_only_blocks_the_user_but_not_the_program()
 	{

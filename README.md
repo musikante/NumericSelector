@@ -132,6 +132,8 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 
 `ValueChangeMode.MustFocusFirst` hace que el primer click que obtiene el foco no modifique el valor; los gestos posteriores sí. `IsDisplayOnly` bloquea al usuario, no al programa: asignar `Value` desde código sigue actualizando el control y disparando `ValueChanged`.
 
+`IsEnabled = false` (heredado de `UIElement`) también deja el control fuera del alcance del usuario, y a diferencia de `IsDisplayOnly` altera la apariencia según el tema. Si el control tenía el foco al deshabilitarse, lo suelta.
+
 ## Garantía de legibilidad
 
 El control calcula un `MinWidth` a partir del mayor número que el rango puede producir. La medición tiene en cuenta fuente, grosor del borde y `Language`, por lo que los formatos `1.000` (`es-AR`) y `1,000` (`en-US`) reservan el espacio correcto. La leyenda puede truncarse; el número no.

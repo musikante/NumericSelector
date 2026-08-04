@@ -425,14 +425,8 @@ namespace NumericSelectorLib
 			// Focusable=false NO suelta el foco que ya estuviera puesto: verificado, el
 			// control quedaba con IsKeyboardFocused=true (borde de foco encendido y, peor,
 			// la rueda habilitada, porque la rueda mira justamente esa propiedad).
-			if (selector.IsDisplayOnly && selector.IsKeyboardFocused)
-			{
-				// Al ancestro enfocable: el foco tiene que ir a algún lado, y devolvérselo
-				// a la ventana lo saca del control sin robárselo a otro control concreto.
-				var scope = FocusManager.GetFocusScope(selector);
-				FocusManager.SetFocusedElement(scope, null);
-				Keyboard.ClearFocus();
-			}
+			if (selector.IsDisplayOnly)
+				selector.ReleaseKeyboardFocusIfHeld();
 		}
 
 		// --- Propiedades de Fuente ---

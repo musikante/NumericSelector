@@ -23,6 +23,10 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 - `README.md` documenta que `SmallChange` y `LargeChange` se coaccionan también por arriba, hasta el ancho del rango, y que esa coacción es silenciosa.
 - La nota `Anotaciones útiles.txt` sale de `NumericSelectorLib/` y pasa a `docs/notas-historicas/`, con una cabecera que aclara que describe el diseño anterior (etapa RangeSlider) y no el control actual.
 
+### Fixed
+
+- **Un control deshabilitado seguía respondiendo al teclado.** `IsEnabled = false` impide *ganar* el foco, pero no suelta el que ya estuviera puesto: al deshabilitar un control enfocado, éste conservaba `IsKeyboardFocused` y, como las teclas se rutean al elemento enfocado y no al que está bajo el puntero, las flechas seguían moviendo el valor. Además el marco de foco quedaba encendido en un control deshabilitado. Ahora el foco se suelta al deshabilitar, con una guarda adicional en el manejo de teclas. El mouse y la rueda no requerían tratamiento: con `IsEnabled = false` el hit-test de entrada ya deja de devolver partes del control, y la rueda se rutea por el mismo camino. Cubierto por tres pruebas nuevas, verificadas por mutación.
+
 ### Added
 
 - Converter público `ThicknessWithoutBottomConverter`, que la plantilla usa para darle a la sección del título los mismos bordes que a la de datos menos el inferior. `BorderThickness` es un único `Thickness` de cuatro lados, así que anular uno solo no se puede resolver con un `TemplateBinding` pelado.

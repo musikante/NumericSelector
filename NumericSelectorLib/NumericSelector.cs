@@ -206,6 +206,14 @@ namespace NumericSelectorLib
 			{
 				UpdateCursors();
 			}
+
+			// IsEnabled=false impide GANAR el foco, pero no suelta el que ya estuviera
+			// puesto (ver ReleaseKeyboardFocusIfHeld). Sin esto, deshabilitar un control
+			// enfocado lo dejaba respondiendo al teclado y con el marco de foco encendido.
+			if (e.Property == IsEnabledProperty && !IsEnabled)
+			{
+				ReleaseKeyboardFocusIfHeld();
+			}
 		}
 
 		// --- Medición ---
@@ -268,11 +276,12 @@ namespace NumericSelectorLib
 		{
 			base.OnPreviewKeyDown(e);
 
-			// En solo-visualizacion no deberia llegar tecla alguna (sin foco no hay teclado),
-			// pero la guarda es de una linea y cierra el caso de un foco heredado.
+			// Ni en solo-visualizacion ni deshabilitado deberia llegar tecla alguna, porque
+			// en ambos casos se suelta el foco y sin foco no hay teclado. La guarda es de una
+			// linea y cierra el caso de un foco que llegue por algun otro camino.
 			// El modo MustFocusFirst NO entra aca: es una regla de mouse. Si el control
 			// tiene el foco para recibir la tecla, el requisito ya esta cumplido.
-			if (IsDisplayOnly)
+			if (IsDisplayOnly || !IsEnabled)
 				return;
 
 			switch (e.Key)
@@ -483,6 +492,28 @@ namespace NumericSelectorLib
 		{
 			base.OnLostKeyboardFocus(e);
 			UpdateCursors();
+		}
+
+		// Soltar el foco de teclado si el control lo tiene puesto.
+		// Ni quitar Focusable (IsDisplayOnly) ni IsEnabled=false lo sueltan por su cuenta:
+		// verificado en los dos casos, IsKeyboardFocused seguía en true. Y mientras el
+		// control lo conserve el teclado le SIGUE llegando, porque las teclas se rutean al
+		// elemento enfocado y no al que está bajo el puntero: medido, una flecha movía el
+		// valor de un control deshabilitado. Además el marco de foco queda encendido, que
+		// en un control deshabilitado es directamente mentira.
+		// El mouse no necesita este cuidado: con IsEnabled=false el hit-test de entrada ya
+		// deja de devolver partes del control (verificado con InputHitTest), y como la rueda
+		// también se rutea desde el elemento bajo el puntero, queda cubierta por lo mismo.
+		private void ReleaseKeyboardFocusIfHeld()
+		{
+			if (!IsKeyboardFocused)
+				return;
+
+			// Al ancestro enfocable: el foco tiene que ir a algún lado, y devolvérselo
+			// a la ventana lo saca del control sin robárselo a otro control concreto.
+			var scope = FocusManager.GetFocusScope(this);
+			FocusManager.SetFocusedElement(scope, null);
+			Keyboard.ClearFocus();
 		}
 
 		// --- Cursores ---
