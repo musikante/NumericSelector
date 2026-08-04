@@ -164,6 +164,9 @@
                     <CheckBox Content="ShowTitleFrame  (destildá para el título como etiqueta suelta)" Margin="0,0,0,6"
                               IsChecked="{Binding ShowTitleFrame, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
+                    <CheckBox Content="ShowValueFrame  (sólo se nota en WithTitle: el número queda suelto)" Margin="0,0,0,6"
+                              IsChecked="{Binding ShowValueFrame, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+
                     <TextBlock Text="ValuePlacement  (WithTitle exige ShowTitleText: si no, cae a BesideBar)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
                     <ComboBox Style="{StaticResource Combo}" SelectedValuePath="Content"
                               SelectedValue="{Binding ValuePlacement, ElementName=MasterNumericSelector, Mode=TwoWay}">

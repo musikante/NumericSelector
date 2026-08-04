@@ -47,6 +47,16 @@ Se hace antes de la primera publicación, que es el único momento en que estos 
 - El trazo **no aparece en `OnBar` ni en `WithTitle`**, donde la columna del valor mide 0 y quedaría como un trazo suelto pegado al final de la barra. Verificado por comparación de píxeles: esos dos modos rinden idénticos a antes del cambio.
 - El piso de ancho suma ahora el grosor del trazo. Se calcula igual para todos los modos aunque sólo se dibuje en uno: reservar de más no molesta —la barra absorbe la diferencia— y así el piso no depende de la disposición.
 
+### Added — `ShowValueFrame`
+
+- Nueva propiedad `bool ShowValueFrame` (predeterminada `true`, el aspecto de siempre). Con `false`, la caja del valor deja de pintar su marco y su fondo, y el número queda como una etiqueta al lado del título.
+- **Alcance acotado a `ValuePlacement.WithTitle`**, donde la caja es un distintivo dentro de la fila del título y apagarlo simplemente lo quita. En `BesideBar` esa caja forma parte del rectángulo principal del control: apagarla no daría una variante del mismo aspecto sino otro distinto —barra encajonada y número afuera—, así que la propiedad es inerte allí. Ser inerte fuera de un modo no es una rareza en esta API: `ShowTitleFrame` ya lo es cuando no hay título.
+- **La regla de prioridad gana una cláusula: la caja del valor manda mientras esté enmarcada; si no lo está, devuelve la prioridad y la etiqueta del título recupera el lado que le había cedido.** Sin esto el contorno quedaría abierto sobre el ancho del número, porque en el modelo de celdas el rectángulo exterior es la unión de los bordes y ese filo lo dibuja la propia caja.
+- La recuperación **sólo ocurre si el título está enmarcado**: con el título ya sin marco no hay contorno que cerrar, y cambiar su grosor movería su texto sin motivo.
+- **Cuáles** lados lleva la caja lo sigue decidiendo la posición y no es configurable —si lo fuera habría filos dibujados dos veces—; esta propiedad decide **si** se pintan. No altera la geometría: el grosor se sigue reservando.
+- El foco no enciende el marco de la caja mientras esté apagado, igual que con el título.
+- Auditado por píxeles en las dieciséis combinaciones de modo, marcos y grosor: ninguna racha mide `2T`, el contorno cierra siempre, y los modos distintos de `WithTitle` rinden exactamente igual con la propiedad en `true` o en `false`.
+
 ### Added — `ShowTitleFrame`
 
 - Nueva propiedad `bool ShowTitleFrame` (predeterminada `true`, el aspecto de siempre). Con `false`, el borde y el fondo de la sección del título pasan a transparentes y el título se lee como una etiqueta suelta por encima de la sección de datos, que conserva su marco.

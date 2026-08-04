@@ -360,6 +360,39 @@ namespace NumericSelector
 			set => SetValue(ShowTitleFrameProperty, value);
 		}
 
+		// Propiedad para el marco de la caja del valor en la fila del título. Mismo criterio
+		// que ShowTitleFrame: apaga lo que se PINTA, no el grosor, así el número no se mueve.
+		// CUÁLES lados lleva la caja lo sigue decidiendo la posición (no es configurable, o
+		// habría filos dibujados dos veces); esta propiedad decide SI se pintan.
+		// Alcance deliberadamente acotado a WithTitle: ahí la caja es un distintivo dentro de
+		// la fila del título y apagarlo lo quita, sin más. En BesideBar esa caja es parte del
+		// rectángulo principal del control, y apagarla no sería una variante del mismo aspecto
+		// sino otro distinto (barra encajonada y número afuera), que nadie pidió.
+		// Ser inerte fuera de un modo no es una rareza acá: ShowTitleFrame ya lo es cuando no
+		// hay título.
+		public static readonly DependencyProperty ShowValueFrameProperty =
+			DependencyProperty.Register(
+				nameof(ShowValueFrame),
+				typeof(bool),
+				typeof(BoundedNumericSelector),
+				new PropertyMetadata(true)); // true = el aspecto de siempre
+
+		/// <summary>
+		/// Obtiene o establece si la caja del valor dibuja su marco y su fondo cuando el número
+		/// va en la fila del título (<see cref="ValuePlacement.WithTitle"/>). En las otras
+		/// disposiciones no tiene efecto, porque allí la caja forma parte del rectángulo del
+		/// control y no es un elemento suelto.
+		/// Con <c>false</c> el número queda como una etiqueta al lado del título, y la etiqueta
+		/// del título recupera el lado que le había cedido para que el contorno no quede abierto.
+		/// No altera la geometría: el grosor se sigue reservando.
+		/// El foco no enciende el marco de la caja mientras esta propiedad esté en <c>false</c>.
+		/// </summary>
+		public bool ShowValueFrame
+		{
+			get => (bool)GetValue(ShowValueFrameProperty);
+			set => SetValue(ShowValueFrameProperty, value);
+		}
+
 		// Propiedad para la ubicación del número (Value) dentro del control.
 		public static readonly DependencyProperty ValuePlacementProperty =
 			DependencyProperty.Register(

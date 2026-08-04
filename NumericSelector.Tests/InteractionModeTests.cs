@@ -495,6 +495,121 @@ public class InteractionModeTests
 		});
 	}
 
+	// --- ShowValueFrame ---
+	// Lo que importa acá es la cláusula que cierra el contorno: si la caja del valor deja de
+	// pintar, el vecino tiene que recuperar el lado que le había cedido, o el rectángulo
+	// queda abierto justo sobre el ancho del número.
+
+	/// <summary>
+	/// El alcance está acotado a WithTitle a propósito: en BesideBar la caja del valor es
+	/// parte del rectángulo principal, y apagarla daría otro aspecto (barra encajonada y
+	/// número afuera) en vez de una variante del mismo.
+	/// </summary>
+	[TestMethod]
+	public void Unframing_the_value_has_no_effect_outside_with_title()
+	{
+		StaTest.Run(() =>
+		{
+			foreach (var donde in new[] { ValuePlacement.BesideBar, ValuePlacement.OnBar })
+			{
+				var e = Host(s =>
+				{
+					s.ControlBorderPixels = new Thickness(2);
+					s.ShowTitleText = true;
+					s.ValuePlacement = donde;
+					s.ShowValueFrame = false;
+				});
+				try
+				{
+					Assert.AreEqual(e.Selector.ControlBorderColor, TrazoDelValor(e.Selector).BorderBrush,
+						$"En {donde} el casillero conserva su marco.");
+					Assert.AreEqual(e.Selector.ControlBorderColor, Celda(e.Selector, "PART_BarCell").BorderBrush,
+						$"En {donde} la barra no cambia.");
+				}
+				finally { e.Window.Close(); }
+			}
+		});
+	}
+
+	[TestMethod]
+	public void Unframing_the_value_in_with_title_leaves_the_number_loose()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s =>
+			{
+				s.ControlBorderPixels = new Thickness(2);
+				s.ShowTitleText = true;
+				s.ValuePlacement = ValuePlacement.WithTitle;
+				s.ShowValueFrame = false;
+			});
+			try
+			{
+				var caja = Celda(e.Selector, "PART_ValueTopCell");
+				AssertTransparente(caja.BorderBrush, "La caja de arriba deja de pintar su borde.");
+				AssertTransparente(caja.Background, "Y su fondo.");
+
+				// Se apaga la pintura, no el grosor: el número no se mueve.
+				Assert.AreEqual(new Thickness(2, 2, 2, 0), caja.BorderThickness);
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	[TestMethod]
+	public void With_title_the_edge_goes_back_to_the_title_only_when_it_is_framed()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s =>
+			{
+				s.ControlBorderPixels = new Thickness(2);
+				s.ShowTitleText = true;
+				s.ValuePlacement = ValuePlacement.WithTitle;
+				s.ShowValueFrame = false;
+			});
+			try
+			{
+				Assert.AreEqual(new Thickness(2, 2, 2, 0), MarcoDelTitulo(e.Selector).BorderThickness,
+					"Con el título enmarcado, recupera el derecho para cerrar el contorno.");
+
+				// Con el título sin marco no hay contorno que cerrar, y cambiar el grosor sólo
+				// correría su texto: por eso la recuperación no debe ocurrir.
+				e.Selector.ShowTitleFrame = false;
+				e.Window.UpdateLayout();
+
+				Assert.AreEqual(new Thickness(2, 2, 0, 0), MarcoDelTitulo(e.Selector).BorderThickness,
+					"Sin marco de título, el grosor se queda como estaba.");
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	[TestMethod]
+	public void Focus_does_not_light_up_a_value_box_that_has_no_frame()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s =>
+			{
+				s.ShowTitleText = true;
+				s.ValuePlacement = ValuePlacement.WithTitle;
+				s.ShowValueFrame = false;
+			});
+			try
+			{
+				e.Selector.Focus();
+				Assert.IsTrue(e.Selector.IsKeyboardFocused);
+
+				AssertTransparente(Celda(e.Selector, "PART_ValueTopCell").BorderBrush,
+					"Con el marco apagado, el foco no debe encender la caja del valor.");
+				Assert.AreEqual(e.Selector.FocusBorderColor, Celda(e.Selector, "PART_BarCell").BorderBrush,
+					"La barra sigue señalando el foco.");
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
 	// --- IsEnabled ---
 	// IsEnabled no es una propiedad del control sino de UIElement, pero el consumidor la
 	// puede usar igual y el control tiene que comportarse. WPF impide GANAR el foco estando

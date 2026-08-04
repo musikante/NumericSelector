@@ -313,13 +313,54 @@
                             <Setter TargetName="PART_ValueSideCell" Property="BorderThickness" Value="0"/>
                         </Trigger>
 
-                        <!-- Foco: se tiñen las celdas de datos. La del título va aparte, porque
-                             depende de si tiene marco. -->
+                        <!-- Caja del valor sin marco. SÓLO en WithTitle: ahí la caja es un
+                             distintivo dentro de la fila del título y apagarlo simplemente lo
+                             quita. En BesideBar esa caja es parte del rectángulo principal, y
+                             apagarla lo reconfiguraría (la barra se encajonaría y el número
+                             quedaría afuera): otro aspecto, no una variante del mismo.
+                             Mismo criterio que el título: Transparent y no x:Null, y se apaga
+                             la pintura sin tocar el grosor, así el número no se mueve. -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="ValuePlacement" Value="WithTitle"/>
+                                <Condition Property="ShowValueFrame" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_ValueTopCell" Property="BorderBrush" Value="Transparent"/>
+                            <Setter TargetName="PART_ValueTopCell" Property="Background" Value="Transparent"/>
+                        </MultiTrigger>
+
+                        <!-- LA CLÁUSULA QUE CIERRA EL CONTORNO: la regla de prioridad vale
+                             mientras la caja del valor esté enmarcada; si no lo está, DEVUELVE
+                             la prioridad y la etiqueta del título recupera el lado que le había
+                             cedido. Sin esto el contorno quedaría abierto sobre el ancho del
+                             número, porque en el modelo de celdas el rectángulo exterior es la
+                             UNIÓN de los bordes y ese filo lo dibuja la propia caja.
+                             Sólo con el título ENMARCADO: si ya está sin marco no hay contorno
+                             que cerrar, y cambiar su grosor correría su texto sin motivo. -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="ValuePlacement" Value="WithTitle"/>
+                                <Condition Property="ShowValueFrame" Value="False"/>
+                                <Condition Property="ShowTitleFrame" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_TitleCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutBottom}}"/>
+                        </MultiTrigger>
+
+                        <!-- Foco: la barra y el casillero al costado siempre, porque su marco no
+                             se puede apagar. La caja de arriba va aparte, para que el foco no
+                             encienda un marco que el consumidor pidió apagar. -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="PART_BarCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                             <Setter TargetName="PART_ValueSideCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_ValueTopCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </Trigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True"/>
+                                <Condition Property="ShowValueFrame" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_ValueTopCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        </MultiTrigger>
 
                         <!-- La etiqueta del título, sólo si tiene marco. Va como MultiTrigger y
                              no confiando en el orden de declaración: si el marco del título está

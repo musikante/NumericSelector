@@ -114,7 +114,8 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 | `TitleText` | `string` | `DefaultTitle` | Texto de la fila superior. |
 | `LegendText` | `string` | `DefaultLegend` | Leyenda sobre la barra. |
 | `ShowTitleText` | `bool` | `false` | Muestra la fila de título. |
-| `ShowTitleFrame` | `bool` | `true` | Dibuja el marco y el fondo de la sección del título. Con `false`, el título queda como etiqueta suelta sobre la sección de datos. |
+| `ShowTitleFrame` | `bool` | `true` | Dibuja el marco y el fondo de la etiqueta del título. Con `false`, el título queda como etiqueta suelta. |
+| `ShowValueFrame` | `bool` | `true` | Dibuja el marco y el fondo de la caja del valor **en `WithTitle`**. Con `false`, el número queda como etiqueta al lado del título. Inerte en las otras disposiciones. |
 | `ValuePlacement` | `enum` | `BesideBar` | Ubicación del valor. |
 | `StretchMode` | `enum` | `Fixed` | Estrategia de ancho. |
 | `ControlBorderPixels` | `Thickness` | `1` | Grosor de los marcos. El lado `Top` es además el grosor de la línea que separa el título de la barra. |
@@ -134,6 +135,10 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 | `FillForeground` | `Brush` | `White` | Texto del valor sobre el relleno en `OnBar`. |
 
 `ValueChangeMode.MustFocusFirst` hace que el primer click que obtiene el foco no modifique el valor; los gestos posteriores sí. `IsDisplayOnly` bloquea al usuario, no al programa: asignar `Value` desde código sigue actualizando el control y disparando `ValueChanged`.
+
+El control se dibuja como **cuatro celdas independientes** —etiqueta del título y caja del valor arriba, barra y caja del valor abajo—, cada una con su marco. **Cuáles** lados dibuja cada una lo decide la posición del valor, con una regla única: *la caja del valor tiene prioridad y define sus lados; los vecinos ceden el lado que tocan*. Así ningún filo se dibuja dos veces. `ShowTitleFrame` y `ShowValueFrame` no eligen lados: sólo deciden si esa celda pinta lo que le toca. Y cuando la caja del valor deja de pintar, devuelve la prioridad: la etiqueta del título recupera su lado para que el contorno no quede abierto.
+
+`ShowValueFrame` sólo tiene efecto en `WithTitle`, donde la caja del valor es un distintivo dentro de la fila del título. En las otras disposiciones esa caja forma parte del rectángulo del control y su marco no es opcional.
 
 `IsEnabled = false` (heredado de `UIElement`) también deja el control fuera del alcance del usuario, y a diferencia de `IsDisplayOnly` altera la apariencia según el tema. Si el control tenía el foco al deshabilitarse, lo suelta.
 
