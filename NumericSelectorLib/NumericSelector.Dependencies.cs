@@ -235,8 +235,8 @@ namespace NumericSelectorLib
 				new PropertyMetadata(Brushes.DodgerBlue));
 
 		/// <summary>
-		/// Obtiene o establece el color que toma el borde (y el trazo divisor) cuando el
-		/// control tiene el foco.
+		/// Obtiene o establece el color que toman los marcos de ambas secciones (título y
+		/// datos) cuando el control tiene el foco.
 		/// </summary>
 		public Brush FocusBorderColor
 		{

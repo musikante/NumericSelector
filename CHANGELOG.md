@@ -15,13 +15,21 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 
 ### Changed
 
+- La plantilla pasa a estar organizada en **dos secciones con marco propio**: la de datos (barra y casillero) con los cuatro lados, y la del título —opcional— con los mismos lados menos el inferior. La línea que separa el título de la barra ya no es un elemento aparte: es el borde superior de la sección de datos, que hace doble función (divisor cuando hay título, borde superior del control cuando no lo hay). Ambos marcos se tiñen juntos al recibir el foco. Con un `ControlBorderPixels` uniforme —el caso corriente— el resultado es idéntico píxel a píxel al anterior, verificado sobre nueve escenarios.
+- **`ControlBorderPixels` no uniforme cambia de significado en la separación.** Antes el divisor tomaba el mayor de los cuatro lados, un valor que no correspondía a ninguno en particular; ahora toma `Top`, que es el lado que efectivamente dibuja. Con `Thickness(1,2,3,4)` la separación pasa de 4 a 2 píxeles.
+- **Un `Height` mayor que el contenido ahora lo absorbe la barra.** Antes quedaba una franja vacía debajo de la barra, dentro del marco; ahora la sección de datos se estira y su borde inferior coincide con el del control. Es el comportamiento que la plantilla ya documentaba para fijar `Height` en la instancia.
 - Documentación de `StretchMode.AutoGrow` alineada con el comportamiento actual de crecimiento del control.
 - El valor predeterminado efectivo de `ResetValue` pasa a ser `50`, coherente con la API documentada.
 - `README.md` documenta que `SmallChange` y `LargeChange` se coaccionan también por arriba, hasta el ancho del rango, y que esa coacción es silenciosa.
 - La nota `Anotaciones útiles.txt` sale de `NumericSelectorLib/` y pasa a `docs/notas-historicas/`, con una cabecera que aclara que describe el diseño anterior (etapa RangeSlider) y no el control actual.
 
+### Added
+
+- Converter público `ThicknessWithoutBottomConverter`, que la plantilla usa para darle a la sección del título los mismos bordes que a la de datos menos el inferior. `BorderThickness` es un único `Thickness` de cuatro lados, así que anular uno solo no se puede resolver con un `TemplateBinding` pelado.
+
 ### Removed
 
+- Parte de plantilla `PART_Divider` y el método `UpdateDividerThickness()` que le ajustaba el grosor a mano, junto con el `PART_MainBorder` que envolvía todo. Su función la cumplen ahora los marcos de las dos secciones.
 - Callback interno `OnVisualPropertyChanged` y el `InvalidateVisual()` que forzaba. `ControlBorderColor`, `BarFillColor` y `BarBorderColor` llegan a la plantilla por `TemplateBinding` y repintan solos; al ser un control lookless, que no dibuja nada propio, ese redibujo no tenía destinatario. Sin cambios de comportamiento observable.
 
 ## Desarrollo inicial

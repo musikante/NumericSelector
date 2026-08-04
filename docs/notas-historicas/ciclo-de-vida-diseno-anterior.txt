@@ -15,8 +15,8 @@ Diferencias con el control de hoy, para que nadie lo lea como referencia vigente
     TemplateBinding y RelativeSource TemplatedParent, que es lo que permite que
     un consumidor use su propio DataContext sin conflicto.
   - No hay un UpdateVisuals() único. El repintado está repartido en métodos
-    acotados: UpdateBarFill, UpdateMinimumRequiredWidth, UpdateDividerThickness y
-    UpdateCursors, cada uno disparado por lo que realmente le incumbe.
+    acotados: UpdateBarFill, UpdateMinimumRequiredWidth y UpdateCursors, cada uno
+    disparado por lo que realmente le incumbe.
   - El relleno de la barra vive dentro de un Canvas a propósito, para que su
     tamaño no participe de la medición del control.
 

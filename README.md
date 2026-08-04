@@ -114,7 +114,7 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 | `ShowTitleText` | `bool` | `false` | Muestra la fila de título. |
 | `ValuePlacement` | `enum` | `BesideBar` | Ubicación del valor. |
 | `StretchMode` | `enum` | `Fixed` | Estrategia de ancho. |
-| `ControlBorderPixels` | `Thickness` | `1` | Grosor del borde y del divisor interno. |
+| `ControlBorderPixels` | `Thickness` | `1` | Grosor de los marcos. El lado `Top` es además el grosor de la línea que separa el título de la barra. |
 
 `StretchMode.Fixed` mantiene el `Width` disponible y aplica elipsis a los textos que no entran. `StretchMode.AutoGrow` puede ampliar el control para acomodar el contenido y no vuelve a achicarlo automáticamente.
 
@@ -124,8 +124,8 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 | --- | --- | --- | --- |
 | `ValueChangeMode` | `enum` | `ChangeOnClick` | Decide si el mouse actúa de inmediato o exige foco previo. |
 | `IsDisplayOnly` | `bool` | `false` | Bloquea mouse, teclado y tabulación sin cambiar la apariencia. |
-| `ControlBorderColor` | `Brush` | `Black` | Borde sin foco. |
-| `FocusBorderColor` | `Brush` | `DodgerBlue` | Borde y divisor con foco. |
+| `ControlBorderColor` | `Brush` | `Black` | Marcos sin foco. |
+| `FocusBorderColor` | `Brush` | `DodgerBlue` | Marcos con foco. |
 | `BarFillColor` | `Brush` | `Orange` | Relleno proporcional de la barra. |
 | `BarBorderColor` | `Brush` | `Black` | Contorno del relleno. |
 | `FillForeground` | `Brush` | `White` | Texto del valor sobre el relleno en `OnBar`. |

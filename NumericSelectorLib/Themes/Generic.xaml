@@ -4,6 +4,7 @@
     xmlns:local="clr-namespace:NumericSelectorLib">
 
     <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    <local:ThicknessWithoutBottomConverter x:Key="ThicknessWithoutBottom" />
 
     <Style TargetType="{x:Type local:NumericSelector}">
         <Setter Property="Template">
@@ -18,22 +19,33 @@
                          valor actual (si no, la columna temblaría al pasar de 99 a 100).
                          Ventaja sobre medir a mano: lo mide el mismo motor que lo dibuja,
                          así que reacciona solo a fuente, DPI y cultura. -->
-                    <Border x:Name="PART_MainBorder"
-                            BorderBrush="{TemplateBinding ControlBorderColor}"
-                            BorderThickness="{TemplateBinding ControlBorderPixels}"
-                            Background="{TemplateBinding Background}">
+                    <!-- EL CONTROL SON DOS SECCIONES, cada una con su propio marco:
+                         la de datos (barra + casillero) con los cuatro lados, y la del
+                         título —opcional— con los mismos lados MENOS el inferior. La línea
+                         que las separa es el borde SUPERIOR de la sección de datos, que
+                         hace doble función: divisor cuando hay título, y borde superior del
+                         control cuando no lo hay. Por eso no existe un divisor aparte y el
+                         grosor de la separación se lee de ControlBorderPixels.Top, en vez
+                         de salir de una reducción arbitraria de los cuatro lados. -->
+                    <Grid x:Name="PART_MainGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <!-- La sección de datos absorbe el alto sobrante: si el consumidor
+                                 fija un Height mayor que el contenido, la barra se estira y el
+                                 borde inferior queda en el borde del control, no a media altura. -->
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
-                        <Grid x:Name="PART_MainGrid">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                        <Border x:Name="PART_TitleBorder"
+                                Grid.Row="0"
+                                BorderBrush="{TemplateBinding ControlBorderColor}"
+                                BorderThickness="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutBottom}}"
+                                Background="{TemplateBinding Background}"
+                                Visibility="{Binding Path=ShowTitleText, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}">
 
                             <!-- Fila superior: título. En WithTitle comparte la línea con el
                                  valor: el valor reserva su ancho y el título recibe el resto. -->
-                            <Grid Grid.Row="0" x:Name="PART_TopRow"
-                                  Visibility="{Binding Path=ShowTitleText, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Grid x:Name="PART_TopRow">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -84,8 +96,15 @@
                                                Visibility="Collapsed"/>
                                 </Grid>
                             </Grid>
+                        </Border>
 
-                            <Grid Grid.Row="2" x:Name="PART_BarAndValueGrid">
+                        <Border x:Name="PART_DataBorder"
+                                Grid.Row="1"
+                                BorderBrush="{TemplateBinding ControlBorderColor}"
+                                BorderThickness="{TemplateBinding ControlBorderPixels}"
+                                Background="{TemplateBinding Background}">
+
+                            <Grid x:Name="PART_BarAndValueGrid">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" x:Name="PART_BarColumn"/>
                                     <ColumnDefinition Width="Auto" x:Name="PART_ValueColumn"/>
@@ -222,26 +241,13 @@
                                                Padding="4,0,4,1"/>
                                 </Grid>
                             </Grid>
-
-                            <!-- Trazo divisor entre el título y la barra (solo en ShowTitleText).
-                                 Fila propia (ya no comparte la del título): su Height no compite
-                                 por el Auto de PART_TopRow. El code-behind lo actualiza para que
-                                 su grosor siga a ControlBorderPixels (ver UpdateDividerThickness).
-                                 Se tiñe junto con el borde al enfocar. -->
-                            <Rectangle x:Name="PART_Divider"
-                                       Grid.Row="1"
-                                       Height="1"
-                                       HorizontalAlignment="Stretch"
-                                       Fill="{TemplateBinding ControlBorderColor}"
-                                       SnapsToDevicePixels="True"
-                                       Visibility="{Binding Path=ShowTitleText, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                        </Grid>
-                    </Border>
+                        </Border>
+                    </Grid>
                     <ControlTemplate.Triggers>
-                        <!-- Foco: el borde externo (y el divisor) cambian de color. -->
+                        <!-- Foco: los marcos de ambas secciones cambian de color a la vez. -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="PART_MainBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_Divider" Property="Fill" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_TitleBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_DataBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </Trigger>
                         <!-- OnBar: valor sobre la barra (dos capas) y sus medidores reservando
                              ancho; sin casillero. La barra sigue ocupando todo el ancho. -->

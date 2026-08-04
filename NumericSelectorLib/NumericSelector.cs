@@ -5,7 +5,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace NumericSelectorLib
@@ -19,7 +18,6 @@ namespace NumericSelectorLib
 		private Grid? _barAndValueGrid;
 		private Grid? _barGrid;
 		private TextBlock? _legendText;
-		private Rectangle? _divider;
 		private Border? _barRect;
 		private TextBlock? _valueText;
 		private UIElement? _valueFillLayer;
@@ -79,7 +77,6 @@ namespace NumericSelectorLib
 			_barAndValueGrid = GetTemplateChild("PART_BarAndValueGrid") as Grid;
 			_barGrid = GetTemplateChild("PART_BarGrid") as Grid;
 			_legendText = GetTemplateChild("PART_LegendText") as TextBlock;
-			_divider = GetTemplateChild("PART_Divider") as Rectangle;
 			_barRect = GetTemplateChild("PART_BarRect") as Border;
 			_valueText = GetTemplateChild("PART_ValueText") as TextBlock;
 			_valueFillLayer = GetTemplateChild("PART_ValueFillLayer") as UIElement;
@@ -90,23 +87,8 @@ namespace NumericSelectorLib
 
 			// Llamar a métodos de actualización iniciales
 			UpdateBarFill(Value); // Asegura que el estado inicial se refleje
-			UpdateDividerThickness();
 			UpdateCursors();
 			//UpdateLegendTextPosition(); // Asegura que la leyenda esté bien posicionada
-		}
-
-		// El divisor ecoa el grosor del borde del control. ControlBorderPixels es un
-		// Thickness (4 lados independientes) pero el divisor es una sola línea horizontal:
-		// no hay una reducción no ambigua de 4 valores a 1. Tomamos el mayor de los 4 para
-		// que el trazo no desaparezca si alguien deja algún lado en 0; en el caso común
-		// (Thickness uniforme, un solo número) da exactamente ese número.
-		private void UpdateDividerThickness()
-		{
-			if (_divider == null) return;
-
-			var t = ControlBorderPixels;
-			double grosor = Math.Max(Math.Max(t.Left, t.Top), Math.Max(t.Right, t.Bottom));
-			_divider.SetCurrentValue(HeightProperty, grosor);
 		}
 
 		// Las partes de la plantilla son hijas del control, así que estas suscripciones no
@@ -218,11 +200,6 @@ namespace NumericSelectorLib
 				e.Property == LanguageProperty || e.Property == FlowDirectionProperty)
 			{
 				UpdateMinimumRequiredWidth();
-			}
-
-			if (e.Property == ControlBorderPixelsProperty)
-			{
-				UpdateDividerThickness();
 			}
 
 			if (e.Property == IsDisplayOnlyProperty || e.Property == ValueChangeModeProperty)
