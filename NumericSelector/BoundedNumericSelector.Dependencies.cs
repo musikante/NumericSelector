@@ -71,7 +71,7 @@ namespace NumericSelector
 				new PropertyMetadata("Default Title Text")); // Valor por defecto.
 
 		/// <summary>
-		/// Obtiene o establece el título que se muestra en la fila superior (si ShowTitleText está activo).
+		/// Obtiene o establece el título que se muestra en la fila superior (salvo con <see cref="TitleMode.Hidden"/>).
 		/// </summary>
 		public string TitleText
 		{
@@ -313,84 +313,25 @@ namespace NumericSelector
 			set => SetValue(FillForegroundProperty, value);
 		}
 
-		// Propiedad para habilitar/deshabilitar el modo de dos filas (TitleText).
-		public static readonly DependencyProperty ShowTitleTextProperty =
+		// Cómo se presenta la etiqueta del título. Un solo enum en lugar del par de
+		// booleanos que había (mostrar / enmarcar): con dos propiedades, la del marco quedaba
+		// inerte cuando el título no se mostraba, y una propiedad que a veces no hace nada
+		// obliga a documentar la excepción para que nadie se sorprenda.
+		public static readonly DependencyProperty TitleModeProperty =
 			DependencyProperty.Register(
-				nameof(ShowTitleText),
-				typeof(bool),
+				nameof(TitleMode),
+				typeof(TitleMode),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata(false, OnShowTitleTextChanged)); // Coacciona ValuePlacement + actualiza layout
+				new PropertyMetadata(TitleMode.Hidden, OnTitleModeChanged)); // re-coacciona ValuePlacement
 
 		/// <summary>
-		/// Obtiene o establece un valor que indica si el control debe mostrar la fila
-		/// superior con el título.
+		/// Obtiene o establece cómo se presenta la etiqueta del título: oculta, enmarcada o
+		/// como etiqueta suelta. Ver <see cref="NumericSelector.TitleMode"/>.
 		/// </summary>
-		public bool ShowTitleText
+		public TitleMode TitleMode
 		{
-			get => (bool)GetValue(ShowTitleTextProperty);
-			set => SetValue(ShowTitleTextProperty, value);
-		}
-
-		// Propiedad para el marco de la sección del título.
-		// Sin callback y sin coerción a propósito: sólo cambia lo que se pinta, no la
-		// geometría (el grosor del borde se sigue reservando), así que no hay layout que
-		// invalidar. Y como bool no tiene estado inválido: si ShowTitleText está en false
-		// la sección entera está colapsada y esta propiedad simplemente no se nota, sin
-		// necesidad de degradarla ni de recordar nada (a diferencia de ValuePlacement).
-		public static readonly DependencyProperty ShowTitleFrameProperty =
-			DependencyProperty.Register(
-				nameof(ShowTitleFrame),
-				typeof(bool),
-				typeof(BoundedNumericSelector),
-				new PropertyMetadata(true)); // true = el aspecto de siempre
-
-		/// <summary>
-		/// Obtiene o establece si la sección del título dibuja su marco y su fondo.
-		/// Con <c>false</c> ambos pasan a transparente y el título se lee como una etiqueta
-		/// suelta por encima de la sección de datos, que conserva su marco.
-		/// No altera la geometría: el grosor del borde se sigue reservando, así que activarlo
-		/// o desactivarlo no mueve nada de lugar.
-		/// El foco NO enciende el marco del título mientras esta propiedad esté en false; lo
-		/// señala el marco de la sección de datos.
-		/// Sólo se nota con <see cref="ShowTitleText"/> activo.
-		/// </summary>
-		public bool ShowTitleFrame
-		{
-			get => (bool)GetValue(ShowTitleFrameProperty);
-			set => SetValue(ShowTitleFrameProperty, value);
-		}
-
-		// Propiedad para el marco de la caja del valor en la fila del título. Mismo criterio
-		// que ShowTitleFrame: apaga lo que se PINTA, no el grosor, así el número no se mueve.
-		// CUÁLES lados lleva la caja lo sigue decidiendo la posición (no es configurable, o
-		// habría filos dibujados dos veces); esta propiedad decide SI se pintan.
-		// Alcance deliberadamente acotado a WithTitle: ahí la caja es un distintivo dentro de
-		// la fila del título y apagarlo lo quita, sin más. En BesideBar esa caja es parte del
-		// rectángulo principal del control, y apagarla no sería una variante del mismo aspecto
-		// sino otro distinto (barra encajonada y número afuera), que nadie pidió.
-		// Ser inerte fuera de un modo no es una rareza acá: ShowTitleFrame ya lo es cuando no
-		// hay título.
-		public static readonly DependencyProperty ShowValueFrameProperty =
-			DependencyProperty.Register(
-				nameof(ShowValueFrame),
-				typeof(bool),
-				typeof(BoundedNumericSelector),
-				new PropertyMetadata(true)); // true = el aspecto de siempre
-
-		/// <summary>
-		/// Obtiene o establece si la caja del valor dibuja su marco y su fondo cuando el número
-		/// va en la fila del título (<see cref="ValuePlacement.WithTitle"/>). En las otras
-		/// disposiciones no tiene efecto, porque allí la caja forma parte del rectángulo del
-		/// control y no es un elemento suelto.
-		/// Con <c>false</c> el número queda como una etiqueta al lado del título, y la etiqueta
-		/// del título recupera el lado que le había cedido para que el contorno no quede abierto.
-		/// No altera la geometría: el grosor se sigue reservando.
-		/// El foco no enciende el marco de la caja mientras esta propiedad esté en <c>false</c>.
-		/// </summary>
-		public bool ShowValueFrame
-		{
-			get => (bool)GetValue(ShowValueFrameProperty);
-			set => SetValue(ShowValueFrameProperty, value);
+			get => (TitleMode)GetValue(TitleModeProperty);
+			set => SetValue(TitleModeProperty, value);
 		}
 
 		// Propiedad para la ubicación del número (Value) dentro del control.
@@ -400,14 +341,16 @@ namespace NumericSelector
 				typeof(ValuePlacement),
 				typeof(BoundedNumericSelector),
 				new PropertyMetadata(
-					ValuePlacement.BesideBar, // Valor por defecto (comportamiento clásico)
+					ValuePlacement.BesideBar,   // Valor por defecto (comportamiento clásico)
 					OnLayoutPropertyChanged,    // al cambiar, re-evaluar el layout
-					CoerceValuePlacement));     // WithTitle requiere ShowTitleText
+					CoerceValuePlacement));     // las variantes WithTitle* requieren título
 
 		/// <summary>
-		/// Obtiene o establece dónde se muestra el número: casillero a la derecha (BesideBar),
-		/// sobre la barra (OnBar) o en la línea superior junto al título (WithTitle).
-		/// WithTitle requiere ShowTitleText; si no, se degrada a BesideBar.
+		/// Obtiene o establece dónde se muestra el número: casillero junto a la barra
+		/// (BesideBar), sobre la barra (OnBar), o en la línea del título con marco
+		/// (WithTitleFramed) o sin él (WithTitleFrameless).
+		/// Las dos últimas requieren que haya título; si no, se degradan a BesideBar y se
+		/// restauran al volver a mostrarlo.
 		/// </summary>
 		public ValuePlacement ValuePlacement
 		{
@@ -643,23 +586,32 @@ namespace NumericSelector
 			}
 		}
 
-		// Coacciona ValuePlacement: WithTitle solo es válido con ShowTitleText; si no,
-		// se degrada a BesideBar. La coerción recuerda el WithTitle "base" y lo restaura
-		// cuando ShowTitleText vuelve a activarse (comportamiento A: recuerda).
+		// Única dependencia que sobrevive entre propiedades, y es irreducible: el número no
+		// puede compartir línea con un título que no existe. Las dos variantes WithTitle* se
+		// degradan a BesideBar sin título.
+		// La coerción NO pierde la elección: WPF conserva el valor BASE y la re-evalúa, así
+		// que al volver a mostrar el título se restaura la variante exacta que se había
+		// pedido, framed o frameless (comportamiento "recuerda").
 		private static object CoerceValuePlacement(DependencyObject d, object baseValue)
 		{
 			if (d is BoundedNumericSelector selector &&
-				(ValuePlacement)baseValue == ValuePlacement.WithTitle &&
-				!selector.ShowTitleText)
+				EsEnLineaDelTitulo((ValuePlacement)baseValue) &&
+				selector.TitleMode == TitleMode.Hidden)
 			{
 				return ValuePlacement.BesideBar;
 			}
 			return baseValue;
 		}
 
-		// Callback de ShowTitleText: re-coacciona ValuePlacement (para forzar/restaurar
-		// WithTitle según corresponda) y luego actualiza el layout.
-		private static void OnShowTitleTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		/// <summary>
+		/// Si la disposición pone el número en la línea del título, sin importar el marco.
+		/// </summary>
+		internal static bool EsEnLineaDelTitulo(ValuePlacement placement) =>
+			placement is ValuePlacement.WithTitleFramed or ValuePlacement.WithTitleFrameless;
+
+		// Callback de TitleMode: re-coacciona ValuePlacement (para degradar o restaurar las
+		// variantes WithTitle* según corresponda) y luego actualiza el layout.
+		private static void OnTitleModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			if (d is BoundedNumericSelector selector)
 			{

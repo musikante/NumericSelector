@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:NumericSelector">
 
-    <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    <local:ValueInTitleRowConverter x:Key="ValueInTitleRow" />
     <local:ThicknessWithoutBottomConverter x:Key="ThicknessWithoutBottom" />
     <local:ThicknessWithoutRightConverter x:Key="ThicknessWithoutRight" />
     <local:ThicknessTopLeftOnlyConverter x:Key="ThicknessTopLeftOnly" />
@@ -56,9 +56,11 @@
 
                         <!-- Fila superior: título. En WithTitle comparte la línea con el
                              valor: el valor reserva su ancho y el título recibe el resto. -->
+                        <!-- Arranca colapsada porque TitleMode.Hidden es el valor por defecto;
+                             la muestran los triggers de Framed y Frameless. -->
                         <Grid x:Name="PART_TopRow"
                               Grid.Row="0"
-                              Visibility="{Binding Path=ShowTitleText, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}">
+                              Visibility="Collapsed">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -297,11 +299,31 @@
                             <Setter TargetName="PART_ValueSideCell" Property="BorderThickness" Value="0"/>
                         </Trigger>
 
-                        <!-- WithTitle: valor en la línea superior junto al título. La caja del
-                             valor sube y se lleva su marco (sin inferior: la costura la dibuja
-                             la barra); la etiqueta del título cede el derecho a esa caja; y la
-                             barra, que abajo queda sola, recupera los cuatro lados. -->
-                        <Trigger Property="ValuePlacement" Value="WithTitle">
+                        <!-- Hay título: se muestra la fila de arriba. Los dos modos visibles
+                             comparten esto; se diferencian sólo en si la etiqueta pinta. -->
+                        <Trigger Property="TitleMode" Value="Framed">
+                            <Setter TargetName="PART_TopRow" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="TitleMode" Value="Frameless">
+                            <Setter TargetName="PART_TopRow" Property="Visibility" Value="Visible"/>
+                            <!-- Se apaga lo que se PINTA, no el grosor, así la geometría queda
+                                 idéntica y alternar entre Framed y Frameless no mueve nada.
+                                 Transparent y NO x:Null: transparente igual pinta, y por eso la
+                                 fila del título sigue recibiendo los clics que dan el foco; con
+                                 nulo dejaría de ser alcanzable por el mouse. -->
+                            <Setter TargetName="PART_TitleCell" Property="BorderBrush" Value="Transparent"/>
+                            <Setter TargetName="PART_TitleCell" Property="Background" Value="Transparent"/>
+                        </Trigger>
+
+                        <!-- Valor en la línea del título. Va por DataTrigger con un converter
+                             porque un Trigger de WPF compara contra UN valor y esto vale para las
+                             dos variantes, framed y frameless: sin el converter habría que
+                             duplicar los nueve setters. La diferencia entre variantes es sólo el
+                             marco y va en su propio bloque, más abajo.
+                             La caja del valor sube y se lleva su marco (sin inferior: la costura
+                             la dibuja la barra); la etiqueta del título cede el derecho a esa
+                             caja; y la barra, que abajo queda sola, recupera los cuatro lados. -->
+                        <DataTrigger Binding="{Binding Path=ValuePlacement, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueInTitleRow}}" Value="True">
                             <Setter TargetName="PART_ValueColumn" Property="Width" Value="0"/>
                             <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="PART_ValueWithTitle" Property="Visibility" Value="Visible"/>
@@ -311,23 +333,13 @@
                             <Setter TargetName="PART_TitleCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessTopLeftOnly}}"/>
                             <Setter TargetName="PART_BarCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}}"/>
                             <Setter TargetName="PART_ValueSideCell" Property="BorderThickness" Value="0"/>
-                        </Trigger>
+                        </DataTrigger>
 
-                        <!-- Caja del valor sin marco. SÓLO en WithTitle: ahí la caja es un
-                             distintivo dentro de la fila del título y apagarlo simplemente lo
-                             quita. En BesideBar esa caja es parte del rectángulo principal, y
-                             apagarla lo reconfiguraría (la barra se encajonaría y el número
-                             quedaría afuera): otro aspecto, no una variante del mismo.
-                             Mismo criterio que el título: Transparent y no x:Null, y se apaga
-                             la pintura sin tocar el grosor, así el número no se mueve. -->
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="ValuePlacement" Value="WithTitle"/>
-                                <Condition Property="ShowValueFrame" Value="False"/>
-                            </MultiTrigger.Conditions>
+                        <!-- WithTitleFrameless: la caja del valor deja de pintar. -->
+                        <Trigger Property="ValuePlacement" Value="WithTitleFrameless">
                             <Setter TargetName="PART_ValueTopCell" Property="BorderBrush" Value="Transparent"/>
                             <Setter TargetName="PART_ValueTopCell" Property="Background" Value="Transparent"/>
-                        </MultiTrigger>
+                        </Trigger>
 
                         <!-- LA CLÁUSULA QUE CIERRA EL CONTORNO: la regla de prioridad vale
                              mientras la caja del valor esté enmarcada; si no lo está, DEVUELVE
@@ -339,16 +351,17 @@
                              que cerrar, y cambiar su grosor correría su texto sin motivo. -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
-                                <Condition Property="ValuePlacement" Value="WithTitle"/>
-                                <Condition Property="ShowValueFrame" Value="False"/>
-                                <Condition Property="ShowTitleFrame" Value="True"/>
+                                <Condition Property="ValuePlacement" Value="WithTitleFrameless"/>
+                                <Condition Property="TitleMode" Value="Framed"/>
                             </MultiTrigger.Conditions>
                             <Setter TargetName="PART_TitleCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutBottom}}"/>
                         </MultiTrigger>
 
                         <!-- Foco: la barra y el casillero al costado siempre, porque su marco no
-                             se puede apagar. La caja de arriba va aparte, para que el foco no
-                             encienda un marco que el consumidor pidió apagar. -->
+                             se puede apagar. Las celdas cuyo marco SÍ se puede apagar van cada
+                             una en su MultiTrigger, para que el foco no encienda un marco que el
+                             consumidor pidió apagar. La regla vive en la condición y no en el
+                             orden de declaración; verificado moviendo los bloques. -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="PART_BarCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                             <Setter TargetName="PART_ValueSideCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
@@ -357,34 +370,18 @@
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsKeyboardFocused" Value="True"/>
-                                <Condition Property="ShowValueFrame" Value="True"/>
+                                <Condition Property="ValuePlacement" Value="WithTitleFramed"/>
                             </MultiTrigger.Conditions>
                             <Setter TargetName="PART_ValueTopCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </MultiTrigger>
 
-                        <!-- La etiqueta del título, sólo si tiene marco. Va como MultiTrigger y
-                             no confiando en el orden de declaración: si el marco del título está
-                             apagado, el foco no debe encenderlo de sorpresa, y esa regla tiene
-                             que estar escrita en la condición, no en la posición del bloque. -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsKeyboardFocused" Value="True"/>
-                                <Condition Property="ShowTitleFrame" Value="True"/>
+                                <Condition Property="TitleMode" Value="Framed"/>
                             </MultiTrigger.Conditions>
                             <Setter TargetName="PART_TitleCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </MultiTrigger>
-
-                        <!-- Título sin marco: se apaga lo que se PINTA, no el grosor, así que la
-                             geometría queda idéntica y activar o desactivar el modo no mueve nada
-                             de lugar. Transparent y NO x:Null: transparente igual pinta, y por eso
-                             sigue recibiendo los clics que dan el foco; con nulo la fila del
-                             título dejaría de ser alcanzable por el mouse.
-                             La independencia respecto del orden está verificada: con este bloque
-                             declarado ANTES de los triggers de foco, las pruebas siguen pasando. -->
-                        <Trigger Property="ShowTitleFrame" Value="False">
-                            <Setter TargetName="PART_TitleCell" Property="BorderBrush" Value="Transparent"/>
-                            <Setter TargetName="PART_TitleCell" Property="Background" Value="Transparent"/>
-                        </Trigger>
 
                         <!-- En AutoGrow el control se ensancha para que el texto entre, así
                              que recortarlo no tiene sentido. -->

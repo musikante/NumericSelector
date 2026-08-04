@@ -47,6 +47,14 @@ Se hace antes de la primera publicación, que es el único momento en que estos 
 - El trazo **no aparece en `OnBar` ni en `WithTitle`**, donde la columna del valor mide 0 y quedaría como un trazo suelto pegado al final de la barra. Verificado por comparación de píxeles: esos dos modos rinden idénticos a antes del cambio.
 - El piso de ancho suma ahora el grosor del trazo. Se calcula igual para todos los modos aunque sólo se dibuje en uno: reservar de más no molesta —la barra absorbe la diferencia— y así el piso no depende de la disposición.
 
+### Changed — dos enums en lugar de tres booleanos
+
+- `ShowTitleText`, `ShowTitleFrame` y `ShowValueFrame` se reemplazan por **`TitleMode`** (`Hidden` | `Framed` | `Frameless`) y dos valores nuevos de **`ValuePlacement`** (`WithTitleFramed` | `WithTitleFrameless`, que sustituyen a `WithTitle`).
+- **Motivo: ninguna propiedad queda inerte.** Con los booleanos había tres relaciones condicionales que sólo se descubrían leyendo la documentación —`ShowTitleFrame` no hacía nada sin título, `ShowValueFrame` no hacía nada fuera de `WithTitle`— y una propiedad que a veces no hace nada es una trampa para quien usa el control. Ahora cada valor de cada enum hace algo siempre, y la lista de valores documenta por sí sola qué combinaciones existen.
+- **Sobrevive una sola dependencia, y es irreducible:** las variantes `WithTitle*` necesitan que haya título. Sin él se degradan a `BesideBar` por coerción, y al volver a mostrarlo se restaura la variante exacta —framed o frameless— porque WPF conserva el valor base.
+- **Contrapartida aceptada:** `TitleMode.Hidden` olvida si el título era `Framed` o `Frameless`. Con dos booleanos esa elección sobrevivía. Recuperarla exigiría estado extra: a diferencia de `ValuePlacement`, acá no hay valor base que restaurar porque `Hidden` lo elige el consumidor. Se nota sobre todo al alternar en el banco de pruebas; una aplicación real fija esto una vez en el XAML.
+- Sin cambios visuales: los veintiún escenarios de referencia rinden idénticos píxel a píxel, y las diez combinaciones válidas de los dos enums quedaron auditadas con `T=1` y `T=3` sin ninguna racha de `2T`.
+
 ### Added — `ShowValueFrame`
 
 - Nueva propiedad `bool ShowValueFrame` (predeterminada `true`, el aspecto de siempre). Con `false`, la caja del valor deja de pintar su marco y su fondo, y el número queda como una etiqueta al lado del título.

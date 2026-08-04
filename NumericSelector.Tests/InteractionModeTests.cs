@@ -300,9 +300,9 @@ public class InteractionModeTests
 		});
 	}
 
-	// --- ShowTitleFrame ---
-	// Es una propiedad de apariencia, pero sus pruebas viven acá porque la regla que
-	// importa es su interacción con el FOCO, y para eso hace falta una ventana real.
+	// --- TitleMode ---
+	// Son de apariencia, pero sus pruebas viven acá porque la regla que importa es la
+	// interacción con el FOCO, y para eso hace falta una ventana real.
 
 	private static Border Celda(BoundedNumericSelector selector, string parte) =>
 		(Border)selector.Template.FindName(parte, selector);
@@ -321,10 +321,11 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => s.ShowTitleText = true);
+			var e = Host(s => s.TitleMode = TitleMode.Framed);
 			try
 			{
-				Assert.IsTrue(e.Selector.ShowTitleFrame, "El default conserva el aspecto de siempre.");
+				Assert.AreEqual(TitleMode.Hidden, new BoundedNumericSelector().TitleMode,
+					"El default sigue siendo sin título, como con el par de booleanos.");
 				Assert.AreEqual(e.Selector.ControlBorderColor, MarcoDelTitulo(e.Selector).BorderBrush);
 				Assert.AreEqual(e.Selector.Background, MarcoDelTitulo(e.Selector).Background);
 				Assert.AreEqual(new Thickness(1, 1, 1, 0), MarcoDelTitulo(e.Selector).BorderThickness,
@@ -339,7 +340,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => { s.ShowTitleText = true; s.ShowTitleFrame = false; });
+			var e = Host(s => { s.TitleMode = TitleMode.Frameless; });
 			try
 			{
 				var marco = MarcoDelTitulo(e.Selector);
@@ -364,7 +365,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => { s.ShowTitleText = true; s.ShowTitleFrame = false; });
+			var e = Host(s => { s.TitleMode = TitleMode.Frameless; });
 			try
 			{
 				e.Selector.Focus();
@@ -388,7 +389,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => s.ShowTitleText = true);
+			var e = Host(s => s.TitleMode = TitleMode.Framed);
 			try
 			{
 				e.Selector.Focus();
@@ -442,8 +443,8 @@ public class InteractionModeTests
 			var e = Host(s =>
 			{
 				s.ControlBorderPixels = new Thickness(2);
-				s.ShowTitleText = true;
-				s.ValuePlacement = ValuePlacement.WithTitle;
+				s.TitleMode = TitleMode.Framed;
+				s.ValuePlacement = ValuePlacement.WithTitleFramed;
 			});
 			try
 			{
@@ -462,9 +463,9 @@ public class InteractionModeTests
 		{
 			// En OnBar y WithTitle la columna del valor mide 0. Sin esto quedaría un trazo
 			// vertical suelto pegado al final de la barra.
-			foreach (var donde in new[] { ValuePlacement.OnBar, ValuePlacement.WithTitle })
+			foreach (var donde in new[] { ValuePlacement.OnBar, ValuePlacement.WithTitleFramed })
 			{
-				var e = Host(s => { s.ShowTitleText = true; s.ValuePlacement = donde; });
+				var e = Host(s => { s.TitleMode = TitleMode.Framed; s.ValuePlacement = donde; });
 				try
 				{
 					Assert.AreEqual(new Thickness(0), TrazoDelValor(e.Selector).BorderThickness,
@@ -495,53 +496,21 @@ public class InteractionModeTests
 		});
 	}
 
-	// --- ShowValueFrame ---
+	// --- WithTitleFrameless ---
 	// Lo que importa acá es la cláusula que cierra el contorno: si la caja del valor deja de
 	// pintar, el vecino tiene que recuperar el lado que le había cedido, o el rectángulo
 	// queda abierto justo sobre el ancho del número.
 
-	/// <summary>
-	/// El alcance está acotado a WithTitle a propósito: en BesideBar la caja del valor es
-	/// parte del rectángulo principal, y apagarla daría otro aspecto (barra encajonada y
-	/// número afuera) en vez de una variante del mismo.
-	/// </summary>
 	[TestMethod]
-	public void Unframing_the_value_has_no_effect_outside_with_title()
-	{
-		StaTest.Run(() =>
-		{
-			foreach (var donde in new[] { ValuePlacement.BesideBar, ValuePlacement.OnBar })
-			{
-				var e = Host(s =>
-				{
-					s.ControlBorderPixels = new Thickness(2);
-					s.ShowTitleText = true;
-					s.ValuePlacement = donde;
-					s.ShowValueFrame = false;
-				});
-				try
-				{
-					Assert.AreEqual(e.Selector.ControlBorderColor, TrazoDelValor(e.Selector).BorderBrush,
-						$"En {donde} el casillero conserva su marco.");
-					Assert.AreEqual(e.Selector.ControlBorderColor, Celda(e.Selector, "PART_BarCell").BorderBrush,
-						$"En {donde} la barra no cambia.");
-				}
-				finally { e.Window.Close(); }
-			}
-		});
-	}
-
-	[TestMethod]
-	public void Unframing_the_value_in_with_title_leaves_the_number_loose()
+	public void The_frameless_variant_leaves_the_number_loose()
 	{
 		StaTest.Run(() =>
 		{
 			var e = Host(s =>
 			{
 				s.ControlBorderPixels = new Thickness(2);
-				s.ShowTitleText = true;
-				s.ValuePlacement = ValuePlacement.WithTitle;
-				s.ShowValueFrame = false;
+				s.TitleMode = TitleMode.Framed;
+				s.ValuePlacement = ValuePlacement.WithTitleFrameless;
 			});
 			try
 			{
@@ -557,16 +526,15 @@ public class InteractionModeTests
 	}
 
 	[TestMethod]
-	public void With_title_the_edge_goes_back_to_the_title_only_when_it_is_framed()
+	public void The_edge_goes_back_to_the_title_only_when_it_is_framed()
 	{
 		StaTest.Run(() =>
 		{
 			var e = Host(s =>
 			{
 				s.ControlBorderPixels = new Thickness(2);
-				s.ShowTitleText = true;
-				s.ValuePlacement = ValuePlacement.WithTitle;
-				s.ShowValueFrame = false;
+				s.TitleMode = TitleMode.Framed;
+				s.ValuePlacement = ValuePlacement.WithTitleFrameless;
 			});
 			try
 			{
@@ -575,7 +543,7 @@ public class InteractionModeTests
 
 				// Con el título sin marco no hay contorno que cerrar, y cambiar el grosor sólo
 				// correría su texto: por eso la recuperación no debe ocurrir.
-				e.Selector.ShowTitleFrame = false;
+				e.Selector.TitleMode = TitleMode.Frameless;
 				e.Window.UpdateLayout();
 
 				Assert.AreEqual(new Thickness(2, 2, 0, 0), MarcoDelTitulo(e.Selector).BorderThickness,
@@ -592,9 +560,8 @@ public class InteractionModeTests
 		{
 			var e = Host(s =>
 			{
-				s.ShowTitleText = true;
-				s.ValuePlacement = ValuePlacement.WithTitle;
-				s.ShowValueFrame = false;
+				s.TitleMode = TitleMode.Framed;
+				s.ValuePlacement = ValuePlacement.WithTitleFrameless;
 			});
 			try
 			{

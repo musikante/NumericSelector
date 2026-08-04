@@ -28,6 +28,28 @@ namespace NumericSelector
 	}
 
 	/// <summary>
+	/// Indica si una <see cref="ValuePlacement"/> pone el número en la línea del título,
+	/// sin importar si esa caja lleva marco o no.
+	/// </summary>
+	/// <remarks>
+	/// La plantilla lo usa para el bloque de setters que comparten <c>WithTitleFramed</c> y
+	/// <c>WithTitleFrameless</c>: un <c>Trigger</c> de WPF compara contra UN valor, así que sin
+	/// esto habría que duplicar los nueve setters de disposición. La diferencia entre ambas
+	/// variantes —el marco— va aparte, en su propio trigger.
+	/// Delega en el mismo predicado que usa la coerción, para no tener dos definiciones de
+	/// "está en la línea del título" que puedan separarse.
+	/// </remarks>
+	[ValueConversion(typeof(ValuePlacement), typeof(bool))]
+	public sealed class ValueInTitleRowConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			=> value is ValuePlacement p && BoundedNumericSelector.EsEnLineaDelTitulo(p);
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			=> Binding.DoNothing;
+	}
+
+	/// <summary>
 	/// Devuelve el mismo <see cref="Thickness"/> recibido pero con el lado derecho en cero.
 	/// </summary>
 	/// <remarks>

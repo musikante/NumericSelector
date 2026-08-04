@@ -148,7 +148,7 @@
 
                     <TextBlock Text="Textos" Style="{StaticResource Seccion}"/>
 
-                    <TextBlock Text="TitleText  (visible solo con ShowTitleText)" Style="{StaticResource Etiqueta}"/>
+                    <TextBlock Text="TitleText  (no se ve con TitleMode=Hidden)" Style="{StaticResource Etiqueta}"/>
                     <TextBox Style="{StaticResource Caja}"
                              Text="{Binding TitleText, ElementName=MasterNumericSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
@@ -158,21 +158,21 @@
 
                     <TextBlock Text="Disposición" Style="{StaticResource Seccion}"/>
 
-                    <CheckBox Content="ShowTitleText" Margin="0,0,0,6"
-                              IsChecked="{Binding ShowTitleText, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+                    <TextBlock Text="TitleMode" Style="{StaticResource Etiqueta}"/>
+                    <ComboBox Style="{StaticResource Combo}" SelectedValuePath="Content"
+                              SelectedValue="{Binding TitleMode, ElementName=MasterNumericSelector, Mode=TwoWay}">
+                        <ComboBoxItem Content="{x:Static local:TitleMode.Hidden}"/>
+                        <ComboBoxItem Content="{x:Static local:TitleMode.Framed}"/>
+                        <ComboBoxItem Content="{x:Static local:TitleMode.Frameless}"/>
+                    </ComboBox>
 
-                    <CheckBox Content="ShowTitleFrame  (destildá para el título como etiqueta suelta)" Margin="0,0,0,6"
-                              IsChecked="{Binding ShowTitleFrame, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
-
-                    <CheckBox Content="ShowValueFrame  (sólo se nota en WithTitle: el número queda suelto)" Margin="0,0,0,6"
-                              IsChecked="{Binding ShowValueFrame, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
-
-                    <TextBlock Text="ValuePlacement  (WithTitle exige ShowTitleText: si no, cae a BesideBar)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
+                    <TextBlock Text="ValuePlacement  (las WithTitle* exigen título: si no, caen a BesideBar y vuelven solas)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
                     <ComboBox Style="{StaticResource Combo}" SelectedValuePath="Content"
                               SelectedValue="{Binding ValuePlacement, ElementName=MasterNumericSelector, Mode=TwoWay}">
                         <ComboBoxItem Content="{x:Static local:ValuePlacement.BesideBar}"/>
                         <ComboBoxItem Content="{x:Static local:ValuePlacement.OnBar}"/>
-                        <ComboBoxItem Content="{x:Static local:ValuePlacement.WithTitle}"/>
+                        <ComboBoxItem Content="{x:Static local:ValuePlacement.WithTitleFramed}"/>
+                        <ComboBoxItem Content="{x:Static local:ValuePlacement.WithTitleFrameless}"/>
                     </ComboBox>
 
                     <TextBlock Text="ControlBorderPixels" Style="{StaticResource Etiqueta}"/>

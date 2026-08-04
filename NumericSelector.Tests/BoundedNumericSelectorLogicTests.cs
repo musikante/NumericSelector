@@ -77,13 +77,13 @@ public class BoundedNumericSelectorLogicTests
 		{
 			var selector = new BoundedNumericSelector();
 
-			selector.ValuePlacement = ValuePlacement.WithTitle;
+			selector.ValuePlacement = ValuePlacement.WithTitleFramed;
 			Assert.AreEqual(ValuePlacement.BesideBar, selector.ValuePlacement);
 
-			selector.ShowTitleText = true;
-			Assert.AreEqual(ValuePlacement.WithTitle, selector.ValuePlacement);
+			selector.TitleMode = TitleMode.Framed;
+			Assert.AreEqual(ValuePlacement.WithTitleFramed, selector.ValuePlacement);
 
-			selector.ShowTitleText = false;
+			selector.TitleMode = TitleMode.Hidden;
 			Assert.AreEqual(ValuePlacement.BesideBar, selector.ValuePlacement);
 		});
 	}
