@@ -5,7 +5,8 @@
 
     <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     <local:ThicknessWithoutBottomConverter x:Key="ThicknessWithoutBottom" />
-    <local:ThicknessLeftOnlyConverter x:Key="ThicknessLeftOnly" />
+    <local:ThicknessWithoutRightConverter x:Key="ThicknessWithoutRight" />
+    <local:ThicknessTopLeftOnlyConverter x:Key="ThicknessTopLeftOnly" />
 
     <Style TargetType="{x:Type local:BoundedNumericSelector}">
         <Setter Property="Template">
@@ -20,40 +21,55 @@
                          valor actual (si no, la columna temblaría al pasar de 99 a 100).
                          Ventaja sobre medir a mano: lo mide el mismo motor que lo dibuja,
                          así que reacciona solo a fuente, DPI y cultura. -->
-                    <!-- EL CONTROL SON DOS SECCIONES, cada una con su propio marco:
-                         la de datos (barra + casillero) con los cuatro lados, y la del
-                         título —opcional— con los mismos lados MENOS el inferior. La línea
-                         que las separa es el borde SUPERIOR de la sección de datos, que
-                         hace doble función: divisor cuando hay título, y borde superior del
-                         control cuando no lo hay. Por eso no existe un divisor aparte y el
-                         grosor de la separación se lee de ControlBorderPixels.Top, en vez
-                         de salir de una reducción arbitraria de los cuatro lados. -->
+
+                    <!-- EL CONTROL SON CUATRO CELDAS INDEPENDIENTES, cada una con su marco:
+                         etiqueta del título y caja del valor arriba, barra y caja del valor
+                         abajo. Ninguna está anidada dentro de otra, y ésa es la clave: si la
+                         caja del valor viviera dentro de un marco que la envuelve, su borde
+                         se apilaría con el de afuera, sumando grosor y corriendo los filos.
+
+                         REGLA ÚNICA: la CAJA DEL VALOR tiene prioridad y define sus lados;
+                         los vecinos ceden el lado que tocan. Así ningún filo se dibuja dos
+                         veces y no hay costuras de doble espesor. La tabla resultante, con
+                         los lados en el orden de WPF (Left, Top, Right, Bottom):
+
+                           modo         etiqueta   valor arriba   barra     valor al lado
+                           BesideBar    T,T,T,0    —              T,T,0,T   T,T,T,T
+                           WithTitle    T,T,0,0    T,T,T,0        T,T,T,T   —
+                           OnBar        T,T,T,0    —              T,T,T,T   0,0,0,0
+
+                         La costura horizontal entre las dos filas la dibuja SIEMPRE el borde
+                         superior de la barra, que además hace de borde superior del control
+                         cuando no hay título. Por eso las celdas de arriba van sin inferior:
+                         una sola línea, uniforme a lo ancho, sin importar el modo.
+
+                         Los valores de la tabla son los DEFAULTS del marcado para BesideBar;
+                         los otros dos modos los ajustan desde sus triggers. -->
                     <Grid x:Name="PART_MainGrid">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <!-- La sección de datos absorbe el alto sobrante: si el consumidor
+                            <!-- La fila de datos absorbe el alto sobrante: si el consumidor
                                  fija un Height mayor que el contenido, la barra se estira y el
                                  borde inferior queda en el borde del control, no a media altura. -->
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <Border x:Name="PART_TitleBorder"
-                                Grid.Row="0"
-                                BorderBrush="{TemplateBinding ControlBorderColor}"
-                                BorderThickness="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutBottom}}"
-                                Background="{TemplateBinding Background}"
-                                Visibility="{Binding Path=ShowTitleText, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <!-- Fila superior: título. En WithTitle comparte la línea con el
+                             valor: el valor reserva su ancho y el título recibe el resto. -->
+                        <Grid x:Name="PART_TopRow"
+                              Grid.Row="0"
+                              Visibility="{Binding Path=ShowTitleText, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                            <!-- Fila superior: título. En WithTitle comparte la línea con el
-                                 valor: el valor reserva su ancho y el título recibe el resto. -->
-                            <Grid x:Name="PART_TopRow">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-
+                            <Border x:Name="PART_TitleCell"
+                                    Grid.Column="0"
+                                    BorderBrush="{TemplateBinding ControlBorderColor}"
+                                    BorderThickness="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutBottom}}"
+                                    Background="{TemplateBinding Background}">
                                 <TextBlock x:Name="PART_TitleText"
-                                           Grid.Column="0"
                                            Text="{TemplateBinding TitleText}"
                                            Foreground="{TemplateBinding Foreground}"
                                            FontSize="{TemplateBinding FontSize}"
@@ -65,9 +81,18 @@
                                            Padding="1,0,1,1"
                                            VerticalAlignment="Center"
                                            HorizontalAlignment="Stretch"/>
+                            </Border>
 
-                                <!-- Celda del valor en la fila superior (modo WithTitle) -->
-                                <Grid Grid.Column="1">
+                            <!-- Caja del valor en la fila superior (modo WithTitle). Sin borde
+                                 por defecto: sólo lo enciende el trigger de WithTitle, para que
+                                 en los otros modos, donde esta celda no muestra nada, no quede
+                                 un trazo suelto. -->
+                            <Border x:Name="PART_ValueTopCell"
+                                    Grid.Column="1"
+                                    BorderBrush="{TemplateBinding ControlBorderColor}"
+                                    BorderThickness="0"
+                                    Background="{TemplateBinding Background}">
+                                <Grid>
                                     <TextBlock x:Name="PART_TopSizerMin" Visibility="Collapsed"
                                                Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
                                                FontSize="{TemplateBinding FontSize}"
@@ -96,20 +121,23 @@
                                                Padding="4,0,4,1"
                                                Visibility="Collapsed"/>
                                 </Grid>
-                            </Grid>
-                        </Border>
+                            </Border>
+                        </Grid>
 
-                        <Border x:Name="PART_DataBorder"
-                                Grid.Row="1"
-                                BorderBrush="{TemplateBinding ControlBorderColor}"
-                                BorderThickness="{TemplateBinding ControlBorderPixels}"
-                                Background="{TemplateBinding Background}">
+                        <Grid x:Name="PART_BarAndValueGrid" Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" x:Name="PART_BarColumn"/>
+                                <ColumnDefinition Width="Auto" x:Name="PART_ValueColumn"/>
+                            </Grid.ColumnDefinitions>
 
-                            <Grid x:Name="PART_BarAndValueGrid">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" x:Name="PART_BarColumn"/>
-                                    <ColumnDefinition Width="Auto" x:Name="PART_ValueColumn"/>
-                                </Grid.ColumnDefinitions>
+                            <!-- Celda de la barra. Cede el lado derecho cuando tiene el
+                                 casillero del valor al lado; en OnBar y WithTitle recupera
+                                 los cuatro lados porque ocupa todo el ancho. -->
+                            <Border x:Name="PART_BarCell"
+                                    Grid.Column="0"
+                                    BorderBrush="{TemplateBinding ControlBorderColor}"
+                                    BorderThickness="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutRight}}"
+                                    Background="{TemplateBinding Background}">
 
                                 <!-- LA BARRA, en 2 columnas: el valor (si va sobre la barra)
                                      reserva su ancho en la columna Auto y la leyenda recibe
@@ -118,7 +146,7 @@
                                      El relleno y la capa clara ocupan AMBAS columnas. -->
                                 <!-- Sin Cursor acá: lo fija el code-behind (UpdateCursors),
                                      porque depende del eje, del modo y del foco. -->
-                                <Grid Grid.Column="0" x:Name="PART_BarGrid"
+                                <Grid x:Name="PART_BarGrid"
                                       VerticalAlignment="Stretch"
                                       Background="Transparent"
                                       ClipToBounds="True">
@@ -209,20 +237,20 @@
                                                    Visibility="Collapsed"/>
                                     </Grid>
                                 </Grid>
+                            </Border>
 
-                                <!-- Casillero del valor (modo BesideBar) + sus medidores.
-                                     Acá los medidores están siempre Hidden: cuando el valor no
-                                     va en el casillero, un trigger fuerza la columna a 0.
-                                     El Border aporta el trazo que separa la barra del número.
-                                     Sólo el lado izquierdo: los otros tres los pone el marco de
-                                     la sección de datos, y volver a dibujarlos daría línea doble.
-                                     Arranca en cero y lo enciende el trigger de BesideBar, para
-                                     que en los modos donde la columna mide 0 no quede un trazo
-                                     vertical huérfano pegado al final de la barra. -->
-                                <Border x:Name="PART_ValueBorder"
-                                        Grid.Column="1"
-                                        BorderBrush="{TemplateBinding ControlBorderColor}"
-                                        BorderThickness="0">
+                            <!-- Casillero del valor (modo BesideBar) + sus medidores. Acá los
+                                 medidores están siempre Hidden: cuando el valor no va en el
+                                 casillero, un trigger fuerza la columna a 0.
+                                 Es la celda con PRIORIDAD: lleva los cuatro lados, y su borde
+                                 izquierdo es el que separa la barra del número (la barra cede
+                                 ese filo). En OnBar y WithTitle la columna mide 0 y los
+                                 triggers le apagan el marco, para que no quede un trazo suelto. -->
+                            <Border x:Name="PART_ValueSideCell"
+                                    Grid.Column="1"
+                                    BorderBrush="{TemplateBinding ControlBorderColor}"
+                                    BorderThickness="{TemplateBinding ControlBorderPixels}"
+                                    Background="{TemplateBinding Background}">
                                 <Grid>
                                     <TextBlock x:Name="PART_ValueSizerMin" Visibility="Hidden"
                                                Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
@@ -251,28 +279,50 @@
                                                Background="Transparent"
                                                Padding="4,0,4,1"/>
                                 </Grid>
-                                </Border>
-                            </Grid>
-                        </Border>
+                            </Border>
+                        </Grid>
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <!-- BesideBar: el casillero del valor se separa de la barra con un trazo.
-                             Va en un trigger del modo, y no fijo en el Border, porque en OnBar y
-                             en WithTitle la columna del valor mide 0 y el trazo quedaría suelto. -->
-                        <Trigger Property="ValuePlacement" Value="BesideBar">
-                            <Setter TargetName="PART_ValueBorder" Property="BorderThickness"
-                                    Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessLeftOnly}}"/>
+                        <!-- OnBar: valor sobre la barra (dos capas) y sus medidores reservando
+                             ancho; sin casillero. La barra ocupa todo el ancho, así que recupera
+                             su lado derecho y el casillero apaga su marco. -->
+                        <Trigger Property="ValuePlacement" Value="OnBar">
+                            <Setter TargetName="PART_ValueColumn" Property="Width" Value="0"/>
+                            <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="PART_ValueOnBarBase" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_ValueOnBarFill" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_BarSizerMin" Property="Visibility" Value="Hidden"/>
+                            <Setter TargetName="PART_BarSizerMax" Property="Visibility" Value="Hidden"/>
+                            <Setter TargetName="PART_BarCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_ValueSideCell" Property="BorderThickness" Value="0"/>
                         </Trigger>
 
-                        <!-- Foco: la sección de datos siempre se tiñe, y con ella el trazo que
-                             separa la barra del número, que es parte del mismo marco. -->
+                        <!-- WithTitle: valor en la línea superior junto al título. La caja del
+                             valor sube y se lleva su marco (sin inferior: la costura la dibuja
+                             la barra); la etiqueta del título cede el derecho a esa caja; y la
+                             barra, que abajo queda sola, recupera los cuatro lados. -->
+                        <Trigger Property="ValuePlacement" Value="WithTitle">
+                            <Setter TargetName="PART_ValueColumn" Property="Width" Value="0"/>
+                            <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="PART_ValueWithTitle" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_TopSizerMin" Property="Visibility" Value="Hidden"/>
+                            <Setter TargetName="PART_TopSizerMax" Property="Visibility" Value="Hidden"/>
+                            <Setter TargetName="PART_ValueTopCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutBottom}}"/>
+                            <Setter TargetName="PART_TitleCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessTopLeftOnly}}"/>
+                            <Setter TargetName="PART_BarCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_ValueSideCell" Property="BorderThickness" Value="0"/>
+                        </Trigger>
+
+                        <!-- Foco: se tiñen las celdas de datos. La del título va aparte, porque
+                             depende de si tiene marco. -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="PART_DataBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_ValueBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_BarCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_ValueSideCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_ValueTopCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </Trigger>
 
-                        <!-- La del título, sólo si tiene marco. Va como MultiTrigger y no
-                             confiando en el orden de declaración: si el marco del título está
+                        <!-- La etiqueta del título, sólo si tiene marco. Va como MultiTrigger y
+                             no confiando en el orden de declaración: si el marco del título está
                              apagado, el foco no debe encenderlo de sorpresa, y esa regla tiene
                              que estar escrita en la condición, no en la posición del bloque. -->
                         <MultiTrigger>
@@ -280,7 +330,7 @@
                                 <Condition Property="IsKeyboardFocused" Value="True"/>
                                 <Condition Property="ShowTitleFrame" Value="True"/>
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="PART_TitleBorder" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_TitleCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </MultiTrigger>
 
                         <!-- Título sin marco: se apaga lo que se PINTA, no el grosor, así que la
@@ -291,34 +341,15 @@
                              La independencia respecto del orden está verificada: con este bloque
                              declarado ANTES de los triggers de foco, las pruebas siguen pasando. -->
                         <Trigger Property="ShowTitleFrame" Value="False">
-                            <Setter TargetName="PART_TitleBorder" Property="BorderBrush" Value="Transparent"/>
-                            <Setter TargetName="PART_TitleBorder" Property="Background" Value="Transparent"/>
+                            <Setter TargetName="PART_TitleCell" Property="BorderBrush" Value="Transparent"/>
+                            <Setter TargetName="PART_TitleCell" Property="Background" Value="Transparent"/>
                         </Trigger>
 
-                        <!-- OnBar: valor sobre la barra (dos capas) y sus medidores reservando
-                             ancho; sin casillero. La barra sigue ocupando todo el ancho. -->
-                        <Trigger Property="ValuePlacement" Value="OnBar">
-                            <Setter TargetName="PART_ValueColumn" Property="Width" Value="0"/>
-                            <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="PART_ValueOnBarBase" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="PART_ValueOnBarFill" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="PART_BarSizerMin" Property="Visibility" Value="Hidden"/>
-                            <Setter TargetName="PART_BarSizerMax" Property="Visibility" Value="Hidden"/>
-                        </Trigger>
-                        <!-- WithTitle: valor en la línea superior junto al título, con sus medidores.
-                             Requiere ShowTitleText. -->
                         <!-- En AutoGrow el control se ensancha para que el texto entre, así
                              que recortarlo no tiene sentido. -->
                         <Trigger Property="StretchMode" Value="AutoGrow">
                             <Setter TargetName="PART_LegendText" Property="TextTrimming" Value="None"/>
                             <Setter TargetName="PART_TitleText" Property="TextTrimming" Value="None"/>
-                        </Trigger>
-                        <Trigger Property="ValuePlacement" Value="WithTitle">
-                            <Setter TargetName="PART_ValueColumn" Property="Width" Value="0"/>
-                            <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="PART_ValueWithTitle" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="PART_TopSizerMin" Property="Visibility" Value="Hidden"/>
-                            <Setter TargetName="PART_TopSizerMax" Property="Visibility" Value="Hidden"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

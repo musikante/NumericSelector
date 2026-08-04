@@ -32,6 +32,14 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 
 Se hace antes de la primera publicación, que es el único momento en que estos cambios no rompen a ningún consumidor.
 
+### Changed — el control pasa a ser cuatro celdas independientes
+
+- La plantilla deja de agrupar en dos secciones anidadas. Ahora son **cuatro celdas hermanas con marco propio**: etiqueta del título y caja del valor arriba, barra y caja del valor abajo. Ninguna está dentro de otra.
+- **Regla única: la caja del valor tiene prioridad y define sus lados; los vecinos ceden el lado que tocan.** Así ningún filo se dibuja dos veces. La costura horizontal entre filas la dibuja siempre el borde superior de la barra, que además hace de borde superior del control cuando no hay título.
+- Esto **habilita la caja del valor en `WithTitle`**, que antes era inviable: con el modelo anidado, el borde de la caja se apilaba debajo del de la sección, sumando altura al control (+`T`) y corriendo el filo derecho hacia adentro. Como celdas hermanas, el borde de la caja *es* el borde exterior y los dos efectos desaparecen por construcción. Medido: `WithTitle` volvió a 300×37 con `T=1` y 300×43 con `T=3`, iguales que `BesideBar`.
+- Verificado contando píxeles: **el perímetro es continuo** en los ocho casos auditados (tres modos más el caso sin título, con `T=1` y `T=3`) y **ninguna costura mide `2T`** — todas dan exactamente `T`. De los trece escenarios de referencia, doce quedaron idénticos píxel a píxel y sólo cambió `WithTitle`, que es el que se quería cambiar.
+- El modelo prepara la orientación vertical: la regla de prioridad se traslada a la plantilla vertical aunque el marcado no se reutilice.
+
 ### Changed — trazo separador del valor
 
 - En `ValuePlacement.BesideBar`, el casillero del valor se separa de la barra con un trazo vertical del mismo grosor que el borde del control (`ControlBorderPixels.Left`), que se tiñe junto con el marco al recibir el foco. No es opcional: es una línea de tabla, no un modo de presentación.

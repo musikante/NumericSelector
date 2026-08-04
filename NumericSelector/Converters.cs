@@ -28,19 +28,35 @@ namespace NumericSelector
 	}
 
 	/// <summary>
-	/// Devuelve un <see cref="Thickness"/> que conserva sólo el lado izquierdo del recibido.
+	/// Devuelve el mismo <see cref="Thickness"/> recibido pero con el lado derecho en cero.
 	/// </summary>
 	/// <remarks>
-	/// La plantilla lo usa para el trazo que separa la barra del casillero del valor. Es una
-	/// sola línea vertical, y su grosor sale del lado IZQUIERDO de ControlBorderPixels por la
-	/// misma razón por la que el de la costura entre secciones sale del superior: se lee del
-	/// lado que efectivamente dibuja, sin reducciones arbitrarias.
+	/// La usa la celda de la barra cuando tiene el casillero del valor a su derecha: ese filo
+	/// lo dibuja el borde izquierdo del casillero, que es la celda con prioridad.
 	/// </remarks>
 	[ValueConversion(typeof(Thickness), typeof(Thickness))]
-	public sealed class ThicknessLeftOnlyConverter : IValueConverter
+	public sealed class ThicknessWithoutRightConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-			=> value is Thickness t ? new Thickness(t.Left, 0, 0, 0) : new Thickness(0);
+			=> value is Thickness t ? new Thickness(t.Left, t.Top, 0, t.Bottom) : new Thickness(0);
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			=> Binding.DoNothing;
+	}
+
+	/// <summary>
+	/// Devuelve un <see cref="Thickness"/> que conserva sólo los lados izquierdo y superior.
+	/// </summary>
+	/// <remarks>
+	/// La usa la etiqueta del título en el modo WithTitle: cede el derecho a la caja del valor
+	/// que tiene al lado, y el inferior a la celda de la barra, cuyo borde superior dibuja la
+	/// costura completa y uniforme a lo ancho del control.
+	/// </remarks>
+	[ValueConversion(typeof(Thickness), typeof(Thickness))]
+	public sealed class ThicknessTopLeftOnlyConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			=> value is Thickness t ? new Thickness(t.Left, t.Top, 0, 0) : new Thickness(0);
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			=> Binding.DoNothing;

@@ -304,8 +304,11 @@ public class InteractionModeTests
 	// Es una propiedad de apariencia, pero sus pruebas viven acá porque la regla que
 	// importa es su interacción con el FOCO, y para eso hace falta una ventana real.
 
+	private static Border Celda(BoundedNumericSelector selector, string parte) =>
+		(Border)selector.Template.FindName(parte, selector);
+
 	private static Border MarcoDelTitulo(BoundedNumericSelector selector) =>
-		(Border)selector.Template.FindName("PART_TitleBorder", selector);
+		Celda(selector, "PART_TitleCell");
 
 	// Se compara el COLOR y no la instancia de la brocha: el convertidor de XAML puede
 	// devolver una instancia propia para "Transparent" y una comparación por referencia
@@ -324,6 +327,8 @@ public class InteractionModeTests
 				Assert.IsTrue(e.Selector.ShowTitleFrame, "El default conserva el aspecto de siempre.");
 				Assert.AreEqual(e.Selector.ControlBorderColor, MarcoDelTitulo(e.Selector).BorderBrush);
 				Assert.AreEqual(e.Selector.Background, MarcoDelTitulo(e.Selector).Background);
+				Assert.AreEqual(new Thickness(1, 1, 1, 0), MarcoDelTitulo(e.Selector).BorderThickness,
+					"Sin inferior: la costura la dibuja el borde superior de la barra.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -347,6 +352,8 @@ public class InteractionModeTests
 				// La geometría no se toca: sólo cambia lo que se pinta.
 				Assert.AreEqual(new Thickness(1, 1, 1, 0), marco.BorderThickness,
 					"Apagar el marco no debe alterar el grosor reservado.");
+				Assert.AreEqual(e.Selector.Background, Celda(e.Selector, "PART_BarCell").Background,
+					"Sólo se apaga la celda del título; la barra conserva su fondo.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -369,9 +376,8 @@ public class InteractionModeTests
 				AssertTransparente(MarcoDelTitulo(e.Selector).BorderBrush,
 					"Con el marco apagado, el foco no debe encender el borde del título.");
 
-				var datos = (Border)e.Selector.Template.FindName("PART_DataBorder", e.Selector);
-				Assert.AreEqual(e.Selector.FocusBorderColor, datos.BorderBrush,
-					"La sección de datos sigue siendo la que señala el foco.");
+				Assert.AreEqual(e.Selector.FocusBorderColor, Celda(e.Selector, "PART_BarCell").BorderBrush,
+					"Las celdas de datos siguen siendo las que señalan el foco.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -399,19 +405,51 @@ public class InteractionModeTests
 	// --- Trazo separador del casillero del valor ---
 
 	private static Border TrazoDelValor(BoundedNumericSelector selector) =>
-		(Border)selector.Template.FindName("PART_ValueBorder", selector);
+		Celda(selector, "PART_ValueSideCell");
 
+	/// <summary>
+	/// La regla de todo el modelo: la caja del valor tiene prioridad y lleva sus cuatro
+	/// lados; el vecino cede el filo que comparten. Si los dos lo dibujaran, la costura
+	/// mediría el doble.
+	/// </summary>
 	[TestMethod]
-	public void Beside_bar_separates_the_value_box_from_the_bar()
+	public void Beside_bar_the_value_box_owns_the_shared_edge()
 	{
 		StaTest.Run(() =>
 		{
 			var e = Host(s => s.ControlBorderPixels = new Thickness(2));
 			try
 			{
-				// Sólo el lado izquierdo: los otros tres los pone el marco de la sección de
-				// datos, y dibujarlos otra vez daría línea doble.
-				Assert.AreEqual(new Thickness(2, 0, 0, 0), TrazoDelValor(e.Selector).BorderThickness);
+				Assert.AreEqual(new Thickness(2), TrazoDelValor(e.Selector).BorderThickness,
+					"El casillero del valor lleva los cuatro lados.");
+				Assert.AreEqual(new Thickness(2, 2, 0, 2), Celda(e.Selector, "PART_BarCell").BorderThickness,
+					"La barra cede el lado derecho, que es el que toca al casillero.");
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	/// <summary>
+	/// En WithTitle la caja sube y se lleva su marco sin el inferior; la etiqueta cede el
+	/// derecho a esa caja y el inferior a la barra, que dibuja una costura uniforme a lo
+	/// ancho; y la barra, sola abajo, recupera los cuatro lados.
+	/// </summary>
+	[TestMethod]
+	public void With_title_moves_the_box_up_and_the_neighbours_yield()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s =>
+			{
+				s.ControlBorderPixels = new Thickness(2);
+				s.ShowTitleText = true;
+				s.ValuePlacement = ValuePlacement.WithTitle;
+			});
+			try
+			{
+				Assert.AreEqual(new Thickness(2, 2, 2, 0), Celda(e.Selector, "PART_ValueTopCell").BorderThickness);
+				Assert.AreEqual(new Thickness(2, 2, 0, 0), MarcoDelTitulo(e.Selector).BorderThickness);
+				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness);
 			}
 			finally { e.Window.Close(); }
 		});
