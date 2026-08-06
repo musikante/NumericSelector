@@ -4,7 +4,7 @@ Control WPF *lookless* para seleccionar un valor entero **acotado a un rango**: 
 
 El control se llama **`BoundedNumericSelector`** y vive en el ensamblado `NumericSelector`.
 
-> Estado: en desarrollo activo. La API ya es utilizable, pero puede evolucionar antes de una primera versión estable.
+> Estado: la API quedó definida y el control está listo para una primera versión estable. Pendiente: empaquetado NuGet y CI.
 
 ![Vista previa del demo de NumericSelector](docs/images/numeric-selector-demo.svg)
 
@@ -13,7 +13,7 @@ El control se llama **`BoundedNumericSelector`** y vive en el ensamblado `Numeri
 - Entrada discreta de tipo `int`, con rango, pasos y valor de reinicio.
 - Valor visible sin saltos de ancho ni recortes, incluso con miles, signos y cambios de cultura.
 - Interacción con mouse, teclado y rueda, cuidando no interferir con un `ScrollViewer` contenedor.
-- Tres disposiciones: valor junto a la barra, sobre la barra o junto al título.
+- Disposición configurable: el casillero del valor vive junto a la barra (a la izquierda o derecha) o sube junto al título, según tres propiedades simples.
 - Modo de sólo visualización que conserva la apariencia y sigue reflejando cambios hechos por código.
 - Plantilla y colores personalizables, sin heredar la semántica de `Slider`.
 
@@ -52,16 +52,13 @@ private void Selector_ValueChanged(
 
 `Value` usa binding bidireccional por defecto, por lo que alcanza con `Value="{Binding MiPropiedad}"`.
 
-## Galería de modos
+## Galería de disposiciones
 
-La vista previa representa la aplicación de demostración incluida. El control admite estas disposiciones del valor:
+La vista previa representa la aplicación de demostración incluida. La posición del casillero del valor se decide con tres propiedades independientes (`ShowTitle`, `ValueFollowsTitle` y `ValueBoxSide`):
 
-| `ValuePlacement` | Resultado |
-| --- | --- |
-| `BesideBar` | Valor en su propio casillero junto a la barra. Es el modo predeterminado. |
-| `OnBar` | Valor sobre la barra; se dibuja en dos capas para conservar contraste dentro y fuera del relleno. |
-| `WithTitleFramed` | Valor compartiendo la línea del título, en una caja con marco. Requiere que `TitleMode` no sea `Hidden`. |
-| `WithTitleFrameless` | Igual, pero el número queda como etiqueta suelta al lado del título. |
+- **Sin título** (`ShowTitle=false`, predeterminado): sólo la fila de abajo, con el casillero del valor junto a la barra, a la derecha por defecto.
+- **Título con el número abajo** (`ShowTitle=true`, `ValueFollowsTitle=false`): la barra y el casillero abajo, la etiqueta del título ocupando todo el ancho.
+- **Número junto al título** (`ShowTitle=true`, `ValueFollowsTitle=true`): el casillero sube a la línea del título y la barra queda sola; la caja va a la derecha o izquierda del título según `ValueBoxSide`.
 
 > La imagen es una vista vectorial del demo creada a partir de su interfaz actual. Cuando se publique el repositorio, conviene reemplazarla o complementarla con GIF/capturas reales en `docs/images/`.
 
@@ -114,8 +111,9 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 | --- | --- | --- | --- |
 | `TitleText` | `string` | `DefaultTitle` | Texto de la fila superior. |
 | `LegendText` | `string` | `DefaultLegend` | Leyenda sobre la barra. |
-| `TitleMode` | `enum` | `Hidden` | Presentación del título: `Hidden`, `Framed` o `Frameless` (etiqueta suelta). |
-| `ValuePlacement` | `enum` | `BesideBar` | Ubicación del valor: `BesideBar`, `OnBar`, `WithTitleFramed` o `WithTitleFrameless`. |
+| `ShowTitle` | `bool` | `false` | Muestra la fila superior con el título enmarcado. |
+| `ValueFollowsTitle` | `bool` | `true` | Con `ShowTitle`, sube el casillero del valor junto al título; con `false`, queda junto a la barra. |
+| `ValueBoxSide` | `enum` | `Right` | Lado del casillero del valor (`Right` o `Left`) respecto de su compañero de fila. |
 | `StretchMode` | `enum` | `Fixed` | Estrategia de ancho. |
 | `ControlBorderPixels` | `Thickness` | `1` | Grosor de los marcos. El lado `Top` es además el grosor de la línea que separa el título de la barra. |
 
@@ -131,15 +129,18 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 | `FocusBorderColor` | `Brush` | `DodgerBlue` | Marcos con foco. |
 | `BarFillColor` | `Brush` | `Orange` | Relleno proporcional de la barra. |
 | `BarBorderColor` | `Brush` | `Black` | Contorno del relleno. |
-| `FillForeground` | `Brush` | `White` | Texto del valor sobre el relleno en `OnBar`. |
 
 `ValueChangeMode.MustFocusFirst` hace que el primer click que obtiene el foco no modifique el valor; los gestos posteriores sí. `IsDisplayOnly` bloquea al usuario, no al programa: asignar `Value` desde código sigue actualizando el control y disparando `ValueChanged`.
 
-El control se dibuja como **cuatro celdas independientes** —etiqueta del título y caja del valor arriba, barra y caja del valor abajo—, cada una con su marco. **Cuáles** lados dibuja cada una lo decide la posición del valor, con una regla única: *la caja del valor tiene prioridad y define sus lados; los vecinos ceden el lado que tocan*. Así ningún filo se dibuja dos veces. `TitleMode` y las variantes `WithTitle*` no eligen lados: sólo deciden si esa celda pinta lo que le toca. Y cuando la caja del valor deja de pintar (`WithTitleFrameless`), devuelve la prioridad: la etiqueta del título recupera su lado para que el contorno no quede abierto.
+El control se dibuja como **cuatro celdas independientes** —etiqueta del título y caja del valor arriba, barra y caja del valor abajo—, cada una con su marco. **Cuáles** lados dibuja cada una lo resuelve una única matriz de costuras (`ValueBorderResolver`), con una regla única: *la caja del valor tiene prioridad y define sus lados; los vecinos ceden el lado que tocan*. Así ningún filo se dibuja dos veces. La costura horizontal entre filas la dibuja siempre el borde superior de la barra, que además hace de borde superior del control cuando no hay título.
 
-El marco de la caja del valor sólo es opcional cuando el número va en la línea del título — por eso son dos valores del enum y no una propiedad aparte. Junto a la barra esa caja forma parte del rectángulo del control y su marco no se puede apagar: una propiedad suelta habría quedado inerte en dos de los cuatro valores, y la lista del enum dice sin ambigüedad qué combinaciones existen.
+Cada una de las tres propiedades de disposición hace algo en todo momento, sin estados inválidos ni degradaciones que documentar:
 
-La única dependencia entre propiedades es irreducible: `WithTitleFramed` y `WithTitleFrameless` necesitan que haya título. Sin él se degradan a `BesideBar`, y al volver a mostrarlo se restaura la variante exacta que se había pedido.
+- `ShowTitle` decide si existe la fila superior.
+- `ValueFollowsTitle` decide, sólo cuando hay título, si el casillero sube a esa fila (`true`) o se queda junto a la barra (`false`).
+- `ValueBoxSide` decide a qué lado del compañero de fila cae el casillero: del título si subió, de la barra si no.
+
+No hay dependencias entre propiedades: cualquier combinación es válida y produce un dibujo cerrado.
 
 `IsEnabled = false` (heredado de `UIElement`) también deja el control fuera del alcance del usuario, y a diferencia de `IsDisplayOnly` altera la apariencia según el tema. Si el control tenía el foco al deshabilitarse, lo suelta.
 
@@ -149,7 +150,7 @@ El control calcula un `MinWidth` a partir del mayor número que el rango puede p
 
 ## Aplicación de demostración
 
-El proyecto `NumericSelector.Demo` permite probar visualmente todas las propiedades, fuentes, colores, rangos y gestos.
+El proyecto `NumericSelector.Demo` permite probar visualmente todas las propiedades, fuentes, colores, rangos y gestos. El control en prueba ocupa una fila superior de alto fijo y las opciones se distribuyen en tres columnas.
 
 ```powershell
 dotnet run --project .\NumericSelector.Demo\NumericSelector.Demo.csproj
@@ -164,7 +165,7 @@ dotnet build .\NumericSelector.slnx --configuration Release
 ## Roadmap
 
 - [x] Control horizontal con rango entero, teclado, mouse y rueda.
-- [x] Modos `BesideBar`, `OnBar`, `WithTitle`, `AutoGrow` y sólo visualización.
+- [x] Disposición configurable (`ShowTitle`, `ValueFollowsTitle`, `ValueBoxSide`), `AutoGrow` y sólo visualización.
 - [x] Demo interactivo de las propiedades públicas.
 - [x] Pruebas automatizadas para defaults, coerciones de rango, pasos, disposición y eventos.
 - [ ] Ampliar las pruebas a cultura, foco, gestos de mouse y `AutoGrow`.

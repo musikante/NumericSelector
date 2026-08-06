@@ -6,26 +6,27 @@
         xmlns:media="clr-namespace:System.Windows.Media;assembly=PresentationCore"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         Title="BoundedNumericSelector - Banco de pruebas"
-        Height="760"
-        Width="900"
+        Height="820"
+        Width="1280"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
         <test:ThicknessToIntConverter x:Key="ThickToInt"/>
+        <test:BrushToColorConverter x:Key="BrushToColor"/>
 
         <!-- Paleta para los selectores de color -->
         <x:Array x:Key="Paleta" Type="{x:Type SolidColorBrush}">
-            <SolidColorBrush Color="Orange"/>
-            <SolidColorBrush Color="DodgerBlue"/>
             <SolidColorBrush Color="Black"/>
             <SolidColorBrush Color="White"/>
-            <SolidColorBrush Color="Goldenrod"/>
-            <SolidColorBrush Color="Chocolate"/>
-            <SolidColorBrush Color="SeaGreen"/>
-            <SolidColorBrush Color="Crimson"/>
-            <SolidColorBrush Color="Purple"/>
             <SolidColorBrush Color="Gray"/>
             <SolidColorBrush Color="LightGray"/>
+            <SolidColorBrush Color="DodgerBlue"/>
+            <SolidColorBrush Color="SeaGreen"/>
+            <SolidColorBrush Color="Crimson"/>
+            <SolidColorBrush Color="Orange"/>
+            <SolidColorBrush Color="Gold"/>
+            <SolidColorBrush Color="Purple"/>
+            <SolidColorBrush Color="Teal"/>
             <SolidColorBrush Color="Transparent"/>
         </x:Array>
 
@@ -73,7 +74,7 @@
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="150"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -84,20 +85,46 @@
                    FontSize="16" FontWeight="Bold"
                    Margin="0,0,0,8"/>
 
-        <Border Grid.Row="1"
-                BorderBrush="#FFBFD4E6" BorderThickness="1"
-                Background="#FFF6FAFD"
-                Padding="16" Margin="0,0,0,12">
-            <local:BoundedNumericSelector x:Name="MasterNumericSelector"
-                                   ValueChanged="Master_ValueChanged"
-                                   TitleText="Título del control Ñ j"
-                                   LegendText="Leyenda del control Ñ j"
-                                   Minimum="0"
-                                   Maximum="100"
-                                   Value="50"
-                                   ResetValue="50"
-                                   HorizontalAlignment="Center"/>
-        </Border>
+<!-- ============ GESTOS (40%) + MASTER (60%) ============ -->
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="35*"/>
+                <ColumnDefinition Width="65*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- === Gestos a probar sobre el Master (izquierda) === -->
+            <Border Grid.Column="0" Margin="0,0,8,0"
+                    Background="#FFF0F0F0" BorderBrush="LightGray" BorderThickness="1" Padding="8">
+                <StackPanel>
+                    <TextBlock Text="Gestos a probar sobre el Master" FontWeight="Bold" Margin="0,0,0,4"
+                               Foreground="#FF20507A"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="#FF444444" FontSize="11">
+                        · Click y arrastre sobre la barra: fija el valor por posición.<LineBreak/>
+                        · Botón derecho: 30% izq = mínimo · 50% centro = ResetValue · 50% der = máximo.<LineBreak/>
+                        · Rueda del mouse: ±SmallChange, solo con el foco puesto (si no, scrollea el panel).<LineBreak/>
+                        · Doble-click en el número: reset. Arrastre vertical sobre el número: ±SmallChange.<LineBreak/>
+                        · Teclado: ←/↓/− y →/↑/+ suman y restan SmallChange; RePág/AvPág = ±LargeChange; Inicio = mínimo; Fin = máximo; Supr/Insert = ResetValue.
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- === El sujeto de prueba (derecha) === -->
+            <Border Grid.Column="1"
+                    BorderBrush="#FFBFD4E6" BorderThickness="1"
+                    Background="#FFF6FAFD"
+                    Padding="5">
+                <local:BoundedNumericSelector x:Name="MasterNumericSelector"
+                                       ValueChanged="Master_ValueChanged"
+                                       TitleText="Título del control Ñ j"
+                                       LegendText="Leyenda del control Ñ j"
+                                       Minimum="0"
+                                       Maximum="100"
+                                       Value="50"
+                                       ResetValue="50"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+            </Border>
+        </Grid>
 
         <!-- ============ CONTROLES DE PRUEBA ============ -->
         <!-- Va en un ScrollViewer: además de acomodar todo, sirve para probar que la
@@ -107,9 +134,10 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- === Columna izquierda === -->
+                <!-- === Columna A: Rango y valor + Textos === -->
                 <StackPanel Grid.Column="0" Margin="0,0,20,0">
 
                     <TextBlock Text="Rango y valor  (con BoundedNumericSelectors)" Style="{StaticResource Seccion}"/>
@@ -148,31 +176,29 @@
 
                     <TextBlock Text="Textos" Style="{StaticResource Seccion}"/>
 
-                    <TextBlock Text="TitleText  (no se ve con TitleMode=Hidden)" Style="{StaticResource Etiqueta}"/>
+                    <TextBlock Text="TitleText  (se ve con ShowTitle=true)" Style="{StaticResource Etiqueta}"/>
                     <TextBox Style="{StaticResource Caja}"
                              Text="{Binding TitleText, ElementName=MasterNumericSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="LegendText  (probá una leyenda larga: se recorta con …)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
                     <TextBox Style="{StaticResource Caja}"
                              Text="{Binding LegendText, ElementName=MasterNumericSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <!-- === Columna B: Disposición + Interacción === -->
+                <StackPanel Grid.Column="1" Margin="0,0,20,0">
 
                     <TextBlock Text="Disposición" Style="{StaticResource Seccion}"/>
 
-                    <TextBlock Text="TitleMode" Style="{StaticResource Etiqueta}"/>
+                    <CheckBox Content="ShowTitle  (muestra la fila del título enmarcada)" Margin="0,0,0,6"
+                              IsChecked="{Binding ShowTitle, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+                    <CheckBox Content="ValueFollowsTitle  (con ShowTitle, el número sube junto al título)" Margin="0,0,0,6"
+                              IsChecked="{Binding ValueFollowsTitle, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+                    <TextBlock Text="ValueBoxSide  (lado del casillero del valor)" Style="{StaticResource Etiqueta}"/>
                     <ComboBox Style="{StaticResource Combo}" SelectedValuePath="Content"
-                              SelectedValue="{Binding TitleMode, ElementName=MasterNumericSelector, Mode=TwoWay}">
-                        <ComboBoxItem Content="{x:Static local:TitleMode.Hidden}"/>
-                        <ComboBoxItem Content="{x:Static local:TitleMode.Framed}"/>
-                        <ComboBoxItem Content="{x:Static local:TitleMode.Frameless}"/>
-                    </ComboBox>
-
-                    <TextBlock Text="ValuePlacement  (las WithTitle* exigen título: si no, caen a BesideBar y vuelven solas)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
-                    <ComboBox Style="{StaticResource Combo}" SelectedValuePath="Content"
-                              SelectedValue="{Binding ValuePlacement, ElementName=MasterNumericSelector, Mode=TwoWay}">
-                        <ComboBoxItem Content="{x:Static local:ValuePlacement.BesideBar}"/>
-                        <ComboBoxItem Content="{x:Static local:ValuePlacement.OnBar}"/>
-                        <ComboBoxItem Content="{x:Static local:ValuePlacement.WithTitleFramed}"/>
-                        <ComboBoxItem Content="{x:Static local:ValuePlacement.WithTitleFrameless}"/>
+                              SelectedValue="{Binding ValueBoxSide, ElementName=MasterNumericSelector, Mode=TwoWay}">
+                        <ComboBoxItem Content="{x:Static local:ValueBoxSide.Right}"/>
+                        <ComboBoxItem Content="{x:Static local:ValueBoxSide.Left}"/>
                     </ComboBox>
 
                     <TextBlock Text="ControlBorderPixels" Style="{StaticResource Etiqueta}"/>
@@ -189,7 +215,7 @@
 
                     <TextBlock Text="Width  (al tocarlo se fija un ancho local: eso anula AutoGrow)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" LegendText="Width"
-                        Minimum="80" Maximum="600"
+                        Minimum="30" Maximum="800"
                         Value="{Binding Width, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
                     <TextBlock Text="Interacción" Style="{StaticResource Seccion}"/>
@@ -208,45 +234,46 @@
                                Foreground="#FF444444" FontSize="11"/>
                 </StackPanel>
 
-                <!-- === Columna derecha === -->
-                <StackPanel Grid.Column="1">
+                <!-- === Columna C: Colores + Fuente + Gestos === -->
+                <StackPanel Grid.Column="2">
 
                     <TextBlock Text="Colores" Style="{StaticResource Seccion}"/>
 
                     <TextBlock Text="BarFillColor" Style="{StaticResource Etiqueta}"/>
                     <ComboBox Style="{StaticResource Combo}" ItemsSource="{StaticResource Paleta}"
-                              ItemTemplate="{StaticResource MuestraDeColor}" SelectedIndex="0"
-                              SelectedItem="{Binding BarFillColor, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+                              ItemTemplate="{StaticResource MuestraDeColor}"
+                              SelectedValuePath="Color"
+                              SelectedValue="{Binding BarFillColor, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BrushToColor}}"/>
 
                     <TextBlock Text="BarBorderColor" Style="{StaticResource Etiqueta}"/>
                     <ComboBox Style="{StaticResource Combo}" ItemsSource="{StaticResource Paleta}"
-                              ItemTemplate="{StaticResource MuestraDeColor}" SelectedIndex="2"
-                              SelectedItem="{Binding BarBorderColor, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
-
-                    <TextBlock Text="FillForeground  (el número sobre el relleno, en OnBar)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
-                    <ComboBox Style="{StaticResource Combo}" ItemsSource="{StaticResource Paleta}"
-                              ItemTemplate="{StaticResource MuestraDeColor}" SelectedIndex="3"
-                              SelectedItem="{Binding FillForeground, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+                              ItemTemplate="{StaticResource MuestraDeColor}"
+                              SelectedValuePath="Color"
+                              SelectedValue="{Binding BarBorderColor, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BrushToColor}}"/>
 
                     <TextBlock Text="ControlBorderColor" Style="{StaticResource Etiqueta}"/>
                     <ComboBox Style="{StaticResource Combo}" ItemsSource="{StaticResource Paleta}"
-                              ItemTemplate="{StaticResource MuestraDeColor}" SelectedIndex="2"
-                              SelectedItem="{Binding ControlBorderColor, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+                              ItemTemplate="{StaticResource MuestraDeColor}"
+                              SelectedValuePath="Color"
+                              SelectedValue="{Binding ControlBorderColor, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BrushToColor}}"/>
 
                     <TextBlock Text="FocusBorderColor  (dale foco al Master para verlo)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
                     <ComboBox Style="{StaticResource Combo}" ItemsSource="{StaticResource Paleta}"
-                              ItemTemplate="{StaticResource MuestraDeColor}" SelectedIndex="1"
-                              SelectedItem="{Binding FocusBorderColor, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+                              ItemTemplate="{StaticResource MuestraDeColor}"
+                              SelectedValuePath="Color"
+                              SelectedValue="{Binding FocusBorderColor, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BrushToColor}}"/>
 
                     <TextBlock Text="Foreground  (textos sobre el fondo)" Style="{StaticResource Etiqueta}"/>
                     <ComboBox Style="{StaticResource Combo}" ItemsSource="{StaticResource Paleta}"
-                              ItemTemplate="{StaticResource MuestraDeColor}" SelectedIndex="2"
-                              SelectedItem="{Binding Foreground, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+                              ItemTemplate="{StaticResource MuestraDeColor}"
+                              SelectedValuePath="Color"
+                              SelectedValue="{Binding Foreground, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BrushToColor}}"/>
 
                     <TextBlock Text="Background" Style="{StaticResource Etiqueta}"/>
                     <ComboBox Style="{StaticResource Combo}" ItemsSource="{StaticResource Paleta}"
-                              ItemTemplate="{StaticResource MuestraDeColor}" SelectedIndex="3"
-                              SelectedItem="{Binding Background, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+                              ItemTemplate="{StaticResource MuestraDeColor}"
+                              SelectedValuePath="Color"
+                              SelectedValue="{Binding Background, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BrushToColor}}"/>
 
                     <TextBlock Text="Fuente" Style="{StaticResource Seccion}"/>
 
@@ -279,22 +306,14 @@
                         <ComboBoxItem Content="{x:Static FontWeights.Black}"/>
                     </ComboBox>
 
-                    <TextBlock Text="Gestos a probar sobre el Master" Style="{StaticResource Seccion}"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#FF444444" FontSize="11">
-                        · Click y arrastre sobre la barra: fija el valor por posición.<LineBreak/>
-                        · Botón derecho: 30% izq = Minimum · centro = ResetValue · 30% der = Maximum.<LineBreak/>
-                        · Rueda: ±SmallChange, pero solo con el foco puesto (si no, scrollea el panel).<LineBreak/>
-                        · Doble-click en el número: ResetValue. Arrastre vertical sobre él: ±SmallChange.<LineBreak/>
-                        · Teclado: flechas, PageUp/Down, Home, End, Delete/Insert.
-                    </TextBlock>
-                </StackPanel>
+</StackPanel>
             </Grid>
         </ScrollViewer>
 
         <!-- ============ EVENTO ValueChanged ============ -->
         <Border Grid.Row="3"
                 Background="#FFF0F0F0" BorderBrush="LightGray" BorderThickness="1"
-                Padding="10" Margin="0,12,0,0">
+                Padding="10">
             <StackPanel>
                 <TextBlock Text="Evento ValueChanged" FontWeight="Bold" Margin="0,0,0,4"/>
                 <TextBlock x:Name="EventLog" Text="(sin cambios todavía)" FontFamily="Consolas" FontSize="11"/>

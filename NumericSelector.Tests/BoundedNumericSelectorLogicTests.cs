@@ -18,6 +18,11 @@ public class BoundedNumericSelectorLogicTests
 			Assert.AreEqual(50, selector.ResetValue);
 			Assert.AreEqual(1, selector.SmallChange);
 			Assert.AreEqual(10, selector.LargeChange);
+
+			// API de disposición tras el rediseño.
+			Assert.IsFalse(selector.ShowTitle);
+			Assert.IsTrue(selector.ValueFollowsTitle);
+			Assert.AreEqual(ValueBoxSide.Right, selector.ValueBoxSide);
 		});
 	}
 
@@ -67,24 +72,6 @@ public class BoundedNumericSelectorLogicTests
 
 			Assert.AreEqual(5, selector.SmallChange);
 			Assert.AreEqual(5, selector.LargeChange);
-		});
-	}
-
-	[TestMethod]
-	public void WithTitle_is_deferred_until_the_title_row_is_visible_and_then_restored()
-	{
-		StaTest.Run(() =>
-		{
-			var selector = new BoundedNumericSelector();
-
-			selector.ValuePlacement = ValuePlacement.WithTitleFramed;
-			Assert.AreEqual(ValuePlacement.BesideBar, selector.ValuePlacement);
-
-			selector.TitleMode = TitleMode.Framed;
-			Assert.AreEqual(ValuePlacement.WithTitleFramed, selector.ValuePlacement);
-
-			selector.TitleMode = TitleMode.Hidden;
-			Assert.AreEqual(ValuePlacement.BesideBar, selector.ValuePlacement);
 		});
 	}
 

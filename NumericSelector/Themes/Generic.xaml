@@ -3,10 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:NumericSelector">
 
-    <local:ValueInTitleRowConverter x:Key="ValueInTitleRow" />
-    <local:ThicknessWithoutBottomConverter x:Key="ThicknessWithoutBottom" />
-    <local:ThicknessWithoutRightConverter x:Key="ThicknessWithoutRight" />
-    <local:ThicknessTopLeftOnlyConverter x:Key="ThicknessTopLeftOnly" />
+    <local:ValueBorderResolver x:Key="ValueBorder" />
 
     <Style TargetType="{x:Type local:BoundedNumericSelector}">
         <Setter Property="Template">
@@ -18,33 +15,17 @@
                          Maximum en la misma celda que el valor visible, la celda mide el
                          MÁXIMO de los tres: WPF calcula el max() por nosotros y el ancho
                          queda reservado para el número más largo posible, sin depender del
-                         valor actual (si no, la columna temblaría al pasar de 99 a 100).
-                         Ventaja sobre medir a mano: lo mide el mismo motor que lo dibuja,
-                         así que reacciona solo a fuente, DPI y cultura. -->
+                         valor actual (si no, la columna temblaría al pasar de 99 a 100). -->
 
                     <!-- EL CONTROL SON CUATRO CELDAS INDEPENDIENTES, cada una con su marco:
                          etiqueta del título y caja del valor arriba, barra y caja del valor
                          abajo. Ninguna está anidada dentro de otra, y ésa es la clave: si la
                          caja del valor viviera dentro de un marco que la envuelve, su borde
                          se apilaría con el de afuera, sumando grosor y corriendo los filos.
-
-                         REGLA ÚNICA: la CAJA DEL VALOR tiene prioridad y define sus lados;
-                         los vecinos ceden el lado que tocan. Así ningún filo se dibuja dos
-                         veces y no hay costuras de doble espesor. La tabla resultante, con
-                         los lados en el orden de WPF (Left, Top, Right, Bottom):
-
-                           modo         etiqueta   valor arriba   barra     valor al lado
-                           BesideBar    T,T,T,0    —              T,T,0,T   T,T,T,T
-                           WithTitle    T,T,0,0    T,T,T,0        T,T,T,T   —
-                           OnBar        T,T,T,0    —              T,T,T,T   0,0,0,0
-
-                         La costura horizontal entre las dos filas la dibuja SIEMPRE el borde
-                         superior de la barra, que además hace de borde superior del control
-                         cuando no hay título. Por eso las celdas de arriba van sin inferior:
-                         una sola línea, uniforme a lo ancho, sin importar el modo.
-
-                         Los valores de la tabla son los DEFAULTS del marcado para BesideBar;
-                         los otros dos modos los ajustan desde sus triggers. -->
+                         QUÉ lados dibuja cada celda lo resuelve ValueBorderResolver (la
+                         "matriz de costuras"): un MultiBinding que devuelve el Thickness por
+                         celda según ShowTitle, ValueFollowsTitle y ValueBoxSide, para que
+                         ningún filo se dibuje dos veces. -->
                     <Grid x:Name="PART_MainGrid">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -54,61 +35,65 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Fila superior: título. En WithTitle comparte la línea con el
-                             valor: el valor reserva su ancho y el título recibe el resto. -->
-                        <!-- Arranca colapsada porque TitleMode.Hidden es el valor por defecto;
-                             la muestran los triggers de Framed y Frameless. -->
-                        <Grid x:Name="PART_TopRow"
-                              Grid.Row="0"
-                              Visibility="Collapsed">
+                        <!-- Fila superior: etiqueta del título y, cuando el valor sube (VBUp),
+                             la caja del valor junto a ella. Arranca colapsada (ShowTitle=false
+                             es el default); la muestran sus triggers. -->
+                        <Grid x:Name="PART_TopRow" Grid.Row="0" Visibility="Collapsed">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition x:Name="PART_TitleColumn" Width="*"/>
+                                <ColumnDefinition x:Name="PART_ValueTopColumn" Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <Border x:Name="PART_TitleCell"
-                                    Grid.Column="0"
-                                    BorderBrush="{TemplateBinding ControlBorderColor}"
-                                    BorderThickness="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutBottom}}"
-                                    Background="{TemplateBinding Background}">
+                            <Border x:Name="PART_TitleCell" Grid.Column="0"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding ControlBorderColor}">
+                                <Border.BorderThickness>
+                                    <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Title">
+                                        <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ShowTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueFollowsTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                    </MultiBinding>
+                                </Border.BorderThickness>
                                 <TextBlock x:Name="PART_TitleText"
-                                           Text="{TemplateBinding TitleText}"
                                            Foreground="{TemplateBinding Foreground}"
                                            FontSize="{TemplateBinding FontSize}"
                                            FontFamily="{TemplateBinding FontFamily}"
                                            FontStyle="{TemplateBinding FontStyle}"
                                            FontWeight="{TemplateBinding FontWeight}"
-                                           TextAlignment="Center"
-                                           TextTrimming="CharacterEllipsis"
-                                           Padding="1,0,1,1"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Stretch"/>
+                                           Text="{TemplateBinding TitleText}"
+TextAlignment="Center"
+                                            TextTrimming="CharacterEllipsis"
+                                            Padding="0,0,0,1"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Stretch"
+                                            Margin="5,0,5,0"/>
                             </Border>
 
-                            <!-- Caja del valor en la fila superior (modo WithTitle). Sin borde
-                                 por defecto: sólo lo enciende el trigger de WithTitle, para que
-                                 en los otros modos, donde esta celda no muestra nada, no quede
-                                 un trazo suelto. -->
-                            <Border x:Name="PART_ValueTopCell"
-                                    Grid.Column="1"
+                            <!-- Caja del valor en la fila superior. Sin borde y colapsada por
+                                 defecto; sólo la enciende el trigger de VBUp, para que en las
+                                 configuraciones donde esta celda no muestra nada no quede ni
+                                 trazo suelto ni un hueco vacío a la derecha del título. -->
+                            <Border x:Name="PART_ValueTopCell" Grid.Column="1"
+                                    Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding ControlBorderColor}"
                                     BorderThickness="0"
-                                    Background="{TemplateBinding Background}">
+                                    Visibility="Collapsed">
                                 <Grid>
-                                    <TextBlock x:Name="PART_TopSizerMin" Visibility="Collapsed"
+                                    <TextBlock x:Name="PART_TopSizerMin" Visibility="Hidden"
                                                Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
                                                FontSize="{TemplateBinding FontSize}"
                                                FontFamily="{TemplateBinding FontFamily}"
                                                FontStyle="{TemplateBinding FontStyle}"
                                                FontWeight="{TemplateBinding FontWeight}"
-                                               Padding="4,0,4,1"/>
-                                    <TextBlock x:Name="PART_TopSizerMax" Visibility="Collapsed"
+                                               Padding="3,0,4,1"/>
+                                    <TextBlock x:Name="PART_TopSizerMax" Visibility="Hidden"
                                                Text="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
                                                FontSize="{TemplateBinding FontSize}"
                                                FontFamily="{TemplateBinding FontFamily}"
                                                FontStyle="{TemplateBinding FontStyle}"
                                                FontWeight="{TemplateBinding FontWeight}"
-                                               Padding="4,0,4,1"/>
+                                               Padding="3,0,4,1"/>
                                     <TextBlock x:Name="PART_ValueWithTitle"
                                                Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
                                                Foreground="{TemplateBinding Foreground}"
@@ -116,11 +101,11 @@
                                                FontFamily="{TemplateBinding FontFamily}"
                                                FontStyle="{TemplateBinding FontStyle}"
                                                FontWeight="{TemplateBinding FontWeight}"
-                                               VerticalAlignment="Center"
-                                               HorizontalAlignment="Stretch"
-                                               TextAlignment="Right"
+TextAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Stretch"
+                                               Padding="3,0,4,1"
                                                Background="Transparent"
-                                               Padding="4,0,4,1"
                                                Visibility="Collapsed"/>
                                 </Grid>
                             </Border>
@@ -132,39 +117,30 @@
                                 <ColumnDefinition Width="Auto" x:Name="PART_ValueColumn"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Celda de la barra. Cede el lado derecho cuando tiene el
-                                 casillero del valor al lado; en OnBar y WithTitle recupera
-                                 los cuatro lados porque ocupa todo el ancho. -->
-                            <Border x:Name="PART_BarCell"
-                                    Grid.Column="0"
-                                    BorderBrush="{TemplateBinding ControlBorderColor}"
-                                    BorderThickness="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutRight}}"
-                                    Background="{TemplateBinding Background}">
-
-                                <!-- LA BARRA, en 2 columnas: el valor (si va sobre la barra)
-                                     reserva su ancho en la columna Auto y la leyenda recibe
-                                     el resto en la columna *. Así no pueden solaparse: la
-                                     leyenda se recorta con elipsis antes de llegar al número.
-                                     El relleno y la capa clara ocupan AMBAS columnas. -->
-                                <!-- Sin Cursor acá: lo fija el code-behind (UpdateCursors),
-                                     porque depende del eje, del modo y del foco. -->
+                            <!-- Celda de la barra. Cede el lado que toca la caja del valor
+                                 según ValueBoxSide; sólo recupera los cuatro lados cuando la
+                                 caja sube y la barra queda sola (VBUp). -->
+                            <Border x:Name="PART_BarCell" Grid.Column="0"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding ControlBorderColor}">
+                                <Border.BorderThickness>
+                                    <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Bar">
+                                        <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ShowTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueFollowsTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                    </MultiBinding>
+                                </Border.BorderThickness>
                                 <Grid x:Name="PART_BarGrid"
                                       VerticalAlignment="Stretch"
                                       Background="Transparent"
                                       ClipToBounds="True">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <!-- (1) Relleno: abarca toda la barra. Va DENTRO de un Canvas
-                                         a propósito: el Canvas mide 0 sin importar sus hijos, así
-                                         que el ancho del rectángulo (que el code-behind calcula a
-                                         partir del ancho de la barra) NO entra en la medición del
-                                         contenido. Si entrara, el ancho natural del control
-                                         dependería de su propio ancho y en AutoGrow crecería sin
-                                         parar. El relleno es decoración: no debe dimensionar nada. -->
-                                    <Canvas Grid.ColumnSpan="2" ClipToBounds="True">
+                                    <!-- (1) Relleno: en un Canvas a propósito, porque el Canvas
+                                         mide 0 sin importar sus hijos y así el ancho del
+                                         rectángulo (que el code-behind calcula a partir del ancho
+                                         de la barra) NO entra en la medición del contenido. El
+                                         relleno es decoración: no debe dimensionar nada. -->
+                                    <Canvas ClipToBounds="True">
                                         <Border x:Name="PART_BarRect"
                                                 Background="{TemplateBinding BarFillColor}"
                                                 BorderBrush="{TemplateBinding BarBorderColor}"
@@ -172,87 +148,39 @@
                                                 Width="0"/>
                                     </Canvas>
 
-                                    <!-- (2) Leyenda: encima del relleno, recibe el espacio restante -->
+                                    <!-- (2) Leyenda: encima del relleno, centrada en la barra. -->
                                     <TextBlock x:Name="PART_LegendText"
-                                               Grid.Column="0"
                                                Text="{TemplateBinding LegendText}"
                                                Foreground="{TemplateBinding Foreground}"
                                                FontSize="{TemplateBinding FontSize}"
                                                FontFamily="{TemplateBinding FontFamily}"
                                                FontStyle="{TemplateBinding FontStyle}"
                                                FontWeight="{TemplateBinding FontWeight}"
-                                               VerticalAlignment="Center"
-                                               HorizontalAlignment="Stretch"
                                                TextAlignment="Center"
                                                TextTrimming="CharacterEllipsis"
-                                               Padding="0,0,0,1"
-                                               Margin="10,0,10,0"/>
-
-                                    <!-- (3) Valor sobre la barra: capa base oscura + medidores.
-                                         Los medidores pasan a Hidden solo en modo OnBar. -->
-                                    <Grid Grid.Column="1">
-                                        <TextBlock x:Name="PART_BarSizerMin" Visibility="Collapsed"
-                                                   Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
-                                                   FontSize="{TemplateBinding FontSize}"
-                                                   FontFamily="{TemplateBinding FontFamily}"
-                                                   FontStyle="{TemplateBinding FontStyle}"
-                                                   FontWeight="{TemplateBinding FontWeight}"
-                                                   Padding="0,0,0,1"
-                                                   Margin="0,0,8,0"/>
-                                        <TextBlock x:Name="PART_BarSizerMax" Visibility="Collapsed"
-                                                   Text="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
-                                                   FontSize="{TemplateBinding FontSize}"
-                                                   FontFamily="{TemplateBinding FontFamily}"
-                                                   FontStyle="{TemplateBinding FontStyle}"
-                                                   FontWeight="{TemplateBinding FontWeight}"
-                                                   Padding="0,0,0,1"
-                                                   Margin="0,0,8,0"/>
-                                        <TextBlock x:Name="PART_ValueOnBarBase"
-                                                   Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
-                                                   Foreground="{TemplateBinding Foreground}"
-                                                   FontSize="{TemplateBinding FontSize}"
-                                                   FontFamily="{TemplateBinding FontFamily}"
-                                                   FontStyle="{TemplateBinding FontStyle}"
-                                                   FontWeight="{TemplateBinding FontWeight}"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Right"
-                                                   Padding="0,0,0,1"
-                                                   Margin="0,0,8,0"
-                                                   Visibility="Collapsed"/>
-                                    </Grid>
-
-                                    <!-- (4) Valor: capa clara recortada al relleno (el Clip lo fija el
-                                         code-behind). Abarca AMBAS columnas para que el recorte use el
-                                         mismo sistema de coordenadas que la barra. -->
-                                    <Grid x:Name="PART_ValueFillLayer" Grid.ColumnSpan="2">
-                                        <TextBlock x:Name="PART_ValueOnBarFill"
-                                                   Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
-                                                   Foreground="{TemplateBinding FillForeground}"
-                                                   FontSize="{TemplateBinding FontSize}"
-                                                   FontFamily="{TemplateBinding FontFamily}"
-                                                   FontStyle="{TemplateBinding FontStyle}"
-                                                   FontWeight="{TemplateBinding FontWeight}"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Right"
-                                                   Padding="0,0,0,1"
-                                                   Margin="0,0,8,0"
-                                                   Visibility="Collapsed"/>
-                                    </Grid>
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Stretch"
+                                                Padding="0,0,0,1"
+                                                Margin="5,0,5,0"/>
                                 </Grid>
                             </Border>
 
-                            <!-- Casillero del valor (modo BesideBar) + sus medidores. Acá los
-                                 medidores están siempre Hidden: cuando el valor no va en el
-                                 casillero, un trigger fuerza la columna a 0.
-                                 Es la celda con PRIORIDAD: lleva los cuatro lados, y su borde
-                                 izquierdo es el que separa la barra del número (la barra cede
-                                 ese filo). En OnBar y WithTitle la columna mide 0 y los
-                                 triggers le apagan el marco, para que no quede un trazo suelto. -->
-                            <Border x:Name="PART_ValueSideCell"
-                                    Grid.Column="1"
-                                    BorderBrush="{TemplateBinding ControlBorderColor}"
-                                    BorderThickness="{TemplateBinding ControlBorderPixels}"
-                                    Background="{TemplateBinding Background}">
+                            <!-- Casillero del valor junto a la barra. Es la celda con
+                                 prioridad: lleva los cuatro lados, y su borde contiguo a la
+                                 barra es el que separa el número del relleno (la barra cede
+                                 ese filo). Su columna se colapsa y su texto se oculta cuando
+                                 el valor sube a la fila del título (VBUp). -->
+                            <Border x:Name="PART_ValueSideCell" Grid.Column="1"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding ControlBorderColor}">
+                                <Border.BorderThickness>
+                                    <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Value">
+                                        <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ShowTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueFollowsTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                    </MultiBinding>
+                                </Border.BorderThickness>
                                 <Grid>
                                     <TextBlock x:Name="PART_ValueSizerMin" Visibility="Hidden"
                                                Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
@@ -260,14 +188,22 @@
                                                FontFamily="{TemplateBinding FontFamily}"
                                                FontStyle="{TemplateBinding FontStyle}"
                                                FontWeight="{TemplateBinding FontWeight}"
-                                               Padding="4,0,4,1"/>
+                                               Padding="3,0,4,1"/>
                                     <TextBlock x:Name="PART_ValueSizerMax" Visibility="Hidden"
                                                Text="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
                                                FontSize="{TemplateBinding FontSize}"
                                                FontFamily="{TemplateBinding FontFamily}"
                                                FontStyle="{TemplateBinding FontStyle}"
                                                FontWeight="{TemplateBinding FontWeight}"
-                                               Padding="4,0,4,1"/>
+                                               Padding="3,0,4,1"/>
+                                    <!-- Padding asimétrico a propósito (3 izq / 4 der) en el
+                                         texto del valor y sus medidores ocultos. El lado
+                                         izquierdo más chico compensa el "corrido a la derecha"
+                                         que mostraba el padding simétrico, y degrada la diferencia
+                                         sub-píxel (~1px) de centrado entre ValueBoxSide=Left/Right
+                                         (redondeo de la columna "*"). No tocar el texto sin tocar a
+                                         los sizers: ambos miden el ancho de la columna Auto y deben
+                                         ser idénticos. -->
                                     <TextBlock x:Name="PART_ValueText"
                                                Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
                                                Foreground="{TemplateBinding Foreground}"
@@ -275,113 +211,74 @@
                                                FontFamily="{TemplateBinding FontFamily}"
                                                FontStyle="{TemplateBinding FontStyle}"
                                                FontWeight="{TemplateBinding FontWeight}"
-                                               VerticalAlignment="Center"
-                                               HorizontalAlignment="Stretch"
-                                               TextAlignment="Right"
-                                               Background="Transparent"
-                                               Padding="4,0,4,1"/>
+TextAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Stretch"
+                                               Padding="3,0,4,1"
+                                               Background="Transparent"/>
                                 </Grid>
                             </Border>
                         </Grid>
                     </Grid>
+
                     <ControlTemplate.Triggers>
-                        <!-- OnBar: valor sobre la barra (dos capas) y sus medidores reservando
-                             ancho; sin casillero. La barra ocupa todo el ancho, así que recupera
-                             su lado derecho y el casillero apaga su marco. -->
-                        <Trigger Property="ValuePlacement" Value="OnBar">
-                            <Setter TargetName="PART_ValueColumn" Property="Width" Value="0"/>
-                            <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="PART_ValueOnBarBase" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="PART_ValueOnBarFill" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="PART_BarSizerMin" Property="Visibility" Value="Hidden"/>
-                            <Setter TargetName="PART_BarSizerMax" Property="Visibility" Value="Hidden"/>
-                            <Setter TargetName="PART_BarCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_ValueSideCell" Property="BorderThickness" Value="0"/>
-                        </Trigger>
-
-                        <!-- Hay título: se muestra la fila de arriba. Los dos modos visibles
-                             comparten esto; se diferencian sólo en si la etiqueta pinta. -->
-                        <Trigger Property="TitleMode" Value="Framed">
+                        <!-- ShowTitle: se muestra la fila superior (título enmarcado). -->
+                        <Trigger Property="ShowTitle" Value="True">
                             <Setter TargetName="PART_TopRow" Property="Visibility" Value="Visible"/>
                         </Trigger>
-                        <Trigger Property="TitleMode" Value="Frameless">
-                            <Setter TargetName="PART_TopRow" Property="Visibility" Value="Visible"/>
-                            <!-- Se apaga lo que se PINTA, no el grosor, así la geometría queda
-                                 idéntica y alternar entre Framed y Frameless no mueve nada.
-                                 Transparent y NO x:Null: transparente igual pinta, y por eso la
-                                 fila del título sigue recibiendo los clics que dan el foco; con
-                                 nulo dejaría de ser alcanzable por el mouse. -->
-                            <Setter TargetName="PART_TitleCell" Property="BorderBrush" Value="Transparent"/>
-                            <Setter TargetName="PART_TitleCell" Property="Background" Value="Transparent"/>
-                        </Trigger>
 
-                        <!-- Valor en la línea del título. Va por DataTrigger con un converter
-                             porque un Trigger de WPF compara contra UN valor y esto vale para las
-                             dos variantes, framed y frameless: sin el converter habría que
-                             duplicar los nueve setters. La diferencia entre variantes es sólo el
-                             marco y va en su propio bloque, más abajo.
-                             La caja del valor sube y se lleva su marco (sin inferior: la costura
-                             la dibuja la barra); la etiqueta del título cede el derecho a esa
-                             caja; y la barra, que abajo queda sola, recupera los cuatro lados. -->
-                        <DataTrigger Binding="{Binding Path=ValuePlacement, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueInTitleRow}}" Value="True">
-                            <Setter TargetName="PART_ValueColumn" Property="Width" Value="0"/>
-                            <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="PART_ValueWithTitle" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="PART_TopSizerMin" Property="Visibility" Value="Hidden"/>
-                            <Setter TargetName="PART_TopSizerMax" Property="Visibility" Value="Hidden"/>
-                            <Setter TargetName="PART_ValueTopCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutBottom}}"/>
-                            <Setter TargetName="PART_TitleCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessTopLeftOnly}}"/>
-                            <Setter TargetName="PART_BarCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_ValueSideCell" Property="BorderThickness" Value="0"/>
-                        </DataTrigger>
-
-                        <!-- WithTitleFrameless: la caja del valor deja de pintar. -->
-                        <Trigger Property="ValuePlacement" Value="WithTitleFrameless">
-                            <Setter TargetName="PART_ValueTopCell" Property="BorderBrush" Value="Transparent"/>
-                            <Setter TargetName="PART_ValueTopCell" Property="Background" Value="Transparent"/>
-                        </Trigger>
-
-                        <!-- LA CLÁUSULA QUE CIERRA EL CONTORNO: la regla de prioridad vale
-                             mientras la caja del valor esté enmarcada; si no lo está, DEVUELVE
-                             la prioridad y la etiqueta del título recupera el lado que le había
-                             cedido. Sin esto el contorno quedaría abierto sobre el ancho del
-                             número, porque en el modelo de celdas el rectángulo exterior es la
-                             UNIÓN de los bordes y ese filo lo dibuja la propia caja.
-                             Sólo con el título ENMARCADO: si ya está sin marco no hay contorno
-                             que cerrar, y cambiar su grosor correría su texto sin motivo. -->
+                        <!-- VBUp := ShowTitle y ValueFollowsTitle: la caja del valor sube a la
+                             fila del título. Abajo, la barra queda sola y recupera sus cuatro
+                             lados; la caja de abajo se colapsa y apaga su marco para no dejar
+                             un trazo suelto donde ya no hay nada. -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
-                                <Condition Property="ValuePlacement" Value="WithTitleFrameless"/>
-                                <Condition Property="TitleMode" Value="Framed"/>
+                                <Condition Property="ShowTitle" Value="True"/>
+                                <Condition Property="ValueFollowsTitle" Value="True"/>
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="PART_TitleCell" Property="BorderThickness" Value="{Binding Path=ControlBorderPixels, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThicknessWithoutBottom}}"/>
+                            <Setter TargetName="PART_ValueSideCell" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="PART_ValueWithTitle" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_ValueTopCell" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_ValueTopCell" Property="BorderThickness">
+                                <Setter.Value>
+                                    <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Value">
+                                        <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ShowTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueFollowsTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                    </MultiBinding>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="PART_ValueSideCell" Property="BorderThickness" Value="0"/>
                         </MultiTrigger>
 
-                        <!-- Foco: la barra y el casillero al costado siempre, porque su marco no
-                             se puede apagar. Las celdas cuyo marco SÍ se puede apagar van cada
-                             una en su MultiTrigger, para que el foco no encienda un marco que el
-                             consumidor pidió apagar. La regla vive en la condición y no en el
-                             orden de declaración; verificado moviendo los bloques. -->
+                        <!-- ValueBoxSide=Left: la caja del valor va a la izquierda de su
+                             compañero de fila, tanto abajo (junto a la barra) como arriba
+                             (junto al título). Se reordenan las celdas Y los anchos de
+                             columna, porque la columna "*" tiene que seguir a la barra:
+                             si sólo se movieran las celdas, la barra caería en la columna
+                             "Auto" y se encogería a su contenido, despegándose del borde. -->
+                        <Trigger Property="ValueBoxSide" Value="Left">
+                            <Setter TargetName="PART_BarCell" Property="Grid.Column" Value="1"/>
+                            <Setter TargetName="PART_ValueSideCell" Property="Grid.Column" Value="0"/>
+                            <Setter TargetName="PART_TitleCell" Property="Grid.Column" Value="1"/>
+                            <Setter TargetName="PART_ValueTopCell" Property="Grid.Column" Value="0"/>
+                            <Setter TargetName="PART_BarColumn" Property="Width" Value="Auto"/>
+                            <Setter TargetName="PART_ValueColumn" Property="Width" Value="*"/>
+                            <Setter TargetName="PART_TitleColumn" Property="Width" Value="Auto"/>
+                            <Setter TargetName="PART_ValueTopColumn" Property="Width" Value="*"/>
+                        </Trigger>
+
+                        <!-- Foco: el contorno completo se tiñe del color de foco. No hay caja
+                             "frameless" que apagar, así que el cambio aplica a las cuatro
+                             celdas siempre. -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="PART_BarCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                             <Setter TargetName="PART_ValueSideCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                        </Trigger>
-
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsKeyboardFocused" Value="True"/>
-                                <Condition Property="ValuePlacement" Value="WithTitleFramed"/>
-                            </MultiTrigger.Conditions>
                             <Setter TargetName="PART_ValueTopCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                        </MultiTrigger>
-
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsKeyboardFocused" Value="True"/>
-                                <Condition Property="TitleMode" Value="Framed"/>
-                            </MultiTrigger.Conditions>
                             <Setter TargetName="PART_TitleCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                        </MultiTrigger>
+                        </Trigger>
 
                         <!-- En AutoGrow el control se ensancha para que el texto entre, así
                              que recortarlo no tiene sentido. -->
@@ -395,8 +292,7 @@
         </Setter>
 
         <Setter Property="Width" Value="300" />
-        <!-- Sin Height fijo: el control se auto-dimensiona a su contenido (compacto).
-             Poné Height en la instancia si querés forzar una altura mayor. -->
+        <!-- Sin Height fijo: el control se auto-dimensiona a su contenido (compacto). -->
         <Setter Property="Focusable" Value="True" />
         <!-- Sin el recuadro punteado por defecto de WPF: el foco lo indica el borde. -->
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />

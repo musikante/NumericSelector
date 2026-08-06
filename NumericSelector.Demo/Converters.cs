@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace NumericSelector.Demo
 {
@@ -18,5 +19,20 @@ namespace NumericSelector.Demo
 		// Destino (int) -> origen (Thickness) : borde uniforme.
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			=> new Thickness(System.Convert.ToDouble(value, culture));
+	}
+
+	/// <summary>
+	/// Casar la selección de un ComboBox por el valor del <see cref="Color"/> y no por la
+	/// referencia del brush. Los brushes de la paleta (StaticResource) son instancias
+	/// distintas de las que tiene el control; por referencia un SelectedItem nunca casaría
+	/// y la caja quedaría vacía.
+	/// </summary>
+	public class BrushToColorConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			=> value is SolidColorBrush b ? b.Color : Colors.Transparent;
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			=> new SolidColorBrush(value is Color c ? c : Colors.Transparent);
 	}
 }

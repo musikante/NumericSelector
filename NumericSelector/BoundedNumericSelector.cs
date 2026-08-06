@@ -13,19 +13,14 @@ namespace NumericSelector
 	public partial class BoundedNumericSelector : Control
 	{
 		// --- Campos de Instancia ---
-		private Grid? _mainGrid;
-		private TextBlock? _titleText;
-		private Grid? _barAndValueGrid;
+		// Referencias a las partes de la plantilla que la interacción dibuja o escucha: la
+		// barra y los dos textos del valor. Las piezas que sólo arman el aspecto (el grid
+		// principal, el título y la leyenda) viven resolviéndose en el XAML, sin necesitar
+		// campo propio aquí.
 		private Grid? _barGrid;
-		private TextBlock? _legendText;
 		private Border? _barRect;
 		private TextBlock? _valueText;
-		private UIElement? _valueFillLayer;
 		private UIElement? _valueWithTitle;
-		private readonly RectangleGeometry _fillClip = new();
-		// Eje principal del control (Fase 1: siempre horizontal). Concentra toda la
-		// logica dependiente de la orientacion; el vertical se agrega en la fase 2.
-		private readonly OrientationAxis _axis = OrientationAxis.Horizontal;
 		private Point _valueDragStart;
 		// Width que tenía antes de entrar en AutoGrow, para restituirlo al volver a Fixed.
 		// No hace falta marca de agua aparte: en AutoGrow el propio Width la cumple, porque
@@ -72,23 +67,16 @@ namespace NumericSelector
 			DetachTemplateParts();
 
 			// Obtener referencias a los elementos visuales de la plantilla.
-			_mainGrid = GetTemplateChild("PART_MainGrid") as Grid;
-			_titleText = GetTemplateChild("PART_TitleText") as TextBlock;
-			_barAndValueGrid = GetTemplateChild("PART_BarAndValueGrid") as Grid;
 			_barGrid = GetTemplateChild("PART_BarGrid") as Grid;
-			_legendText = GetTemplateChild("PART_LegendText") as TextBlock;
 			_barRect = GetTemplateChild("PART_BarRect") as Border;
 			_valueText = GetTemplateChild("PART_ValueText") as TextBlock;
-			_valueFillLayer = GetTemplateChild("PART_ValueFillLayer") as UIElement;
-			if (_valueFillLayer != null) _valueFillLayer.Clip = _fillClip;
 			_valueWithTitle = GetTemplateChild("PART_ValueWithTitle") as UIElement;
 
 			AttachTemplateParts();
 
-			// Llamar a métodos de actualización iniciales
-			UpdateBarFill(Value); // Asegura que el estado inicial se refleje
+			// Estado inicial: el relleno y los cursores.
+			UpdateBarFill(Value);
 			UpdateCursors();
-			//UpdateLegendTextPosition(); // Asegura que la leyenda esté bien posicionada
 		}
 
 		// Las partes de la plantilla son hijas del control, así que estas suscripciones no
@@ -104,7 +92,7 @@ namespace NumericSelector
 				_valueText.MouseLeftButtonUp += ValueText_MouseLeftButtonUp;
 			}
 
-			// El valor en la línea superior (modo WithTitle) usa los mismos gestos de arrastre.
+			// El valor arriba (VBUp: ShowTitle y ValueFollowsTitle) usa los mismos gestos.
 			if (_valueWithTitle != null)
 			{
 				_valueWithTitle.MouseLeftButtonDown += ValueText_MouseLeftButtonDown;
@@ -180,9 +168,10 @@ namespace NumericSelector
 			// +1 de tolerancia, en el espíritu del LNSlider: que sobre no molesta, que falte
 			// corta el número. FormattedText y TextBlock pueden diferir por fracciones.
 			// El último sumando es el trazo que separa la barra del casillero. Sólo se dibuja
-			// en BesideBar, pero el piso se calcula igual para todos los modos: reservar de
-			// más no molesta —la barra absorbe la diferencia— y así el piso no depende de la
-			// disposición ni hay que recalcularlo al cambiarla.
+			// cuando el casillero está junto a la barra, pero el piso se calcula igual para
+			// todas las disposiciones: reservar de más no molesta —la barra absorbe la
+			// diferencia— y así el piso no depende de la disposición ni hay que recalcularlo
+			// al cambiarla.
 			double piso = Math.Ceiling(texto) + 1 + ValueBoxPadding
 						+ ControlBorderPixels.Left + ControlBorderPixels.Right
 						+ ControlBorderPixels.Left;
@@ -294,12 +283,14 @@ namespace NumericSelector
 				case Key.Left:
 				case Key.Down:
 				case Key.Subtract:
+				case Key.OemMinus:
 					Value -= SmallChange;
 					e.Handled = true;
 					break;
 				case Key.Right:
 				case Key.Up:
 				case Key.Add:
+				case Key.OemPlus:
 					Value += SmallChange;
 					e.Handled = true;
 					break;
@@ -332,16 +323,17 @@ namespace NumericSelector
 			UpdateBarFill(Value);
 		}
 
-		// --- Interaccion de mouse ---
+		// --- Interacción de mouse ---
 
 		// Convierte una posicion del mouse (dentro de la barra) al valor entero
-		// correspondiente, delegando en el eje la conversion posicion -> ratio.
+		// correspondiente, a lo largo del eje horizontal (0 = izquierda, 1 = derecha).
 		private int ValueFromPosition(Point p)
 		{
 			if (_barGrid == null)
 				return Minimum;
 
-			double ratio = _axis.PositionToRatio(p, new Size(_barGrid.ActualWidth, _barGrid.ActualHeight));
+			double w = _barGrid.ActualWidth;
+			double ratio = w <= 0 ? 0 : Math.Clamp(p.X / w, 0, 1);
 			return RatioToValue(ratio);
 		}
 
@@ -392,11 +384,11 @@ namespace NumericSelector
 			if (_barGrid == null)
 				return;
 
-			var barSize = new Size(_barGrid.ActualWidth, _barGrid.ActualHeight);
-			if (_axis.GetExtent(barSize) <= 0)
+			double width = _barGrid.ActualWidth;
+			if (width <= 0)
 				return;
 
-			double ratio = _axis.PositionToRatio(e.GetPosition(_barGrid), barSize);
+			double ratio = Math.Clamp(e.GetPosition(_barGrid).X / width, 0, 1);
 
 			if (ratio < RightClickEdgeZone) Value = Minimum;
 			else if (ratio > 1 - RightClickEdgeZone) Value = Maximum;
@@ -534,9 +526,9 @@ namespace NumericSelector
 			bool gestures = !IsDisplayOnly &&
 				(ValueChangeMode == ValueChangeMode.ChangeOnClick || IsKeyboardFocused);
 
-			// El de la barra lo decide el eje: depende de la orientacion (fase 2).
+			// Arrastre horizontal sobre la barra.
 			if (_barGrid != null)
-				_barGrid.Cursor = gestures ? _axis.DragCursor : Cursors.Arrow;
+				_barGrid.Cursor = gestures ? Cursors.SizeWE : Cursors.Arrow;
 
 			// El casillero del valor se arrastra en vertical en cualquier orientacion.
 			var valueCursor = gestures ? Cursors.SizeNS : Cursors.Arrow;
@@ -551,7 +543,7 @@ namespace NumericSelector
 				Mouse.UpdateCursor();
 		}
 
-		// --- Habilitacion de los gestos ---
+		// --- Habilitación de los gestos ---
 
 		// Unico punto de decision para todos los gestos de mouse: en solo-visualizacion no
 		// actua ninguno, y en MustFocusFirst sólo actuan si el control ya tenia el foco al
@@ -579,88 +571,33 @@ namespace NumericSelector
 			long range = (long)Maximum - Minimum;
 			double ratio = (range > 0) ? Math.Clamp((double)(value - (long)Minimum) / range, 0, 1) : 0;
 
-			var barSize = new Size(_barGrid.ActualWidth, _barGrid.ActualHeight);
-
-			// El eje aplica el relleno sobre su dimension principal y calcula el recorte
-			// de la capa clara del valor (inversion OnBar). Toda la orientacion vive ahi.
-			_axis.ApplyFill(_barRect, barSize, ratio);
-			_fillClip.Rect = _axis.GetFillClip(barSize, ratio);
+			// Eje horizontal: el relleno crece hacia la derecha en proporcion al valor.
+			// El alto se fija por codigo porque el rectangulo vive dentro de un Canvas
+			// (ver Generic.xaml), que no estira a sus hijos.
+			_barRect.Width = _barGrid.ActualWidth * ratio;
+			_barRect.Height = _barGrid.ActualHeight;
 		}
 
-		// --- Vestigios del modelo de 3 filas heredado del LNSlider (VB6) ---
-		// Se conservan como referencia de diseño en transición. OJO: usan nombres viejos
-		// (_sliderCanvas nunca existió en esta versión), así que si se reactivan hay que
-		// reescribirlos contra las partes actuales (_barGrid / _barRect / _legendText).
-		// Además llaman a UpdateValueColumnWidth(), que ya no existe: hoy el ancho de la
-		// columna del valor lo resuelven los medidores ocultos y los triggers de la plantilla.
+		// --- Medición de texto ---
 
-		/*
-		private void OnValueChangedHandler(double newValue)
-		{
-			// Lógica para actualizar la UI basada en el valor de la instancia.
-			if (_sliderRect != null && _sliderCanvas != null)
-			{
-				// Asumiendo que _sliderCanvas tiene el ancho total disponible para el slider.
-				double totalWidth = _sliderCanvas.ActualWidth;
-				// Calcular el porcentaje del valor dentro del rango (asumiendo rango 0-100 para simplificar)
-				// Deberías usar Minimum y Maximum para un cálculo más preciso.
-				double range = Maximum - Minimum; // Asumiendo Minimum y Maximum son propiedades de instancia
-				double percentage = (range > 0) ? (newValue - Minimum) / range : 0;
-
-				_sliderRect.Width = totalWidth * Math.Clamp(percentage, 0, 1);
-			}
-
-			if (_valueText != null)
-			{
-				_valueText.Text = newValue.ToString();
-			}
-
-			//UpdateSliderTextPosition();
-			UpdateValueColumnWidth(); // Asegurar que el ancho de la columna se recalcula después de actualizar el valor
-		}
-		*/
-
-		/*
-		private void UpdateSliderTextPosition()
-		{
-			if (_sliderText == null || _sliderCanvas == null || _sliderRect == null) return;
-
-			// Medir el texto para obtener su tamaño real.
-			_sliderText.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-			double textWidth = _sliderText.DesiredSize.Width;
-
-			// Calcular la posición para centrar el texto sobre el rectángulo del slider.
-			double rectWidth = _sliderRect.Width;
-			double x = (rectWidth / 2) - (textWidth / 2);
-
-			// Asegurarse de que el texto no se salga de los límites del canvas.
-			x = Math.Max(0, Math.Min(x, rectWidth - textWidth));
-
-			Canvas.SetLeft(_sliderText, x);
-			Canvas.SetTop(_sliderText, (_sliderCanvas.ActualHeight - _sliderText.DesiredSize.Height) / 2);
-		}
-		*/
-
-		// --- Métodos Auxiliares de Instancia ---
-		// (Ej: Medición de texto, si necesitas usarlo en métodos de instancia)
+		// Ancho en píxeles que ocupa un texto con la fuente actual del control. Se usa para
+		// el piso del ancho (UpdateMinimumRequiredWidth). FormattedText puede diferir por
+		// fracciones de lo que termina dibujando el TextBlock de la plantilla, por eso el
+		// cálculo del piso suma una tolerancia de 1.
 		private double MeasureStringWidth(string text)
 		{
-			// Implementación de medición de texto usando las propiedades de instancia.
-			// Es importante que estas propiedades (FontFamily, FontSize, etc.) sean accesibles aquí.
 			if (string.IsNullOrEmpty(text)) return 0;
 
 			var ft = new FormattedText(
 				text,
 				FormatCulture,
-				this.FlowDirection,
-				new Typeface(this.FontFamily, this.FontStyle, this.FontWeight, this.FontStretch), // Usar propiedades de instancia
-				this.FontSize, // Usar propiedad de instancia
-				Brushes.Black, // Color de texto genérico, puede ser una propiedad de dependencia
+				FlowDirection,
+				new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+				FontSize,
+				Brushes.Black,
 				VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
 			return ft.Width;
 		}
-
-		// ... otros métodos de instancia no estáticos ...
 	}
 }

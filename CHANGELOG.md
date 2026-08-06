@@ -4,6 +4,25 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 
 ## [Unreleased]
 
+### Changed — afinado final
+
+- **Teclado: las teclas `+` y `-` de la fila principal también cambian el valor** (`±SmallChange`). Las del teclado numérico (`Key.Add`/`Key.Subtract`) ya funcionaban; se suman `Key.OemPlus`/`Key.OemMinus`. El banco de pruebas documenta la combinación completa.
+- **El padding de la caja del valor pasa a ser asimétrico** (`3,0,3,1` antes `4,0,4,1`). El lado izquierdo más chico compensa la impresión de dígitos corridos a la derecha y degrada la diferencia de centrado sub-píxel (~1px) entre `ValueBoxSide=Left` y `Right`, originada por el redondeo a píxel de la columna `*`. Los medidores ocultos usan el mismo padding para que el ancho de la columna `Auto` coincida con lo dibujado.
+- **Demo**: el Master se ubica en una fila superior de alto fijo (no reacomoda los controles al cambiar de tamaño) y las opciones pasan a tres columnas; la guía de gestos vive en una celda del 40% junto al Master (60%).
+- **Demo — selección de color por valor**: los combos de color eligén la selección por `Color` (`SelectedValuePath` + `BrushToColorConverter`) y no por referencia de brush. Con la selección por referencia, al declarar el Master después de los combos (nuevo orden del árbol) la caja aparecía vacía aunque funcionara.
+- **Demo**: paleta de colores recortada y agrupada por uso (neutros → acentos → `Transparent`).
+
+### Changed — rediseño de la API de disposición
+
+- Se eliminan `TitleMode` (`Hidden`/`Framed`/`Frameless`), `ValuePlacement` (`BesideBar`/`OnBar`/`WithTitleFramed`/`WithTitleFrameless`) y `FillForeground`. Sus responsabilidades pasan a tres propiedades independientes, sin valores combinados ni degradaciones:
+  - `ShowTitle` (`bool`, default `false`): muestra la fila superior con el título enmarcado.
+  - `ValueFollowsTitle` (`bool`, default `true`): con `ShowTitle`, sube el casillero del valor junto al título; con `false` se queda junto a la barra.
+  - `ValueBoxSide` (`ValueBoxSide`, default `Right`): lado del casillero del valor respecto de su compañero de fila.
+- **No quedan dependencias entre propiedades**: cualquier combinación es válida y produce un contorno cerrado, sin coerción ni estados que documentar. Cuando la caja sube (`ShowTitle && ValueFollowsTitle`) el número va a la fila del título y la barra queda sola abajo.
+- Se descarta la variante **`OnBar`** (número sobre la barra) y el modo **`Frameless`** (cajas sin marco): la caja del valor siempre está enmarcada. Con ello desaparecen las dos capas de texto del valor sobre el relleno, `FillForeground`, el recorte de la capa clara y la abstracción `OrientationAxis` (el control es horizontal únicamente).
+- El reparto de lados entre celdas pasa a una **única función pura** (`ValueBorderResolver.Resolve`), la misma matriz de costuras en una sola fuente de verdad, testeada sin ventana. La plantilla la consume con `MultiBinding` en las cuatro celdas; desaparecen los tres convertidores ad hoc de `Thickness`.
+- La orientación vertical deja de estar en el roadmap.
+
 ### Added
 
 - Documentación inicial de contribución y política de seguridad.

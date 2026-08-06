@@ -300,7 +300,7 @@ public class InteractionModeTests
 		});
 	}
 
-	// --- TitleMode ---
+	// --- ShowTitle y disposición ---
 	// Son de apariencia, pero sus pruebas viven acá porque la regla que importa es la
 	// interacción con el FOCO, y para eso hace falta una ventana real.
 
@@ -310,103 +310,93 @@ public class InteractionModeTests
 	private static Border MarcoDelTitulo(BoundedNumericSelector selector) =>
 		Celda(selector, "PART_TitleCell");
 
-	// Se compara el COLOR y no la instancia de la brocha: el convertidor de XAML puede
-	// devolver una instancia propia para "Transparent" y una comparación por referencia
-	// sería frágil sin agregar nada.
-	private static void AssertTransparente(Brush brocha, string mensaje) =>
-		Assert.AreEqual(Colors.Transparent, ((SolidColorBrush)brocha).Color, mensaje);
+	private static Border CajaDeArriba(BoundedNumericSelector selector) =>
+		Celda(selector, "PART_ValueTopCell");
+
+	private static Border CajaDeAbajo(BoundedNumericSelector selector) =>
+		Celda(selector, "PART_ValueSideCell");
 
 	[TestMethod]
-	public void Title_frame_is_drawn_by_default()
+	public void Title_row_is_hidden_by_default()
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => s.TitleMode = TitleMode.Framed);
+			var e = Host();
 			try
 			{
-				Assert.AreEqual(TitleMode.Hidden, new BoundedNumericSelector().TitleMode,
-					"El default sigue siendo sin título, como con el par de booleanos.");
+				Assert.AreEqual(Visibility.Collapsed,
+					((FrameworkElement)e.Selector.Template.FindName("PART_TopRow", e.Selector)).Visibility);
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	[TestMethod]
+	public void Show_title_shows_a_framed_title_that_yields_to_its_neighbours()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s => { s.ShowTitle = true; s.ControlBorderPixels = new Thickness(2); });
+			try
+			{
+				Assert.AreEqual(Visibility.Visible,
+					((FrameworkElement)e.Selector.Template.FindName("PART_TopRow", e.Selector)).Visibility);
 				Assert.AreEqual(e.Selector.ControlBorderColor, MarcoDelTitulo(e.Selector).BorderBrush);
+
+				// Con el default de ValueFollowsTitle (true) el valor sube (VBUp): el título
+				// cede el derecho a la caja y la base a la costura que dibuja la barra.
+				Assert.AreEqual(new Thickness(2, 2, 0, 0), MarcoDelTitulo(e.Selector).BorderThickness,
+					"El título cede el derecho a la caja del valor y la base a la barra.");
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	[TestMethod]
+	public void Background_reaches_every_cell()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s =>
+			{
+				s.ShowTitle = true;
+				s.Background = Brushes.Coral;
+			});
+			try
+			{
+				// El fondo del control se pinta a través de las cuatro celdas: si una no lo
+				// enlazara, quedaría un hueco sin color ahí.
 				Assert.AreEqual(e.Selector.Background, MarcoDelTitulo(e.Selector).Background);
-				Assert.AreEqual(new Thickness(1, 1, 1, 0), MarcoDelTitulo(e.Selector).BorderThickness,
-					"Sin inferior: la costura la dibuja el borde superior de la barra.");
+				Assert.AreEqual(e.Selector.Background, CajaDeAbajo(e.Selector).Background);
+				Assert.AreEqual(e.Selector.Background, Celda(e.Selector, "PART_BarCell").Background);
+				Assert.AreEqual(e.Selector.Background, CajaDeArriba(e.Selector).Background);
 			}
 			finally { e.Window.Close(); }
 		});
 	}
 
 	[TestMethod]
-	public void Turning_off_the_title_frame_makes_border_and_background_transparent()
+	public void Focus_lights_up_the_whole_outline()
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => { s.TitleMode = TitleMode.Frameless; });
-			try
-			{
-				var marco = MarcoDelTitulo(e.Selector);
-
-				// Transparent y NO nulo: con nulo la fila del título dejaría de recibir los
-				// clics que dan el foco, porque una brocha nula no pinta y no se golpea.
-				AssertTransparente(marco.BorderBrush, "El borde del título tiene que quedar transparente.");
-				AssertTransparente(marco.Background, "El fondo del título tiene que quedar transparente.");
-
-				// La geometría no se toca: sólo cambia lo que se pinta.
-				Assert.AreEqual(new Thickness(1, 1, 1, 0), marco.BorderThickness,
-					"Apagar el marco no debe alterar el grosor reservado.");
-				Assert.AreEqual(e.Selector.Background, Celda(e.Selector, "PART_BarCell").Background,
-					"Sólo se apaga la celda del título; la barra conserva su fondo.");
-			}
-			finally { e.Window.Close(); }
-		});
-	}
-
-	[TestMethod]
-	public void Focus_does_not_light_up_a_title_that_has_no_frame()
-	{
-		StaTest.Run(() =>
-		{
-			var e = Host(s => { s.TitleMode = TitleMode.Frameless; });
-			try
-			{
-				e.Selector.Focus();
-				Assert.IsTrue(e.Selector.IsKeyboardFocused);
-
-				// La regla acordada: si el marco del título está apagado, el foco no se lo
-				// devuelve de sorpresa. Está escrita en la condición de un MultiTrigger y no
-				// en el orden de declaración, justamente para que esta prueba la sostenga.
-				AssertTransparente(MarcoDelTitulo(e.Selector).BorderBrush,
-					"Con el marco apagado, el foco no debe encender el borde del título.");
-
-				Assert.AreEqual(e.Selector.FocusBorderColor, Celda(e.Selector, "PART_BarCell").BorderBrush,
-					"Las celdas de datos siguen siendo las que señalan el foco.");
-			}
-			finally { e.Window.Close(); }
-		});
-	}
-
-	[TestMethod]
-	public void Focus_still_lights_up_a_title_that_has_a_frame()
-	{
-		StaTest.Run(() =>
-		{
-			var e = Host(s => s.TitleMode = TitleMode.Framed);
+			var e = Host(s => s.ShowTitle = true);
 			try
 			{
 				e.Selector.Focus();
 
-				// Contrapunto de la prueba anterior: sin ésta, apagar por error el teñido
-				// del título en TODOS los casos pasaría inadvertido.
-				Assert.AreEqual(e.Selector.FocusBorderColor, MarcoDelTitulo(e.Selector).BorderBrush,
-					"Con marco, el título se sigue tiñendo al enfocar.");
+				// Con ShowTitle el contorno es la unión de los cuatro marcos, y todos se
+				// tiñen: no hay caja "frameless" que apagar, así que la regla es única.
+				Assert.AreEqual(e.Selector.FocusBorderColor, MarcoDelTitulo(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderColor, CajaDeArriba(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderColor, Celda(e.Selector, "PART_BarCell").BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderColor, CajaDeAbajo(e.Selector).BorderBrush);
 			}
 			finally { e.Window.Close(); }
 		});
 	}
 
 	// --- Trazo separador del casillero del valor ---
-
-	private static Border TrazoDelValor(BoundedNumericSelector selector) =>
-		Celda(selector, "PART_ValueSideCell");
 
 	/// <summary>
 	/// La regla de todo el modelo: la caja del valor tiene prioridad y lleva sus cuatro
@@ -421,7 +411,7 @@ public class InteractionModeTests
 			var e = Host(s => s.ControlBorderPixels = new Thickness(2));
 			try
 			{
-				Assert.AreEqual(new Thickness(2), TrazoDelValor(e.Selector).BorderThickness,
+				Assert.AreEqual(new Thickness(2), CajaDeAbajo(e.Selector).BorderThickness,
 					"El casillero del valor lleva los cuatro lados.");
 				Assert.AreEqual(new Thickness(2, 2, 0, 2), Celda(e.Selector, "PART_BarCell").BorderThickness,
 					"La barra cede el lado derecho, que es el que toca al casillero.");
@@ -430,49 +420,79 @@ public class InteractionModeTests
 		});
 	}
 
-	/// <summary>
-	/// En WithTitle la caja sube y se lleva su marco sin el inferior; la etiqueta cede el
-	/// derecho a esa caja y el inferior a la barra, que dibuja una costura uniforme a lo
-	/// ancho; y la barra, sola abajo, recupera los cuatro lados.
-	/// </summary>
 	[TestMethod]
-	public void With_title_moves_the_box_up_and_the_neighbours_yield()
+	public void Left_side_moves_the_box_and_the_bar_yields_the_left()
 	{
 		StaTest.Run(() =>
 		{
 			var e = Host(s =>
 			{
 				s.ControlBorderPixels = new Thickness(2);
-				s.TitleMode = TitleMode.Framed;
-				s.ValuePlacement = ValuePlacement.WithTitleFramed;
+				s.ValueBoxSide = ValueBoxSide.Left;
 			});
 			try
 			{
-				Assert.AreEqual(new Thickness(2, 2, 2, 0), Celda(e.Selector, "PART_ValueTopCell").BorderThickness);
-				Assert.AreEqual(new Thickness(2, 2, 0, 0), MarcoDelTitulo(e.Selector).BorderThickness);
-				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness);
+				Assert.AreEqual(new Thickness(2), CajaDeAbajo(e.Selector).BorderThickness);
+				Assert.AreEqual(new Thickness(0, 2, 2, 2), Celda(e.Selector, "PART_BarCell").BorderThickness,
+					"Con el casillero a la izquierda, la barra cede el lado izquierdo.");
+				Assert.AreEqual(1, Grid.GetColumn(Celda(e.Selector, "PART_BarCell")),
+					"La barra pasa a la segunda columna; el casillero queda primero.");
+
+				// La columna "*" tiene que acompañar a la barra: si sólo se movieran las
+				// celdas, la barra caería en una columna "Auto" y se encogería a su contenido.
+				Assert.AreEqual(GridLength.Auto,
+					((ColumnDefinition)e.Selector.Template.FindName("PART_BarColumn", e.Selector)).Width);
+				Assert.AreEqual(new GridLength(1, GridUnitType.Star),
+					((ColumnDefinition)e.Selector.Template.FindName("PART_ValueColumn", e.Selector)).Width);
+			}
+			finally { e.Window.Close(); }
+		});
+	}
+
+	/// <summary>
+	/// VBUp (ShowTitle y ValueFollowsTitle): la caja sube a la fila del título y se lleva
+	/// su marco sin el inferior; la etiqueta cede el derecho a esa caja y el inferior a la
+	/// barra, que dibuja una costura uniforme a lo ancho; y la barra, sola abajo, recupera
+	/// los cuatro lados.
+	/// </summary>
+	[TestMethod]
+	public void Value_up_moves_the_box_to_the_title_row_and_the_neighbours_yield()
+	{
+		StaTest.Run(() =>
+		{
+			var e = Host(s =>
+			{
+				s.ControlBorderPixels = new Thickness(2);
+				s.ShowTitle = true;
+				s.ValueFollowsTitle = true;
+			});
+			try
+			{
+				Assert.AreEqual(new Thickness(2, 2, 2, 0), CajaDeArriba(e.Selector).BorderThickness,
+					"La caja de arriba cede la base a la costura que dibuja la barra.");
+				Assert.AreEqual(new Thickness(2, 2, 0, 0), MarcoDelTitulo(e.Selector).BorderThickness,
+					"El título cede el derecho a la caja y la base a la barra.");
+				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness,
+					"La barra, sola abajo, recupera los cuatro lados.");
 			}
 			finally { e.Window.Close(); }
 		});
 	}
 
 	[TestMethod]
-	public void The_separator_disappears_where_the_value_column_collapses()
+	public void The_separator_disappears_when_the_value_column_collapses()
 	{
 		StaTest.Run(() =>
 		{
-			// En OnBar y WithTitle la columna del valor mide 0. Sin esto quedaría un trazo
-			// vertical suelto pegado al final de la barra.
-			foreach (var donde in new[] { ValuePlacement.OnBar, ValuePlacement.WithTitleFramed })
+			var e = Host(s => { s.ShowTitle = true; s.ValueFollowsTitle = true; });
+			try
 			{
-				var e = Host(s => { s.TitleMode = TitleMode.Framed; s.ValuePlacement = donde; });
-				try
-				{
-					Assert.AreEqual(new Thickness(0), TrazoDelValor(e.Selector).BorderThickness,
-						$"En {donde} no debe quedar trazo separador.");
-				}
-				finally { e.Window.Close(); }
+				// Con el valor arriba, la columna del valor de abajo mide 0: sin apagar el
+				// marco quedaría un trazo vertical suelto pegado al final de la barra.
+				Assert.AreEqual(new Thickness(0), CajaDeAbajo(e.Selector).BorderThickness,
+					"La caja de abajo, vacía, no debe dejar trazo separador.");
 			}
+			finally { e.Window.Close(); }
 		});
 	}
 
@@ -484,94 +504,35 @@ public class InteractionModeTests
 			var e = Host();
 			try
 			{
-				Assert.AreEqual(e.Selector.ControlBorderColor, TrazoDelValor(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.ControlBorderColor, CajaDeAbajo(e.Selector).BorderBrush);
 
 				e.Selector.Focus();
 
 				// Es parte del mismo marco: si no se tiñera, al enfocar se vería un recuadro
 				// azul con una raya negra en el medio.
-				Assert.AreEqual(e.Selector.FocusBorderColor, TrazoDelValor(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderColor, CajaDeAbajo(e.Selector).BorderBrush);
 			}
 			finally { e.Window.Close(); }
 		});
 	}
 
-	// --- WithTitleFrameless ---
-	// Lo que importa acá es la cláusula que cierra el contorno: si la caja del valor deja de
-	// pintar, el vecino tiene que recuperar el lado que le había cedido, o el rectángulo
-	// queda abierto justo sobre el ancho del número.
-
 	[TestMethod]
-	public void The_frameless_variant_leaves_the_number_loose()
+	public void Show_title_without_following_keeps_the_value_beside_the_bar()
 	{
 		StaTest.Run(() =>
 		{
 			var e = Host(s =>
 			{
 				s.ControlBorderPixels = new Thickness(2);
-				s.TitleMode = TitleMode.Framed;
-				s.ValuePlacement = ValuePlacement.WithTitleFrameless;
+				s.ShowTitle = true;
+				s.ValueFollowsTitle = false;
 			});
 			try
 			{
-				var caja = Celda(e.Selector, "PART_ValueTopCell");
-				AssertTransparente(caja.BorderBrush, "La caja de arriba deja de pintar su borde.");
-				AssertTransparente(caja.Background, "Y su fondo.");
-
-				// Se apaga la pintura, no el grosor: el número no se mueve.
-				Assert.AreEqual(new Thickness(2, 2, 2, 0), caja.BorderThickness);
-			}
-			finally { e.Window.Close(); }
-		});
-	}
-
-	[TestMethod]
-	public void The_edge_goes_back_to_the_title_only_when_it_is_framed()
-	{
-		StaTest.Run(() =>
-		{
-			var e = Host(s =>
-			{
-				s.ControlBorderPixels = new Thickness(2);
-				s.TitleMode = TitleMode.Framed;
-				s.ValuePlacement = ValuePlacement.WithTitleFrameless;
-			});
-			try
-			{
-				Assert.AreEqual(new Thickness(2, 2, 2, 0), MarcoDelTitulo(e.Selector).BorderThickness,
-					"Con el título enmarcado, recupera el derecho para cerrar el contorno.");
-
-				// Con el título sin marco no hay contorno que cerrar, y cambiar el grosor sólo
-				// correría su texto: por eso la recuperación no debe ocurrir.
-				e.Selector.TitleMode = TitleMode.Frameless;
-				e.Window.UpdateLayout();
-
-				Assert.AreEqual(new Thickness(2, 2, 0, 0), MarcoDelTitulo(e.Selector).BorderThickness,
-					"Sin marco de título, el grosor se queda como estaba.");
-			}
-			finally { e.Window.Close(); }
-		});
-	}
-
-	[TestMethod]
-	public void Focus_does_not_light_up_a_value_box_that_has_no_frame()
-	{
-		StaTest.Run(() =>
-		{
-			var e = Host(s =>
-			{
-				s.TitleMode = TitleMode.Framed;
-				s.ValuePlacement = ValuePlacement.WithTitleFrameless;
-			});
-			try
-			{
-				e.Selector.Focus();
-				Assert.IsTrue(e.Selector.IsKeyboardFocused);
-
-				AssertTransparente(Celda(e.Selector, "PART_ValueTopCell").BorderBrush,
-					"Con el marco apagado, el foco no debe encender la caja del valor.");
-				Assert.AreEqual(e.Selector.FocusBorderColor, Celda(e.Selector, "PART_BarCell").BorderBrush,
-					"La barra sigue señalando el foco.");
+				// La caja sigue abajo, junto a la barra, y el título abarca todo el ancho.
+				Assert.AreEqual(new Thickness(2, 2, 2, 0), MarcoDelTitulo(e.Selector).BorderThickness);
+				Assert.AreEqual(new Thickness(2), CajaDeAbajo(e.Selector).BorderThickness);
+				Assert.AreEqual(new Thickness(2, 2, 0, 2), Celda(e.Selector, "PART_BarCell").BorderThickness);
 			}
 			finally { e.Window.Close(); }
 		});
