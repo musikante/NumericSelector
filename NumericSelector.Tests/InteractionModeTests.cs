@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace NumericSelector.Tests;
 
 /// <summary>
-/// Pruebas de los dos modos de interacción: ValueChangeMode e IsDisplayOnly.
+/// Pruebas de los dos modos de interacción: ValueChangeMode e IsReadOnly.
 /// A diferencia de las de lógica pura, éstas necesitan una ventana real: los gestos
 /// llegan por eventos ruteados y el foco no existe fuera del árbol visual.
 /// </summary>
@@ -108,7 +108,7 @@ public class InteractionModeTests
 			var selector = new BoundedNumericSelector();
 
 			Assert.AreEqual(ValueChangeMode.ChangeOnClick, selector.ValueChangeMode);
-			Assert.IsFalse(selector.IsDisplayOnly);
+			Assert.IsFalse(selector.IsReadOnly);
 		});
 	}
 
@@ -205,26 +205,26 @@ public class InteractionModeTests
 		});
 	}
 
-	// --- IsDisplayOnly ---
+	// --- IsReadOnly ---
 
 	[TestMethod]
-	public void Display_only_takes_the_control_out_of_the_tab_order_and_gives_it_back()
+	public void Read_only_takes_the_control_out_of_the_tab_order_and_gives_it_back()
 	{
 		StaTest.Run(() =>
 		{
 			var selector = new BoundedNumericSelector();
 			Assert.IsTrue(selector.Focusable);
 
-			selector.IsDisplayOnly = true;
+			selector.IsReadOnly = true;
 			Assert.IsFalse(selector.Focusable, "En sólo visualización el control no debe poder enfocarse.");
 
-			selector.IsDisplayOnly = false;
+			selector.IsReadOnly = false;
 			Assert.IsTrue(selector.Focusable, "Al salir del modo, la focusabilidad tiene que volver sola.");
 		});
 	}
 
 	[TestMethod]
-	public void Display_only_does_not_overrule_a_consumer_that_disabled_focus()
+	public void Read_only_does_not_overrule_a_consumer_that_disabled_focus()
 	{
 		StaTest.Run(() =>
 		{
@@ -232,8 +232,8 @@ public class InteractionModeTests
 			// no pisar la decisión de quien usa el control.
 			var selector = new BoundedNumericSelector { Focusable = false };
 
-			selector.IsDisplayOnly = true;
-			selector.IsDisplayOnly = false;
+			selector.IsReadOnly = true;
+			selector.IsReadOnly = false;
 
 			Assert.IsFalse(selector.Focusable,
 				"Salir del modo no debe encender la focusabilidad que el consumidor había apagado.");
@@ -241,7 +241,7 @@ public class InteractionModeTests
 	}
 
 	[TestMethod]
-	public void Display_only_releases_the_focus_it_already_had()
+	public void Read_only_releases_the_focus_it_already_had()
 	{
 		StaTest.Run(() =>
 		{
@@ -251,7 +251,7 @@ public class InteractionModeTests
 				e.Selector.Focus();
 				Assert.IsTrue(e.Selector.IsKeyboardFocused);
 
-				e.Selector.IsDisplayOnly = true;
+				e.Selector.IsReadOnly = true;
 
 				// Quitar Focusable no suelta por sí solo un foco ya puesto: si esto se rompe,
 				// el control queda con el borde de foco encendido y la rueda viva.
@@ -263,7 +263,7 @@ public class InteractionModeTests
 	}
 
 	[TestMethod]
-	public void Display_only_ignores_mouse_wheel_and_keyboard()
+	public void Read_only_ignores_mouse_wheel_and_keyboard()
 	{
 		StaTest.Run(() =>
 		{
@@ -274,7 +274,7 @@ public class InteractionModeTests
 				// un gesto que funciona, para poder afirmar que después no produce ninguno.
 				var (esperado, distinto) = Sondear(e, ClickIzquierdo);
 
-				e.Selector.IsDisplayOnly = true;
+				e.Selector.IsReadOnly = true;
 				e.Selector.Value = distinto;
 
 				ClickIzquierdo(e.Bar);
@@ -300,24 +300,24 @@ public class InteractionModeTests
 		});
 	}
 
-	// --- ShowTitle y disposición ---
+	// --- ShowDetail y disposición ---
 	// Son de apariencia, pero sus pruebas viven acá porque la regla que importa es la
 	// interacción con el FOCO, y para eso hace falta una ventana real.
 
 	private static Border Celda(BoundedNumericSelector selector, string parte) =>
 		(Border)selector.Template.FindName(parte, selector);
 
-	private static Border MarcoDelTitulo(BoundedNumericSelector selector) =>
-		Celda(selector, "PART_TitleCell");
+	private static Border CeldaDetalle(BoundedNumericSelector selector) =>
+		Celda(selector, "PART_DetailCell");
 
 	private static Border CajaDeArriba(BoundedNumericSelector selector) =>
-		Celda(selector, "PART_ValueTopCell");
+		Celda(selector, "PART_ValueDetailCell");
 
 	private static Border CajaDeAbajo(BoundedNumericSelector selector) =>
-		Celda(selector, "PART_ValueSideCell");
+		Celda(selector, "PART_ValueCell");
 
 	[TestMethod]
-	public void Title_row_is_hidden_by_default()
+	public void Detail_row_is_hidden_by_default()
 	{
 		StaTest.Run(() =>
 		{
@@ -325,28 +325,29 @@ public class InteractionModeTests
 			try
 			{
 				Assert.AreEqual(Visibility.Collapsed,
-					((FrameworkElement)e.Selector.Template.FindName("PART_TopRow", e.Selector)).Visibility);
+					((FrameworkElement)e.Selector.Template.FindName("PART_DetailRow", e.Selector)).Visibility);
 			}
 			finally { e.Window.Close(); }
 		});
 	}
 
 	[TestMethod]
-	public void Show_title_shows_a_framed_title_that_yields_to_its_neighbours()
+	public void Show_detail_shows_a_framed_detail_that_yields_only_the_top()
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => { s.ShowTitle = true; s.ControlBorderPixels = new Thickness(2); });
+			var e = Host(s => { s.ShowDetail = true; s.ControlBorderPixels = new Thickness(2); });
 			try
 			{
 				Assert.AreEqual(Visibility.Visible,
-					((FrameworkElement)e.Selector.Template.FindName("PART_TopRow", e.Selector)).Visibility);
-				Assert.AreEqual(e.Selector.ControlBorderColor, MarcoDelTitulo(e.Selector).BorderBrush);
+					((FrameworkElement)e.Selector.Template.FindName("PART_DetailRow", e.Selector)).Visibility);
+				Assert.AreEqual(e.Selector.ControlBorderColor, CeldaDetalle(e.Selector).BorderBrush);
 
-				// Con el default de ValueFollowsTitle (true) el valor sube (VBUp): el título
-				// cede el derecho a la caja y la base a la costura que dibuja la barra.
-				Assert.AreEqual(new Thickness(2, 2, 0, 0), MarcoDelTitulo(e.Selector).BorderThickness,
-					"El título cede el derecho a la caja del valor y la base a la barra.");
+				// Con el default de ValueFollowsDetail (true) el valor desciende: el detalle
+				// es marco fijo (Left,Right,Bottom) y sólo cede la parte superior a la costura
+				// que dibuja la barra (que ahora queda arriba).
+				Assert.AreEqual(new Thickness(2, 0, 2, 2), CeldaDetalle(e.Selector).BorderThickness,
+					"La fila de detalle lleva los tres lados y cede el superior a la barra.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -359,14 +360,14 @@ public class InteractionModeTests
 		{
 			var e = Host(s =>
 			{
-				s.ShowTitle = true;
+				s.ShowDetail = true;
 				s.Background = Brushes.Coral;
 			});
 			try
 			{
-				// El fondo del control se pinta a través de las cuatro celdas: si una no lo
+				// El fondo del control se pinta a través de las celdas: si una no lo
 				// enlazara, quedaría un hueco sin color ahí.
-				Assert.AreEqual(e.Selector.Background, MarcoDelTitulo(e.Selector).Background);
+				Assert.AreEqual(e.Selector.Background, CeldaDetalle(e.Selector).Background);
 				Assert.AreEqual(e.Selector.Background, CajaDeAbajo(e.Selector).Background);
 				Assert.AreEqual(e.Selector.Background, Celda(e.Selector, "PART_BarCell").Background);
 				Assert.AreEqual(e.Selector.Background, CajaDeArriba(e.Selector).Background);
@@ -380,14 +381,14 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => s.ShowTitle = true);
+			var e = Host(s => s.ShowDetail = true);
 			try
 			{
 				e.Selector.Focus();
 
-				// Con ShowTitle el contorno es la unión de los cuatro marcos, y todos se
+				// Con ShowDetail el contorno es la unión de los marcos, y todos se
 				// tiñen: no hay caja "frameless" que apagar, así que la regla es única.
-				Assert.AreEqual(e.Selector.FocusBorderColor, MarcoDelTitulo(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderColor, CeldaDetalle(e.Selector).BorderBrush);
 				Assert.AreEqual(e.Selector.FocusBorderColor, CajaDeArriba(e.Selector).BorderBrush);
 				Assert.AreEqual(e.Selector.FocusBorderColor, Celda(e.Selector, "PART_BarCell").BorderBrush);
 				Assert.AreEqual(e.Selector.FocusBorderColor, CajaDeAbajo(e.Selector).BorderBrush);
@@ -399,29 +400,29 @@ public class InteractionModeTests
 	// --- Trazo separador del casillero del valor ---
 
 	/// <summary>
-	/// La regla de todo el modelo: la caja del valor tiene prioridad y lleva sus cuatro
-	/// lados; el vecino cede el filo que comparten. Si los dos lo dibujaran, la costura
-	/// mediría el doble.
+	/// La regla de todo el modelo: la barra es el marco fijo (cuatro lados) y la caja del
+	/// valor cede el filo que comparten. Si los dos lo dibujaran, la costura mediría el
+	/// doble.
 	/// </summary>
 	[TestMethod]
-	public void Beside_bar_the_value_box_owns_the_shared_edge()
+	public void Beside_bar_the_bar_draws_the_shared_edge()
 	{
 		StaTest.Run(() =>
 		{
 			var e = Host(s => s.ControlBorderPixels = new Thickness(2));
 			try
 			{
-				Assert.AreEqual(new Thickness(2), CajaDeAbajo(e.Selector).BorderThickness,
-					"El casillero del valor lleva los cuatro lados.");
-				Assert.AreEqual(new Thickness(2, 2, 0, 2), Celda(e.Selector, "PART_BarCell").BorderThickness,
-					"La barra cede el lado derecho, que es el que toca al casillero.");
+				Assert.AreEqual(new Thickness(0, 2, 2, 2), CajaDeAbajo(e.Selector).BorderThickness,
+					"El casillero cede el lado que mira a la barra.");
+				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness,
+					"La barra, marco fijo, dibuja el filo compartido.");
 			}
 			finally { e.Window.Close(); }
 		});
 	}
 
 	[TestMethod]
-	public void Left_side_moves_the_box_and_the_bar_yields_the_left()
+	public void Left_side_moves_the_box_and_the_bar_draws_the_shared_edge()
 	{
 		StaTest.Run(() =>
 		{
@@ -432,9 +433,10 @@ public class InteractionModeTests
 			});
 			try
 			{
-				Assert.AreEqual(new Thickness(2), CajaDeAbajo(e.Selector).BorderThickness);
-				Assert.AreEqual(new Thickness(0, 2, 2, 2), Celda(e.Selector, "PART_BarCell").BorderThickness,
-					"Con el casillero a la izquierda, la barra cede el lado izquierdo.");
+				Assert.AreEqual(new Thickness(2, 2, 0, 2), CajaDeAbajo(e.Selector).BorderThickness,
+					"El casillero cede el lado derecho, que es el que mira a la barra.");
+				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness,
+					"La barra, marco fijo, dibuja el filo compartido.");
 				Assert.AreEqual(1, Grid.GetColumn(Celda(e.Selector, "PART_BarCell")),
 					"La barra pasa a la segunda columna; el casillero queda primero.");
 
@@ -450,30 +452,29 @@ public class InteractionModeTests
 	}
 
 	/// <summary>
-	/// VBUp (ShowTitle y ValueFollowsTitle): la caja sube a la fila del título y se lleva
-	/// su marco sin el inferior; la etiqueta cede el derecho a esa caja y el inferior a la
-	/// barra, que dibuja una costura uniforme a lo ancho; y la barra, sola abajo, recupera
-	/// los cuatro lados.
+	/// Valor en detalle (ShowDetail y ValueFollowsDetail): la caja desciende a la fila del
+	/// detalle, cede el lado superior a la costura que dibuja la barra de arriba y cede el
+	/// lado que mira a la etiqueta de detalle, que lo dibuja.
 	/// </summary>
 	[TestMethod]
-	public void Value_up_moves_the_box_to_the_title_row_and_the_neighbours_yield()
+	public void Value_down_moves_the_box_to_the_detail_row_and_yields_the_shared_edges()
 	{
 		StaTest.Run(() =>
 		{
 			var e = Host(s =>
 			{
 				s.ControlBorderPixels = new Thickness(2);
-				s.ShowTitle = true;
-				s.ValueFollowsTitle = true;
+				s.ShowDetail = true;
+				s.ValueFollowsDetail = true;
 			});
 			try
 			{
-				Assert.AreEqual(new Thickness(2, 2, 2, 0), CajaDeArriba(e.Selector).BorderThickness,
-					"La caja de arriba cede la base a la costura que dibuja la barra.");
-				Assert.AreEqual(new Thickness(2, 2, 0, 0), MarcoDelTitulo(e.Selector).BorderThickness,
-					"El título cede el derecho a la caja y la base a la barra.");
+				Assert.AreEqual(new Thickness(0, 0, 2, 2), CajaDeArriba(e.Selector).BorderThickness,
+					"La caja de detalle cede el superior a la barra y el lado que mira a la etiqueta.");
+				Assert.AreEqual(new Thickness(2, 0, 2, 2), CeldaDetalle(e.Selector).BorderThickness,
+					"La fila de detalle, marco fijo, dibuja el filo compartido y cede el superior.");
 				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness,
-					"La barra, sola abajo, recupera los cuatro lados.");
+					"La barra, marco base arriba, sigue con sus cuatro lados.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -484,13 +485,13 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => { s.ShowTitle = true; s.ValueFollowsTitle = true; });
+			var e = Host(s => { s.ShowDetail = true; s.ValueFollowsDetail = true; });
 			try
 			{
-				// Con el valor arriba, la columna del valor de abajo mide 0: sin apagar el
+				// Con el valor abajo, la columna del valor de arriba mide 0: sin apagar el
 				// marco quedaría un trazo vertical suelto pegado al final de la barra.
 				Assert.AreEqual(new Thickness(0), CajaDeAbajo(e.Selector).BorderThickness,
-					"La caja de abajo, vacía, no debe dejar trazo separador.");
+					"La caja de arriba, vacía, no debe dejar trazo separador.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -517,22 +518,23 @@ public class InteractionModeTests
 	}
 
 	[TestMethod]
-	public void Show_title_without_following_keeps_the_value_beside_the_bar()
+	public void Show_detail_without_following_keeps_the_value_beside_the_bar()
 	{
 		StaTest.Run(() =>
 		{
 			var e = Host(s =>
 			{
 				s.ControlBorderPixels = new Thickness(2);
-				s.ShowTitle = true;
-				s.ValueFollowsTitle = false;
+				s.ShowDetail = true;
+				s.ValueFollowsDetail = false;
 			});
 			try
 			{
-				// La caja sigue abajo, junto a la barra, y el título abarca todo el ancho.
-				Assert.AreEqual(new Thickness(2, 2, 2, 0), MarcoDelTitulo(e.Selector).BorderThickness);
-				Assert.AreEqual(new Thickness(2), CajaDeAbajo(e.Selector).BorderThickness);
-				Assert.AreEqual(new Thickness(2, 2, 0, 2), Celda(e.Selector, "PART_BarCell").BorderThickness);
+				// La caja sigue arriba, junto a la barra, y la fila de detalle abarca todo el
+				// ancho bajo la barra.
+				Assert.AreEqual(new Thickness(2, 0, 2, 2), CeldaDetalle(e.Selector).BorderThickness);
+				Assert.AreEqual(new Thickness(0, 2, 2, 2), CajaDeAbajo(e.Selector).BorderThickness);
+				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness);
 			}
 			finally { e.Window.Close(); }
 		});
@@ -619,11 +621,11 @@ public class InteractionModeTests
 	}
 
 	[TestMethod]
-	public void Display_only_blocks_the_user_but_not_the_program()
+	public void Read_only_blocks_the_user_but_not_the_program()
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new BoundedNumericSelector { IsDisplayOnly = true };
+			var selector = new BoundedNumericSelector { IsReadOnly = true };
 			var cambios = new List<(int OldValue, int NewValue)>();
 			selector.ValueChanged += (_, args) => cambios.Add((args.OldValue, args.NewValue));
 

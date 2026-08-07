@@ -23,7 +23,7 @@ La aplicación `NumericSelector.Demo` es el banco de pruebas manual de la experi
 
 - La solución debe compilar en `Release` sin advertencias nuevas.
 - Agregá o actualizá pruebas automatizadas cuando el cambio altere comportamiento verificable.
-- Probá manualmente los gestos afectados en el demo: mouse, rueda, teclado, foco y modo `IsDisplayOnly`.
+- Probá manualmente los gestos afectados en el demo: mouse, rueda, teclado, foco y modo `IsReadOnly`.
 - Conservá la compatibilidad de binding y de las propiedades de dependencia salvo que el issue acuerde una ruptura de API.
 - Actualizá `README.md` y `CHANGELOG.md` si cambia la API pública, un gesto o un límite conocido.
 - Usá nombres claros, comentarios sólo donde expliquen una decisión no obvia y formato consistente con el código existente.

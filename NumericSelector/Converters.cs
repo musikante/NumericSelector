@@ -2,34 +2,36 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace NumericSelector
 {
-	/// <summary>
+/// <summary>
 	/// Resuelve en una función pura el <see cref="Thickness"/> de borde que corresponde a
 	/// cada celda del control, a partir de la matriz de costuras.
 	/// </summary>
 	/// <remarks>
-	/// Modelo de celdas: el control son celdas hermanas con marco propio, y la costura se
-	/// resuelve mirando qué celdas comparten fila. La regla es única: donde una celda con
-	/// prioridad —el casillero del valor— se encuentra con un vecino, el vecino cede el
-	/// lado que toca; así ningún filo se dibuja dos veces y no hay líneas de doble espesor.
+	/// Modelo de celdas: la barra con su Caption (fila superior) y la fila de detalle (la
+	/// que pueda descender el valor) son el marco fijo; la caja del valor es el único
+	/// elemento que cambia según la posición. La regla es única: la costura que separa dos
+	/// celdas la dibuja siempre el vecino fijo (la barra arriba), y la caja cede el lado que
+	/// mira hacia él; así ningún filo se dibuja dos veces y no hay líneas de doble espesor.
 	///
 	/// Matriz (lados en el orden de WPF: Left, Top, Right, Bottom). La primera columna es
-	/// "ShowTitle y ValueFollowsTitle" (el valor vive arriba, junto al título, y la barra
-	/// queda sola); la segunda es el valor al lado de la barra:
+	/// "ShowDetail y ValueFollowsDetail", el valor desciende debajo junto al detalle; la
+	/// segunda es el valor al lado de la barra:
 	///
-	///   celda   valor arriba                    valor al lado de la barra
-	///   Bar     Left,Top,Right,Bottom              cede el lado de ValueBoxSide
-	///   Value   Left,Top,Right,0                   Left,Top,Right,Bottom
-	///   Title   Lado opuesto al casillero,0,0      Left,Top,Right,0
+	///   celda   siempre
+	///   Bar     Left,Top,Right,Bottom
+	///   Detail  Left,0,Right,Bottom
+	///   Value   (Right): 0,y,Right,Bottom   (Left): Left,y,0,Bottom
+	///           y = Top si se queda junto a la barra; 0 si desciende al detalle.
 	///
 	/// Salvedades de la matriz:
-	///   • La costura horizontal entre filas la dibuja SIEMPRE el borde superior de la
-	///     barra, que además hace de borde superior del control cuando no hay título. Por
-	///     eso las celdas de la fila de arriba ceden siempre la base (0).
-	///   • Cuando el casillero del valor llega arriba dibuja el filo compartido con el
-	///     título, y el título le cede el lado que toca según ValueBoxSide.
+	///   • La costura horizontal entre filas la dibuja SIEMPRE el borde inferior de la
+	///     barra, que además hace de borde inferior del control cuando no hay detalle.
+	///   • La caja del valor cede siempre el lado que mira a su compañero de fila (el
+	///     opuesto a ValueBoxSide); ese filo lo dibuja el vecino fijo.
 	/// </remarks>
 	public sealed class ValueBorderResolver : IMultiValueConverter
 	{
@@ -37,12 +39,12 @@ namespace NumericSelector
 		public const string BarCell = "Bar";
 		/// <summary>Parámetro del casillero del valor.</summary>
 		public const string ValueCell = "Value";
-		/// <summary>Parámetro de la etiqueta del título.</summary>
-		public const string TitleCell = "Title";
+		/// <summary>Parámetro de la fila de detalle.</summary>
+		public const string DetailCell = "Detail";
 
 		/// <summary>
-		/// Función pura de la matriz: dado el grosor base por lado y la (ShowTitle,
-		/// ValueFollowsTitle, ValueBoxSide) devuelve el <see cref="Thickness"/> que toca a la
+		/// Función pura de la matriz: dado el grosor base por lado y la (ShowDetail,
+		/// ValueFollowsDetail, ValueBoxSide) devuelve el <see cref="Thickness"/> que toca a la
 		/// celda indicada por <paramref name="cell"/>.
 		/// </summary>
 		/// <remarks>
@@ -50,52 +52,93 @@ namespace NumericSelector
 		/// del control. El conversor no hace más que despachar sus argumentos acá.
 		/// </remarks>
 		public static Thickness Resolve(
-			Thickness pixels, bool showTitle, bool followTitle, ValueBoxSide side, string cell)
+			Thickness pixels, bool showDetail, bool followsDetail, ValueBoxSide side, string cell)
 		{
-			bool up = showTitle && followTitle;
+			// "down": el valor desciende a la fila de detalle (que debe estar visible).
+			bool down = showDetail && followsDetail;
 
 			switch (cell)
 			{
 				case BarCell:
-				// Con el valor arriba la barra está sola y recupera los cuatro lados. Junto a la
-				// caja del valor, cede el lado que esa caja toca (el de ValueBoxSide).
-					return up
-						? pixels
-						: side == ValueBoxSide.Right
-							? new Thickness(pixels.Left, pixels.Top, 0, pixels.Bottom)
-							: new Thickness(0, pixels.Top, pixels.Right, pixels.Bottom);
+				// Marco base: la barra lleva siempre los cuatro lados; su borde inferior
+				// dibuja además la costura horizontal cuando hay fila de detalle debajo.
+					return pixels;
 
 				case ValueCell:
-					// Prioridad: define sus lados. Sólo cede la base cuando sube, porque la
-					// costura horizontal la dibuja la barra que tiene debajo.
-					return up
-						? new Thickness(pixels.Left, pixels.Top, pixels.Right, 0)
-						: pixels;
+				// Único elemento que cambia: cede el lado que mira a su compañero de fila
+				// (el de ValueBoxPosition) a su vecino fijo, y el superior cuando desciende
+				// al detalle, porque la costura horizontal la dibuja la barra que está
+				// arriba.
+					bool left = side == ValueBoxSide.Left;
+					return new Thickness(
+						left ? pixels.Left : 0,
+						down ? 0 : pixels.Top,
+						left ? 0 : pixels.Right,
+						pixels.Bottom);
 
-				default: // TitleCell
-// Siempre sin base (la costura la dibuja la barra). Cuando el valor sube a la
-				// derecha, la caja dibuja el filo compartido y el título cede su lado derecho;
-				// cuando sube a la izquierda, la caja queda a la izquierda y el título cede el
-				// lado izquierdo.
-					return up
-						? side == ValueBoxSide.Right
-							? new Thickness(pixels.Left, pixels.Top, 0, 0)
-							: new Thickness(0, pixels.Top, pixels.Right, 0)
-						: new Thickness(pixels.Left, pixels.Top, pixels.Right, 0);
+				default: // DetailCell
+				// Marco fijo: nunca en la parte superior (la costura la dibuja la barra).
+					return new Thickness(pixels.Left, 0, pixels.Right, pixels.Bottom);
 			}
 		}
 
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
 			var pixels = values.Length > 0 && values[0] is Thickness t ? t : new Thickness(0);
-			bool showTitle = values.Length > 1 && values[1] is bool st && st;
-			bool followTitle = values.Length > 2 && values[2] is bool ft && ft;
+			bool showDetail = values.Length > 1 && values[1] is bool sd && sd;
+			bool followsDetail = values.Length > 2 && values[2] is bool fd && fd;
 			var side = values.Length > 3 && values[3] is ValueBoxSide s ? s : ValueBoxSide.Right;
 
-			return Resolve(pixels, showTitle, followTitle, side, parameter as string ?? "");
+			return Resolve(pixels, showDetail, followsDetail, side, parameter as string ?? "");
 		}
 
 		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
 			=> throw new NotSupportedException();
+	}
+
+	/// <summary>
+	/// Tipografía y formato que usa un control para medir sus textos: la "fuente global"
+	/// del control, única para todos sus textos (título, leyenda y valor). Es un record
+	/// inmutable y de igualdad por valor: se arma una vez por cambio de tipografía y se
+	/// reutiliza en todas las mediciones. El DPI no vive acá —se pasa por tanda de
+	/// medición (ver <see cref="TextMeasure"/>)— porque cambia de monitor y se obtiene
+	/// en vivo, sin riesgo de quedarse con una escala vencida.
+	/// </summary>
+	internal sealed record TextMeasureContext(
+		Typeface Typeface,
+		double FontSize,
+		CultureInfo Culture,
+		FlowDirection Flow);
+
+	/// <summary>
+	/// Medición pura de texto: dado el <see cref="TextMeasureContext"/> y el DPI de la
+	/// escala activa, devuelve el <see cref="Size"/> (ancho y alto) netos que ocuparía el
+	/// texto, sin padding ni bordes —esos los suma el llamador. El alto es de una sola
+	/// línea: se mide con ancho ilimitado. Función pura: no depende de ventana ni de
+	/// instancia del control, y se prueba sin ella.
+	/// </summary>
+	internal static class TextMeasure
+	{
+		/// <summary>
+		/// Mide el ancho y alto netos del texto dado, con la tipografía del contexto a la
+		/// escala <paramref name="dpi"/> (PixelsPerDip). Texto vacío o nulo devuelve
+		/// <see cref="Size.Empty"/>.
+		/// </summary>
+		public static Size Measure(TextMeasureContext context, double dpi, string text)
+		{
+			if (string.IsNullOrEmpty(text))
+				return Size.Empty;
+
+			var ft = new FormattedText(
+				text,
+				context.Culture,
+				context.Flow,
+				context.Typeface,
+				context.FontSize,
+				Brushes.Black,
+				dpi);
+
+			return new Size(ft.Width, ft.Height);
+		}
 	}
 }

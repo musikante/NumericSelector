@@ -11,14 +11,17 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 - **Demo**: el Master se ubica en una fila superior de alto fijo (no reacomoda los controles al cambiar de tamaño) y las opciones pasan a tres columnas; la guía de gestos vive en una celda del 40% junto al Master (60%).
 - **Demo — selección de color por valor**: los combos de color eligén la selección por `Color` (`SelectedValuePath` + `BrushToColorConverter`) y no por referencia de brush. Con la selección por referencia, al declarar el Master después de los combos (nuevo orden del árbol) la caja aparecía vacía aunque funcionara.
 - **Demo**: paleta de colores recortada y agrupada por uso (neutros → acentos → `Transparent`).
+- **La propiedad de solo visualización pasa de llamarse `IsDisplayOnly` a `IsReadOnly`**: es el nombre estándar de WPF para "el usuario no modifica, el programa sí" (igual que `TextBox.IsReadOnly`). Sin cambios de comportamiento.
+- **La matriz de costuras cambia de paradigma**: la barra y el detalle pasan a ser el marco fijo (la barra siempre lleva sus cuatro lados; la fila de detalle todo menos el superior) y la caja del valor pasa a ser el único elemento que cambia —cede el lado que mira a su compañero de fila y el superior cuando desciende—. Visual idéntico con `ControlBorderPixels` uniforme; con grosor no uniforme la costura vertical la dibuja ahora el vecino fijo (antes la caja), así que toma su lado.
+- **La medición del texto sale del control hacia una función pura** (`TextMeasure.Measure`): lee la tipografía global del control (detalle, leyenda y valor) y la cultura de `Language` para devolver el ancho y alto netos de un texto, sin padding ni bordes. El control mantiene un `TextMeasureContext` inmutable que reconstruye sólo al cambiar fuente/idioma, y pasa el DPI por tanda de recálculo (no lo guarda). Queda así testeada sin ventana, como la matriz de costuras.
 
 ### Changed — rediseño de la API de disposición
 
 - Se eliminan `TitleMode` (`Hidden`/`Framed`/`Frameless`), `ValuePlacement` (`BesideBar`/`OnBar`/`WithTitleFramed`/`WithTitleFrameless`) y `FillForeground`. Sus responsabilidades pasan a tres propiedades independientes, sin valores combinados ni degradaciones:
-  - `ShowTitle` (`bool`, default `false`): muestra la fila superior con el título enmarcado.
-  - `ValueFollowsTitle` (`bool`, default `true`): con `ShowTitle`, sube el casillero del valor junto al título; con `false` se queda junto a la barra.
+  - `ShowDetail` (`bool`, default `false`): muestra la fila de detalle inferior enmarcada.
+  - `ValueFollowsDetail` (`bool`, default `true`): con `ShowDetail`, baja el casillero del valor junto al detalle; con `false` se queda junto a la barra.
   - `ValueBoxSide` (`ValueBoxSide`, default `Right`): lado del casillero del valor respecto de su compañero de fila.
-- **No quedan dependencias entre propiedades**: cualquier combinación es válida y produce un contorno cerrado, sin coerción ni estados que documentar. Cuando la caja sube (`ShowTitle && ValueFollowsTitle`) el número va a la fila del título y la barra queda sola abajo.
+- **No quedan dependencias entre propiedades**: cualquier combinación es válida y produce un contorno cerrado, sin coerción ni estados que documentar. Cuando la caja baja (`ShowDetail && ValueFollowsDetail`) el número va a la fila de detalle y la barra queda sola arriba.
 - Se descarta la variante **`OnBar`** (número sobre la barra) y el modo **`Frameless`** (cajas sin marco): la caja del valor siempre está enmarcada. Con ello desaparecen las dos capas de texto del valor sobre el relleno, `FillForeground`, el recorte de la capa clara y la abstracción `OrientationAxis` (el control es horizontal únicamente).
 - El reparto de lados entre celdas pasa a una **única función pura** (`ValueBorderResolver.Resolve`), la misma matriz de costuras en una sola fuente de verdad, testeada sin ventana. La plantilla la consume con `MultiBinding` en las cuatro celdas; desaparecen los tres convertidores ad hoc de `Thickness`.
 - La orientación vertical deja de estar en el roadmap.
@@ -30,7 +33,7 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 - Normalización de finales de línea con `.gitattributes`: LF en el repositorio y los propios de cada plataforma en el disco de trabajo, binarios marcados como tales, y CRLF forzado en `.bat`, `.cmd` y `.ps1`, que lo necesitan para funcionar. Evita que un colaborador en otro sistema genere diferencias de archivo entero por el solo cambio de fin de línea.
 - README reestructurado con vista previa visual y roadmap.
 - Proyecto MSTest con pruebas de defaults, coerciones, pasos, disposición y `ValueChanged`.
-- Pruebas automatizadas de los modos de interacción: `ValueChangeMode` —incluida la regla de que en `MustFocusFirst` el click que otorga el foco no mueve el valor, y que la regla alcanza también al click derecho por zonas— e `IsDisplayOnly` —coerción y restitución de `Focusable`, liberación del foco ya puesto, bloqueo de mouse, rueda y teclado, y cambios por código que siguen funcionando—.
+- Pruebas automatizadas de los modos de interacción: `ValueChangeMode` —incluida la regla de que en `MustFocusFirst` el click que otorga el foco no mueve el valor, y que la regla alcanza también al click derecho por zonas— e `IsReadOnly` —coerción y restitución de `Focusable`, liberación del foco ya puesto, bloqueo de mouse, rueda y teclado, y cambios por código que siguen funcionando—.
 
 ### Changed
 
@@ -111,5 +114,5 @@ Se hace antes de la primera publicación, que es el único momento en que estos 
 - Control WPF `BoundedNumericSelector` para valores enteros discretos y acotados.
 - Interacción por barra, arrastre vertical del valor, rueda y teclado.
 - Modos de presentación `BesideBar`, `OnBar` y `WithTitle`.
-- Modos de interacción `ChangeOnClick`, `MustFocusFirst` e `IsDisplayOnly`.
+- Modos de interacción `ChangeOnClick`, `MustFocusFirst` e `IsReadOnly`.
 - Aplicación WPF de demostración de las propiedades y gestos disponibles.

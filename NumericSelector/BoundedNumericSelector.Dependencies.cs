@@ -15,7 +15,7 @@ namespace NumericSelector
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(BoundedNumericSelector),
 				new FrameworkPropertyMetadata(typeof(BoundedNumericSelector)));
 
-			// En IsDisplayOnly el control no debe poder recibir el foco. Se hace por
+			// En IsReadOnly el control no debe poder recibir el foco. Se hace por
 			// COERCIÓN y no asignando Focusable: así el valor de abajo (el del estilo, o el
 			// que haya puesto el consumidor) queda intacto y vuelve solo al salir del modo.
 			// Asignarlo obligaría a recordar a qué valor volver, y pisaría a quien tuviera
@@ -25,7 +25,7 @@ namespace NumericSelector
 		}
 
 		private static object CoerceFocusable(DependencyObject d, object baseValue) =>
-			((BoundedNumericSelector)d).IsDisplayOnly ? false : baseValue;
+			((BoundedNumericSelector)d).IsReadOnly ? false : baseValue;
 
 		// --- Evento Ruteado ValueChanged ---
 		// Equivalente moderno del evento Change del control original en VB6.
@@ -58,39 +58,43 @@ namespace NumericSelector
 		// cortaba el número. El ocultamiento de la caja cuando el valor sube (VBUp) lo
 		// resuelven los triggers de Generic.xaml.
 
-		// Propiedad para el título (fila superior).
-		public static readonly DependencyProperty TitleTextProperty =
+		// Propiedad para la CAPTION: el texto identificador del control, que se dibuja sobre
+		// la barra y es el rótulo permanente (como la etiqueta de un ComboBox).
+		public static readonly DependencyProperty CaptionTextProperty =
 			DependencyProperty.Register(
-				nameof(TitleText),
+				nameof(CaptionText),
 				typeof(string),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata("Default Title Text")); // Valor por defecto.
+				new PropertyMetadata("Default Caption"));
 
 		/// <summary>
-		/// Obtiene o establece el título que se muestra en la fila superior (salvo con <see cref="ShowTitle"/> = false).
+		/// Obtiene o establece el texto permanente que identifica al control. Se dibuja sobre
+		/// la barra, aprovechando el relleno como fondo (cuidar el contraste de colores).
 		/// </summary>
-		public string TitleText
+		public string CaptionText
 		{
-			get => (string)GetValue(TitleTextProperty);
-			set => SetValue(TitleTextProperty, value);
+			get => (string)GetValue(CaptionTextProperty);
+			set => SetValue(CaptionTextProperty, value);
 		}
 
-		// Propiedad para la leyenda del control (se dibuja sobre la barra).
-		public static readonly DependencyProperty LegendTextProperty =
+		// Propiedad para la fila de DETALLE (desplazable debajo de la barra).
+		public static readonly DependencyProperty DetailTextProperty =
 			DependencyProperty.Register(
-				nameof(LegendText),
+				nameof(DetailText),
 				typeof(string),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata("Legend")); // Valor por defecto.
+				new PropertyMetadata("Default Detail Text")); // Valor por defecto.
 
 		/// <summary>
-		/// Obtiene o establece la leyenda que describe al control. Hoy se dibuja sobre la barra,
-		/// aprovechando el relleno como fondo (cuidar el contraste de colores).
+		/// Obtiene o establece el texto de la fila de detalle, que se despliega debajo de la
+		/// barra cuando <see cref="ShowDetail"/> es true. Su propósito usual es dar salida en
+		/// texto al índice de <see cref="Value"/> (p. ej. el elemento elegido), aunque puede
+		/// usarse como encabezado fijo.
 		/// </summary>
-		public string LegendText
+		public string DetailText
 		{
-			get => (string)GetValue(LegendTextProperty);
-			set => SetValue(LegendTextProperty, value);
+			get => (string)GetValue(DetailTextProperty);
+			set => SetValue(DetailTextProperty, value);
 		}
 
 		// Propiedad para el valor numérico del selector.
@@ -291,45 +295,46 @@ namespace NumericSelector
 			set => SetValue(BarBorderColorProperty, value);
 		}
 
-		// Propiedad para decidir si existe la fila superior con el título enmarcado.
-		// Es un bool porque el título, si se muestra, siempre va enmarcado; no hay una forma
-		// "suelta" que representar con un tercer valor.
-		public static readonly DependencyProperty ShowTitleProperty =
+// Propiedad para decidir si existe la fila de detalle debajo de la barra.
+		// Es un bool: la fila de detalle, si se muestra, siempre va enmarcada; no hay una
+		// forma "suelta" que representar con un tercer valor.
+		public static readonly DependencyProperty ShowDetailProperty =
 			DependencyProperty.Register(
-				nameof(ShowTitle),
+				nameof(ShowDetail),
 				typeof(bool),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata(false, OnLayoutPropertyChanged)); // default: sin título
+				new PropertyMetadata(false, OnLayoutPropertyChanged)); // default: sin detalle
 
 		/// <summary>
-		/// Obtiene o establece si se muestra la fila superior con el título enmarcado.
+		/// Obtiene o establece si se muestra la fila de detalle enmarcada debajo de la barra.
 		/// </summary>
-		public bool ShowTitle
+		public bool ShowDetail
 		{
-			get => (bool)GetValue(ShowTitleProperty);
-			set => SetValue(ShowTitleProperty, value);
+			get => (bool)GetValue(ShowDetailProperty);
+			set => SetValue(ShowDetailProperty, value);
 		}
 
-		// Propiedad para decidir si la caja del valor sube a la fila del título cuando
-		// existe. Auto-posicionamiento: con ShowTitle=true la caja del valor vive arriba,
-		// junto al título; con false queda abajo, junto a la barra, aunque haya título.
-		// Es un bool (y no un enum de fila) porque no hay estado inválido: sin título el
-		// valor queda abajo por construcción, sin necesidad de coerción ni "degradación".
-		public static readonly DependencyProperty ValueFollowsTitleProperty =
+		// Propiedad para decidir si la caja del valor desciende a la fila de detalle cuando
+		// existe. Con ShowDetail=true el casillero del valor se mueve abajo, junto al texto de
+		// detalle; con false queda en la fila de la barra (junto a la Caption).
+		// Es un bool (y no un enum) porque no hay estado inválido: sin fila de detalle el
+		// valor queda arriba por construcción, sin coerción ni "degradación".
+		public static readonly DependencyProperty ValueFollowsDetailProperty =
 			DependencyProperty.Register(
-				nameof(ValueFollowsTitle),
+				nameof(ValueFollowsDetail),
 				typeof(bool),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata(true, OnLayoutPropertyChanged)); // default: sigue al título
+				new PropertyMetadata(true, OnLayoutPropertyChanged)); // default: sigue al detalle
 
 		/// <summary>
-		/// Obtiene o establece si la caja del valor sube a la fila del título cuando existe
-		/// (<see cref="ShowTitle"/>). Con false el valor se queda junto a la barra.
+		/// Obtiene o establece si el casillero del valor desciende a la fila del detalle
+		/// cuando existe (<see cref="ShowDetail"/>). Con false el valor se queda junto a la
+		/// barra (junto a la Caption).
 		/// </summary>
-		public bool ValueFollowsTitle
+		public bool ValueFollowsDetail
 		{
-			get => (bool)GetValue(ValueFollowsTitleProperty);
-			set => SetValue(ValueFollowsTitleProperty, value);
+			get => (bool)GetValue(ValueFollowsDetailProperty);
+			set => SetValue(ValueFollowsDetailProperty, value);
 		}
 
 		// Propiedad para el lado de la caja del valor respecto de la caja con la que
@@ -390,12 +395,12 @@ namespace NumericSelector
 		}
 
 		// Propiedad para el modo "sólo visualización".
-		public static readonly DependencyProperty IsDisplayOnlyProperty =
+		public static readonly DependencyProperty IsReadOnlyProperty =
 			DependencyProperty.Register(
-				nameof(IsDisplayOnly),
+				nameof(IsReadOnly),
 				typeof(bool),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata(false, OnIsDisplayOnlyChanged));
+				new PropertyMetadata(false, OnIsReadOnlyChanged));
 
 		/// <summary>
 		/// Obtiene o establece el modo de sólo visualización: el control conserva todo su
@@ -407,13 +412,13 @@ namespace NumericSelector
 		/// Bloquea al usuario, no al programa: asignar Value por código sigue funcionando
 		/// y sigue disparando ValueChanged.
 		/// </summary>
-		public bool IsDisplayOnly
+		public bool IsReadOnly
 		{
-			get => (bool)GetValue(IsDisplayOnlyProperty);
-			set => SetValue(IsDisplayOnlyProperty, value);
+			get => (bool)GetValue(IsReadOnlyProperty);
+			set => SetValue(IsReadOnlyProperty, value);
 		}
 
-		private static void OnIsDisplayOnlyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		private static void OnIsReadOnlyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			var selector = (BoundedNumericSelector)d;
 
@@ -423,7 +428,7 @@ namespace NumericSelector
 			// Focusable=false NO suelta el foco que ya estuviera puesto: verificado, el
 			// control quedaba con IsKeyboardFocused=true (borde de foco encendido y, peor,
 			// la rueda habilitada, porque la rueda mira justamente esa propiedad).
-			if (selector.IsDisplayOnly)
+			if (selector.IsReadOnly)
 				selector.ReleaseKeyboardFocusIfHeld();
 		}
 

@@ -24,4 +24,4 @@ Se confirmará la recepción, se evaluará el problema y se coordinará la divul
 
 ## Alcance actual
 
-NumericSelector es un control de interfaz WPF sin servicios de red, persistencia ni manejo de credenciales propios. Aun así, se revisarán reportes relacionados con denegación de servicio en layout, uso inseguro desde XAML y dependencias de compilación o distribución.
+`BoundedNumericSelector`, el control que vive en el ensamblado `NumericSelector`, es un control de interfaz WPF sin servicios de red, persistencia ni manejo de credenciales propios. Aun así, se revisarán reportes relacionados con denegación de servicio en layout, uso inseguro desde XAML y dependencias de compilación o distribución.

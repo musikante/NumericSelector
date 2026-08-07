@@ -44,7 +44,7 @@ dotnet test .\NumericSelector.Tests\NumericSelector.Tests.csproj
 | `BoundedNumericSelector.cs` | Lógica de interacción, medición, cursores, manejo de eventos |
 | `BoundedNumericSelector.Dependencies.cs` | Propiedades de dependencia, coerciones, evento ValueChanged |
 | `Themes/Generic.xaml` | Plantilla por defecto (estilo, triggers, partes) |
-| `Converters.cs` | `ValueBorderResolver`: la matriz de costuras como función pura |
+| `Converters.cs` | `ValueBorderResolver` (matriz de costuras) y `TextMeasureContext`/`TextMeasure` (medición de texto): funciones puras |
 | `ValueBoxSide.cs`, `StretchMode.cs`, `ValueChangeMode.cs` | Enums de la API pública |
 
 ### Modelo de celdas
@@ -55,16 +55,15 @@ El control son **cuatro celdas hermanas** con marco propio:
 - Barra (abajo, izquierda)
 - Caja del valor (abajo, derecha — o izquierda con `ValueBoxSide=Left`)
 
-**Regla única**: la caja del valor tiene prioridad y define sus lados; los vecinos ceden el lado que tocan. Ningún filo se dibuja dos veces. El reparto concreto lo calcula `ValueBorderResolver.Resolve`, una función pura con la matriz de costuras completa (ver su `Converters.cs`).
+**Regla única**: la barra y el detalle son el marco fijo (la barra lleva sus cuatro lados, el detalle cede el superior) y la caja del valor cede el lado que mira a su compañero de fila. Ningún filo se dibuja dos veces. El reparto concreto lo calcula `ValueBorderResolver.Resolve`, una función pura con la matriz de costuras completa (ver su `Converters.cs`).
 
 ### Partes de la plantilla (PART_)
 
 La plantilla define estas partes que el code-behind referencia por nombre:
-- `PART_MainGrid`, `PART_TopRow`, `PART_TitleCell`, `PART_TitleText`
-- `PART_BarAndValueGrid`, `PART_BarCell`, `PART_BarGrid`, `PART_BarRect`
-- `PART_LegendText`, `PART_ValueSideCell`, `PART_ValueText`
-- `PART_ValueTopCell`, `PART_ValueWithTitle`
-- Medidores ocultos: `PART_TopSizerMin/Max`, `PART_ValueSizerMin/Max`
+- `PART_MainGrid`, `PART_BarRow`, `PART_DetailRow`
+- `PART_BarAndValueGrid`, `PART_BarCell`, `PART_BarGrid`, `PART_BarRect`, `PART_BarColumn`, `PART_BarRowDef`
+- `PART_CaptionText`, `PART_ValueCell`, `PART_ValueText`, `PART_ValueColumn`, `PART_ValueSizerMin/Max`
+- La fila de detalle, con su caja de valor propia: `PART_DetailCell`, `PART_DetailText`, `PART_ValueDetailCell`, `PART_ValueDetailText`, `PART_DetailColumn`, `PART_ValueDetailColumn`, `PART_DetailSizerMin/Max`
 
 **No se deben renombrar**: los nombres `PART_*` son contrato público.
 
@@ -79,7 +78,7 @@ Las coerciones son silenciosas y mutuamente restrictivas:
 | `Value` | Acotado a `[Minimum, Maximum]` |
 | `ResetValue` | Acotado a `[Minimum, Maximum]` |
 | `SmallChange`, `LargeChange` | Entre `1` y el ancho del rango |
-| `Focusable` | `false` cuando `IsDisplayOnly=true` (coerción, no asignación) |
+| `Focusable` | `false` cuando `IsReadOnly=true` (coerción, no asignación) |
 
 ### Cultura y formato
 
@@ -91,7 +90,7 @@ Las coerciones son silenciosas y mutuamente restrictivas:
 
 - `ValueChangeMode.ChangeOnClick` (default): el mouse actúa siempre
 - `ValueChangeMode.MustFocusFirst`: el mouse actúa solo con foco previo; el click que enfoca no cambia el valor
-- `IsDisplayOnly`: bloquea mouse, teclado y tabulación; conserva aspecto; cambios por código siguen funcionando
+- `IsReadOnly`: bloquea mouse, teclado y tabulación; conserva aspecto; cambios por código siguen funcionando
 
 Teclado: `←`/`↓`/`-` y `→`/`↑`/`+` cambian o restan `SmallChange`; `PageUp`/`PageDown` de a `LargeChange`; `Home`/`End` a los extremos; `Delete`/`Insert` a `ResetValue`. Se manejan las teclas de la fila principal (`Key.OemPlus`/`OemMinus`) y las del teclado numérico (`Key.Add`/`Subtract`).
 
@@ -105,7 +104,7 @@ Teclado: `←`/`↓`/`-` y `→`/`↑`/`+` cambian o restan `SmallChange`; `Page
 
 ### Tipos de pruebas
 
-1. **Lógica pura** (`BoundedNumericSelectorLogicTests.cs`): no necesitan ventana; validan defaults, coerciones, pasos, disposición, ValueChanged
+1. **Lógica pura** (`BoundedNumericSelectorLogicTests.cs`, `TextMeasureTests.cs`): no necesitan ventana; validan defaults, coerciones, pasos, disposición, ValueChanged y los invariantes de la medición de texto (`TextMeasure.Measure`)
 2. **Interacción** (`InteractionModeTests.cs`): necesitan ventana real (STA + Dispatcher) porque los gestos llegan por eventos ruteados y el foco no existe fuera del visual tree
 
 ### Helper `StaTest`
@@ -116,9 +115,10 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 
 - Defaults, coerciones de rango, pasos, disposición, ValueChanged
 - Valor de la matriz de costuras (`ValueBorderResolver.Resolve`) en todas las configuraciones
-- Disposición (`ShowTitle`, `ValueFollowsTitle`, `ValueBoxSide`) y trazo separador del valor
+- Invariantes de medición de texto (`TextMeasure.Measure`): vacío, monotonía, tamaño de fuente, independencia del DPI, efecto de la cultura y pureza
+- Disposición (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxSide`) y trazo separador del valor
 - ValueChangeMode (ChangeOnClick, MustFocusFirst)
-- IsDisplayOnly (focusable, liberación de foco, bloqueo de input)
+- IsReadOnly (focusable, liberación de foco, bloqueo de input)
 - IsEnabled (liberación de foco, bloqueo de teclado)
 
 ### Pendiente (según roadmap)

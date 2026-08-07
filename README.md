@@ -6,7 +6,7 @@ El control se llama **`BoundedNumericSelector`** y vive en el ensamblado `Numeri
 
 > Estado: la API quedó definida y el control está listo para una primera versión estable. Pendiente: empaquetado NuGet y CI.
 
-![Vista previa del demo de NumericSelector](docs/images/numeric-selector-demo.svg)
+![Vista previa del demo de NumericSelector](docs/images/numeric-selector-demo.png)
 
 ## Qué aporta
 
@@ -54,13 +54,11 @@ private void Selector_ValueChanged(
 
 ## Galería de disposiciones
 
-La vista previa representa la aplicación de demostración incluida. La posición del casillero del valor se decide con tres propiedades independientes (`ShowTitle`, `ValueFollowsTitle` y `ValueBoxSide`):
+La vista previa representa la aplicación de demostración incluida. La posición del casillero del valor se decide con tres propiedades independientes (`ShowDetail`, `ValueFollowsDetail` y `ValueBoxSide`):
 
-- **Sin título** (`ShowTitle=false`, predeterminado): sólo la fila de abajo, con el casillero del valor junto a la barra, a la derecha por defecto.
-- **Título con el número abajo** (`ShowTitle=true`, `ValueFollowsTitle=false`): la barra y el casillero abajo, la etiqueta del título ocupando todo el ancho.
-- **Número junto al título** (`ShowTitle=true`, `ValueFollowsTitle=true`): el casillero sube a la línea del título y la barra queda sola; la caja va a la derecha o izquierda del título según `ValueBoxSide`.
-
-> La imagen es una vista vectorial del demo creada a partir de su interfaz actual. Cuando se publique el repositorio, conviene reemplazarla o complementarla con GIF/capturas reales en `docs/images/`.
+- **Sin detalle** (`ShowDetail=false`, predeterminado): sólo la fila de la barra, con la leyenda sobre el relleno y el casillero del valor junto a la barra, a la derecha por defecto.
+- **Detalle con el número arriba** (`ShowDetail=true`, `ValueFollowsDetail=false`): la barra y el casillero arriba, la etiqueta del detalle ocupando todo el ancho en la fila inferior.
+- **Número junto al detalle** (`ShowDetail=true`, `ValueFollowsDetail=true`): el casillero baja a la línea del detalle y la barra queda sola; la caja va a la derecha o izquierda del detalle según `ValueBoxSide`.
 
 ## Interacción
 
@@ -109,13 +107,13 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 
 | Propiedad | Tipo | Predeterminado | Descripción |
 | --- | --- | --- | --- |
-| `TitleText` | `string` | `DefaultTitle` | Texto de la fila superior. |
-| `LegendText` | `string` | `DefaultLegend` | Leyenda sobre la barra. |
-| `ShowTitle` | `bool` | `false` | Muestra la fila superior con el título enmarcado. |
-| `ValueFollowsTitle` | `bool` | `true` | Con `ShowTitle`, sube el casillero del valor junto al título; con `false`, queda junto a la barra. |
+| `CaptionText` | `string` | `DefaultCaption` | Leyenda sobre el relleno de la barra. |
+| `DetailText` | `string` | `DefaultDetail` | Texto de la fila de detalle inferior. |
+| `ShowDetail` | `bool` | `false` | Muestra la fila de detalle enmarcada. |
+| `ValueFollowsDetail` | `bool` | `true` | Con `ShowDetail`, baja el casillero del valor junto al detalle; con `false`, queda junto a la barra. |
 | `ValueBoxSide` | `enum` | `Right` | Lado del casillero del valor (`Right` o `Left`) respecto de su compañero de fila. |
 | `StretchMode` | `enum` | `Fixed` | Estrategia de ancho. |
-| `ControlBorderPixels` | `Thickness` | `1` | Grosor de los marcos. El lado `Top` es además el grosor de la línea que separa el título de la barra. |
+| `ControlBorderPixels` | `Thickness` | `1` | Grosor de los marcos. El lado `Top` es además el grosor de la línea que separa la barra de la fila de detalle. |
 
 `StretchMode.Fixed` mantiene el `Width` disponible y aplica elipsis a los textos que no entran. `StretchMode.AutoGrow` puede ampliar el control para acomodar el contenido y no vuelve a achicarlo automáticamente.
 
@@ -124,25 +122,25 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 | Propiedad | Tipo | Predeterminado | Descripción |
 | --- | --- | --- | --- |
 | `ValueChangeMode` | `enum` | `ChangeOnClick` | Decide si el mouse actúa de inmediato o exige foco previo. |
-| `IsDisplayOnly` | `bool` | `false` | Bloquea mouse, teclado y tabulación sin cambiar la apariencia. |
+| `IsReadOnly` | `bool` | `false` | Bloquea mouse, teclado y tabulación sin cambiar la apariencia. |
 | `ControlBorderColor` | `Brush` | `Black` | Marcos sin foco. |
 | `FocusBorderColor` | `Brush` | `DodgerBlue` | Marcos con foco. |
 | `BarFillColor` | `Brush` | `Orange` | Relleno proporcional de la barra. |
 | `BarBorderColor` | `Brush` | `Black` | Contorno del relleno. |
 
-`ValueChangeMode.MustFocusFirst` hace que el primer click que obtiene el foco no modifique el valor; los gestos posteriores sí. `IsDisplayOnly` bloquea al usuario, no al programa: asignar `Value` desde código sigue actualizando el control y disparando `ValueChanged`.
+`ValueChangeMode.MustFocusFirst` hace que el primer click que obtiene el foco no modifique el valor; los gestos posteriores sí. `IsReadOnly` bloquea al usuario, no al programa: asignar `Value` desde código sigue actualizando el control y disparando `ValueChanged`.
 
-El control se dibuja como **cuatro celdas independientes** —etiqueta del título y caja del valor arriba, barra y caja del valor abajo—, cada una con su marco. **Cuáles** lados dibuja cada una lo resuelve una única matriz de costuras (`ValueBorderResolver`), con una regla única: *la caja del valor tiene prioridad y define sus lados; los vecinos ceden el lado que tocan*. Así ningún filo se dibuja dos veces. La costura horizontal entre filas la dibuja siempre el borde superior de la barra, que además hace de borde superior del control cuando no hay título.
+El control se dibuja como **cuatro celdas independientes** —barra y caja del valor arriba, etiqueta del detalle y caja del detalle abajo—, cada una con su marco. **Cuáles** lados dibuja cada una lo resuelve una única matriz de costuras (`ValueBorderResolver`), con una regla única: *la barra y el detalle son el marco fijo, y la caja del valor cede el lado que mira a su compañero de fila*. Así ningún filo se dibuja dos veces. La costura horizontal entre filas la dibuja siempre el borde superior de la fila de detalle, que además hace de borde superior de la fila de la barra.
 
 Cada una de las tres propiedades de disposición hace algo en todo momento, sin estados inválidos ni degradaciones que documentar:
 
-- `ShowTitle` decide si existe la fila superior.
-- `ValueFollowsTitle` decide, sólo cuando hay título, si el casillero sube a esa fila (`true`) o se queda junto a la barra (`false`).
-- `ValueBoxSide` decide a qué lado del compañero de fila cae el casillero: del título si subió, de la barra si no.
+- `ShowDetail` decide si existe la fila de detalle.
+- `ValueFollowsDetail` decide, sólo cuando hay detalle, si el casillero baja a esa fila (`true`) o se queda junto a la barra (`false`).
+- `ValueBoxSide` decide a qué lado del compañero de fila cae el casillero: del detalle si bajó, de la barra si no.
 
 No hay dependencias entre propiedades: cualquier combinación es válida y produce un dibujo cerrado.
 
-`IsEnabled = false` (heredado de `UIElement`) también deja el control fuera del alcance del usuario, y a diferencia de `IsDisplayOnly` altera la apariencia según el tema. Si el control tenía el foco al deshabilitarse, lo suelta.
+`IsEnabled = false` (heredado de `UIElement`) también deja el control fuera del alcance del usuario, y a diferencia de `IsReadOnly` altera la apariencia según el tema. Si el control tenía el foco al deshabilitarse, lo suelta.
 
 ## Garantía de legibilidad
 
@@ -165,7 +163,7 @@ dotnet build .\NumericSelector.slnx --configuration Release
 ## Roadmap
 
 - [x] Control horizontal con rango entero, teclado, mouse y rueda.
-- [x] Disposición configurable (`ShowTitle`, `ValueFollowsTitle`, `ValueBoxSide`), `AutoGrow` y sólo visualización.
+- [x] Disposición configurable (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxSide`), `AutoGrow` y sólo visualización.
 - [x] Demo interactivo de las propiedades públicas.
 - [x] Pruebas automatizadas para defaults, coerciones de rango, pasos, disposición y eventos.
 - [ ] Ampliar las pruebas a cultura, foco, gestos de mouse y `AutoGrow`.

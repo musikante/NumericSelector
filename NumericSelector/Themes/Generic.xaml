@@ -17,117 +17,47 @@
                          queda reservado para el número más largo posible, sin depender del
                          valor actual (si no, la columna temblaría al pasar de 99 a 100). -->
 
-                    <!-- EL CONTROL SON CUATRO CELDAS INDEPENDIENTES, cada una con su marco:
-                         etiqueta del título y caja del valor arriba, barra y caja del valor
-                         abajo. Ninguna está anidada dentro de otra, y ésa es la clave: si la
-                         caja del valor viviera dentro de un marco que la envuelve, su borde
-                         se apilaría con el de afuera, sumando grosor y corriendo los filos.
+                    <!-- EL CONTROL SON CELDAS INDEPENDIENTES, cada una con su marco:
+                         (fila superior) la barra con su Caption y el casillero del valor,
+                         y (fila inferior, opcional) la de detalle. Ninguna está anidada
+                         dentro de otra, y ésa es la clave: si una celda viviera dentro de
+                         un marco que la envuelve, su borde se apilaría con el de afuera,
+                         sumando grosor y corriendo los filos.
                          QUÉ lados dibuja cada celda lo resuelve ValueBorderResolver (la
                          "matriz de costuras"): un MultiBinding que devuelve el Thickness por
-                         celda según ShowTitle, ValueFollowsTitle y ValueBoxSide, para que
+                         celda según ShowDetail, ValueFollowsCaption y ValueBoxSide, para que
                          ningún filo se dibuje dos veces. -->
                     <Grid x:Name="PART_MainGrid">
                         <Grid.RowDefinitions>
+                            <!-- La fila de la barra (superior) absorbe el alto sobrante: si
+                                 el consumidor fija un Height mayor que el contenido, la barra
+                                 se estira y el borde inferior queda en el borde del control,
+                                 no a media altura. -->
+                            <RowDefinition Height="*" x:Name="PART_BarRowDef"/>
+                            <!-- Fila de detalle: opcional, auto-posicionada abajo. -->
                             <RowDefinition Height="Auto"/>
-                            <!-- La fila de datos absorbe el alto sobrante: si el consumidor
-                                 fija un Height mayor que el contenido, la barra se estira y el
-                                 borde inferior queda en el borde del control, no a media altura. -->
-                            <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Fila superior: etiqueta del título y, cuando el valor sube (VBUp),
-                             la caja del valor junto a ella. Arranca colapsada (ShowTitle=false
-                             es el default); la muestran sus triggers. -->
-                        <Grid x:Name="PART_TopRow" Grid.Row="0" Visibility="Collapsed">
+                        <!-- Fila superior: la barra con su Caption y el casillero del valor a
+                             un lado. Es la fila siempre presente, el eje del control. -->
+                        <Grid x:Name="PART_BarAndValueGrid" Grid.Row="0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition x:Name="PART_TitleColumn" Width="*"/>
-                                <ColumnDefinition x:Name="PART_ValueTopColumn" Width="Auto"/>
+                                <ColumnDefinition x:Name="PART_BarColumn" Width="*"/>
+                                <ColumnDefinition x:Name="PART_ValueColumn" Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <Border x:Name="PART_TitleCell" Grid.Column="0"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding ControlBorderColor}">
-                                <Border.BorderThickness>
-                                    <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Title">
-                                        <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ShowTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ValueFollowsTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                    </MultiBinding>
-                                </Border.BorderThickness>
-                                <TextBlock x:Name="PART_TitleText"
-                                           Foreground="{TemplateBinding Foreground}"
-                                           FontSize="{TemplateBinding FontSize}"
-                                           FontFamily="{TemplateBinding FontFamily}"
-                                           FontStyle="{TemplateBinding FontStyle}"
-                                           FontWeight="{TemplateBinding FontWeight}"
-                                           Text="{TemplateBinding TitleText}"
-TextAlignment="Center"
-                                            TextTrimming="CharacterEllipsis"
-                                            Padding="0,0,0,1"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Stretch"
-                                            Margin="5,0,5,0"/>
-                            </Border>
-
-                            <!-- Caja del valor en la fila superior. Sin borde y colapsada por
-                                 defecto; sólo la enciende el trigger de VBUp, para que en las
-                                 configuraciones donde esta celda no muestra nada no quede ni
-                                 trazo suelto ni un hueco vacío a la derecha del título. -->
-                            <Border x:Name="PART_ValueTopCell" Grid.Column="1"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding ControlBorderColor}"
-                                    BorderThickness="0"
-                                    Visibility="Collapsed">
-                                <Grid>
-                                    <TextBlock x:Name="PART_TopSizerMin" Visibility="Hidden"
-                                               Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
-                                               FontSize="{TemplateBinding FontSize}"
-                                               FontFamily="{TemplateBinding FontFamily}"
-                                               FontStyle="{TemplateBinding FontStyle}"
-                                               FontWeight="{TemplateBinding FontWeight}"
-                                               Padding="3,0,4,1"/>
-                                    <TextBlock x:Name="PART_TopSizerMax" Visibility="Hidden"
-                                               Text="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
-                                               FontSize="{TemplateBinding FontSize}"
-                                               FontFamily="{TemplateBinding FontFamily}"
-                                               FontStyle="{TemplateBinding FontStyle}"
-                                               FontWeight="{TemplateBinding FontWeight}"
-                                               Padding="3,0,4,1"/>
-                                    <TextBlock x:Name="PART_ValueWithTitle"
-                                               Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
-                                               Foreground="{TemplateBinding Foreground}"
-                                               FontSize="{TemplateBinding FontSize}"
-                                               FontFamily="{TemplateBinding FontFamily}"
-                                               FontStyle="{TemplateBinding FontStyle}"
-                                               FontWeight="{TemplateBinding FontWeight}"
-TextAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Stretch"
-                                               Padding="3,0,4,1"
-                                               Background="Transparent"
-                                               Visibility="Collapsed"/>
-                                </Grid>
-                            </Border>
-                        </Grid>
-
-                        <Grid x:Name="PART_BarAndValueGrid" Grid.Row="1">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" x:Name="PART_BarColumn"/>
-                                <ColumnDefinition Width="Auto" x:Name="PART_ValueColumn"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Celda de la barra. Cede el lado que toca la caja del valor
-                                 según ValueBoxSide; sólo recupera los cuatro lados cuando la
-                                 caja sube y la barra queda sola (VBUp). -->
+                            <!-- Celda de la barra: marco base, lleva siempre los cuatro
+                                 lados; su borde inferior dibuja además la costura con la
+                                 fila de detalle cuando existe. Sobre su relleno se dibuja la
+                                 Caption (el texto identificador permanente). -->
                             <Border x:Name="PART_BarCell" Grid.Column="0"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding ControlBorderColor}">
                                 <Border.BorderThickness>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Bar">
                                         <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ShowTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ValueFollowsTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
                                     </MultiBinding>
                                 </Border.BorderThickness>
@@ -148,9 +78,10 @@ TextAlignment="Center"
                                                 Width="0"/>
                                     </Canvas>
 
-                                    <!-- (2) Leyenda: encima del relleno, centrada en la barra. -->
-                                    <TextBlock x:Name="PART_LegendText"
-                                               Text="{TemplateBinding LegendText}"
+                                    <!-- (2) Caption: el texto identificador del control, sobre
+                                         el relleno de la barra y centrado en ella. -->
+                                    <TextBlock x:Name="PART_CaptionText"
+                                               Text="{TemplateBinding CaptionText}"
                                                Foreground="{TemplateBinding Foreground}"
                                                FontSize="{TemplateBinding FontSize}"
                                                FontFamily="{TemplateBinding FontFamily}"
@@ -160,24 +91,24 @@ TextAlignment="Center"
                                                TextTrimming="CharacterEllipsis"
                                                VerticalAlignment="Center"
                                                HorizontalAlignment="Stretch"
-                                                Padding="0,0,0,1"
-                                                Margin="5,0,5,0"/>
+                                               Padding="0,0,0,1"
+                                               Margin="5,0,5,0"/>
                                 </Grid>
                             </Border>
 
-                            <!-- Casillero del valor junto a la barra. Es la celda con
-                                 prioridad: lleva los cuatro lados, y su borde contiguo a la
-                                 barra es el que separa el número del relleno (la barra cede
-                                 ese filo). Su columna se colapsa y su texto se oculta cuando
-                                 el valor sube a la fila del título (VBUp). -->
-                            <Border x:Name="PART_ValueSideCell" Grid.Column="1"
+                            <!-- Casillero del valor junto a la barra, debajo de la Caption.
+                                 Cede el lado que mira a la barra —ese filo lo dibuja la barra,
+                                 que es el marco base— y lleva los otros tres lados. Su columna
+                                 se colapsa y su texto se oculta cuando el valor desciende a la
+                                 fila de detalle. -->
+                            <Border x:Name="PART_ValueCell" Grid.Column="1"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding ControlBorderColor}">
                                 <Border.BorderThickness>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Value">
                                         <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ShowTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ValueFollowsTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
                                     </MultiBinding>
                                 </Border.BorderThickness>
@@ -196,14 +127,6 @@ TextAlignment="Center"
                                                FontStyle="{TemplateBinding FontStyle}"
                                                FontWeight="{TemplateBinding FontWeight}"
                                                Padding="3,0,4,1"/>
-                                    <!-- Padding asimétrico a propósito (3 izq / 4 der) en el
-                                         texto del valor y sus medidores ocultos. El lado
-                                         izquierdo más chico compensa el "corrido a la derecha"
-                                         que mostraba el padding simétrico, y degrada la diferencia
-                                         sub-píxel (~1px) de centrado entre ValueBoxSide=Left/Right
-                                         (redondeo de la columna "*"). No tocar el texto sin tocar a
-                                         los sizers: ambos miden el ancho de la columna Auto y deben
-                                         ser idénticos. -->
                                     <TextBlock x:Name="PART_ValueText"
                                                Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
                                                Foreground="{TemplateBinding Foreground}"
@@ -211,9 +134,87 @@ TextAlignment="Center"
                                                FontFamily="{TemplateBinding FontFamily}"
                                                FontStyle="{TemplateBinding FontStyle}"
                                                FontWeight="{TemplateBinding FontWeight}"
-TextAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Stretch"
+                                               TextAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Stretch"
+                                               Padding="3,0,4,1"
+                                               Background="Transparent"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- Fila de detalle: debajo de la barra, opcional (ShowDetail), con el
+                             texto de DetailText y, cuando el valor desciende, su casillero a
+                             un lado. Arranca colapsada; la muestra ShowDetail. -->
+                        <Grid x:Name="PART_DetailRow" Grid.Row="1" Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition x:Name="PART_DetailColumn" Width="*"/>
+                                <ColumnDefinition x:Name="PART_ValueDetailColumn" Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Celda de la fila del detalle. Marco fijo que cede el lado
+                                 superior (la costura con la barra la dibuja el borde inferior
+                                 de la barra). -->
+                            <Border x:Name="PART_DetailCell" Grid.Column="0"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding ControlBorderColor}">
+                                <Border.BorderThickness>
+                                    <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Detail">
+                                        <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                    </MultiBinding>
+                                </Border.BorderThickness>
+                                <TextBlock x:Name="PART_DetailText"
+                                           Text="{TemplateBinding DetailText}"
+                                           Foreground="{TemplateBinding Foreground}"
+                                           FontSize="{TemplateBinding FontSize}"
+                                           FontFamily="{TemplateBinding FontFamily}"
+                                           FontStyle="{TemplateBinding FontStyle}"
+                                           FontWeight="{TemplateBinding FontWeight}"
+                                           TextAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Stretch"
+                                           Padding="0,0,0,1"
+                                           Margin="5,0,5,0"/>
+                            </Border>
+
+                            <!-- Casillero del valor en la fila de detalle. Sin borde, colapsado
+                                 por defecto; sólo lo enciende el trigger de valor en detalle,
+                                 para que donde esta celda no muestra nada no quede ni trazo
+                                 suelto ni un hueco vacío. -->
+                            <Border x:Name="PART_ValueDetailCell" Grid.Column="1"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding ControlBorderColor}"
+                                    BorderThickness="0"
+                                    Visibility="Collapsed">
+                                <Grid>
+                                    <TextBlock x:Name="PART_DetailSizerMin" Visibility="Hidden"
+                                               Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontFamily="{TemplateBinding FontFamily}"
+                                               FontStyle="{TemplateBinding FontStyle}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               Padding="3,0,4,1"/>
+                                    <TextBlock x:Name="PART_DetailSizerMax" Visibility="Hidden"
+                                               Text="{Binding Maximum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontFamily="{TemplateBinding FontFamily}"
+                                               FontStyle="{TemplateBinding FontStyle}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               Padding="3,0,4,1"/>
+                                    <TextBlock x:Name="PART_ValueDetailText"
+                                               Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontFamily="{TemplateBinding FontFamily}"
+                                               FontStyle="{TemplateBinding FontStyle}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               TextAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Stretch"
                                                Padding="3,0,4,1"
                                                Background="Transparent"/>
                                 </Grid>
@@ -222,69 +223,69 @@ TextAlignment="Center"
                     </Grid>
 
                     <ControlTemplate.Triggers>
-                        <!-- ShowTitle: se muestra la fila superior (título enmarcado). -->
-                        <Trigger Property="ShowTitle" Value="True">
-                            <Setter TargetName="PART_TopRow" Property="Visibility" Value="Visible"/>
+                        <!-- ShowDetail: se muestra la fila de detalle debajo de la barra. -->
+                        <Trigger Property="ShowDetail" Value="True">
+                            <Setter TargetName="PART_DetailRow" Property="Visibility" Value="Visible"/>
                         </Trigger>
 
-                        <!-- VBUp := ShowTitle y ValueFollowsTitle: la caja del valor sube a la
-                             fila del título. Abajo, la barra queda sola y recupera sus cuatro
-                             lados; la caja de abajo se colapsa y apaga su marco para no dejar
-                             un trazo suelto donde ya no hay nada. -->
+                        <!-- Valor en detalle := ShowDetail y ValueFollowsDetail: la caja del
+                             valor desciende a la fila de detalle. Arriba la barra queda sola,
+                             siempre con sus cuatro lados; la caja de arriba se oculta y apaga
+                             su marco para no dejar un trazo suelto donde ya no hay nada. -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
-                                <Condition Property="ShowTitle" Value="True"/>
-                                <Condition Property="ValueFollowsTitle" Value="True"/>
+                                <Condition Property="ShowDetail" Value="True"/>
+                                <Condition Property="ValueFollowsDetail" Value="True"/>
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="PART_ValueSideCell" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="PART_ValueCell" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="PART_ValueText" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="PART_ValueWithTitle" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="PART_ValueTopCell" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="PART_ValueTopCell" Property="BorderThickness">
+                            <Setter TargetName="PART_ValueDetailCell" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_ValueDetailText" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_ValueDetailCell" Property="BorderThickness">
                                 <Setter.Value>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Value">
                                         <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ShowTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ValueFollowsTitle" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
                                     </MultiBinding>
                                 </Setter.Value>
                             </Setter>
-                            <Setter TargetName="PART_ValueSideCell" Property="BorderThickness" Value="0"/>
+                            <Setter TargetName="PART_ValueCell" Property="BorderThickness" Value="0"/>
                         </MultiTrigger>
 
                         <!-- ValueBoxSide=Left: la caja del valor va a la izquierda de su
-                             compañero de fila, tanto abajo (junto a la barra) como arriba
-                             (junto al título). Se reordenan las celdas Y los anchos de
+                             compañero de fila, tanto arriba (junto a la barra) como abajo
+                             (junto al detalle). Se reordenan las celdas Y los anchos de
                              columna, porque la columna "*" tiene que seguir a la barra:
                              si sólo se movieran las celdas, la barra caería en la columna
                              "Auto" y se encogería a su contenido, despegándose del borde. -->
                         <Trigger Property="ValueBoxSide" Value="Left">
                             <Setter TargetName="PART_BarCell" Property="Grid.Column" Value="1"/>
-                            <Setter TargetName="PART_ValueSideCell" Property="Grid.Column" Value="0"/>
-                            <Setter TargetName="PART_TitleCell" Property="Grid.Column" Value="1"/>
-                            <Setter TargetName="PART_ValueTopCell" Property="Grid.Column" Value="0"/>
+                            <Setter TargetName="PART_ValueCell" Property="Grid.Column" Value="0"/>
+                            <Setter TargetName="PART_DetailCell" Property="Grid.Column" Value="1"/>
+                            <Setter TargetName="PART_ValueDetailCell" Property="Grid.Column" Value="0"/>
                             <Setter TargetName="PART_BarColumn" Property="Width" Value="Auto"/>
                             <Setter TargetName="PART_ValueColumn" Property="Width" Value="*"/>
-                            <Setter TargetName="PART_TitleColumn" Property="Width" Value="Auto"/>
-                            <Setter TargetName="PART_ValueTopColumn" Property="Width" Value="*"/>
+                            <Setter TargetName="PART_DetailColumn" Property="Width" Value="Auto"/>
+                            <Setter TargetName="PART_ValueDetailColumn" Property="Width" Value="*"/>
                         </Trigger>
 
                         <!-- Foco: el contorno completo se tiñe del color de foco. No hay caja
-                             "frameless" que apagar, así que el cambio aplica a las cuatro
-                             celdas siempre. -->
+                             "frameless" que apagar, así que el cambio aplica a las celdas
+                             siempre. -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="PART_BarCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_ValueSideCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_ValueTopCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_TitleCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_ValueCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_ValueDetailCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_DetailCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </Trigger>
 
                         <!-- En AutoGrow el control se ensancha para que el texto entre, así
                              que recortarlo no tiene sentido. -->
                         <Trigger Property="StretchMode" Value="AutoGrow">
-                            <Setter TargetName="PART_LegendText" Property="TextTrimming" Value="None"/>
-                            <Setter TargetName="PART_TitleText" Property="TextTrimming" Value="None"/>
+                            <Setter TargetName="PART_CaptionText" Property="TextTrimming" Value="None"/>
+                            <Setter TargetName="PART_DetailText" Property="TextTrimming" Value="None"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -299,8 +300,8 @@ TextAlignment="Center"
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="UseLayoutRounding" Value="True" />
         <Setter Property="Background" Value="White"/>
-        <Setter Property="TitleText" Value="DefaultTitle" />
-        <Setter Property="LegendText" Value="DefaultLegend" />
+        <Setter Property="CaptionText" Value="DefaultCaption" />
+        <Setter Property="DetailText" Value="DefaultDetail" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>

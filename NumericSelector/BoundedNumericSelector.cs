@@ -20,7 +20,7 @@ namespace NumericSelector
 		private Grid? _barGrid;
 		private Border? _barRect;
 		private TextBlock? _valueText;
-		private UIElement? _valueWithTitle;
+		private UIElement? _valueDetail;
 		private Point _valueDragStart;
 		// Width que tenía antes de entrar en AutoGrow, para restituirlo al volver a Fixed.
 		// No hace falta marca de agua aparte: en AutoGrow el propio Width la cumple, porque
@@ -33,11 +33,16 @@ namespace NumericSelector
 		// (izquierda -> Minimum, derecha -> Maximum). El centro restante -> ResetValue.
 		private const double RightClickEdgeZone = 0.3;
 
-		// Si el control ya tenia el foco cuando empezo la pulsacion actual. Se toma en
-		// OnPreviewMouseDown (fase tunel) porque para cuando corren los handlers de las
+// Si el control ya tenia el foco cuando empezo la pulsacion actual. Se toma en
+// OnPreviewMouseDown (fase tunel) porque para cuando corren los handlers de las
 		// partes (fase burbuja) el Focus() de esa misma pulsacion YA se aplico y consultar
 		// IsKeyboardFocused ahi daria siempre true: verificado, la guarda no filtraria nada.
 		private bool _hadFocusOnPress;
+
+		// Contexto de medición de texto: la tipografía "global" del control (parte),
+		// armada una sola vez por cambio de fuente/idioma y reutilizada en todas las
+		// mediciones. El DPI no se guarda acá: se obtiene por tanda, en vivo.
+		private TextMeasureContext? _measureContext;
 
 		// --- Constructor de Instancia ---
 		public BoundedNumericSelector()
@@ -52,7 +57,8 @@ namespace NumericSelector
 			SetCurrentValue(LanguageProperty,
 				XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag));
 
-			// Piso inicial acorde al rango por defecto.
+			// Contexto de medición y piso inicial, acordes a la fuente y el rango por defecto.
+			RebuildMeasureContext();
 			UpdateMinimumRequiredWidth();
 		}
 
@@ -70,7 +76,7 @@ namespace NumericSelector
 			_barGrid = GetTemplateChild("PART_BarGrid") as Grid;
 			_barRect = GetTemplateChild("PART_BarRect") as Border;
 			_valueText = GetTemplateChild("PART_ValueText") as TextBlock;
-			_valueWithTitle = GetTemplateChild("PART_ValueWithTitle") as UIElement;
+			_valueDetail = GetTemplateChild("PART_ValueDetailText") as UIElement;
 
 			AttachTemplateParts();
 
@@ -92,12 +98,12 @@ namespace NumericSelector
 				_valueText.MouseLeftButtonUp += ValueText_MouseLeftButtonUp;
 			}
 
-			// El valor arriba (VBUp: ShowTitle y ValueFollowsTitle) usa los mismos gestos.
-			if (_valueWithTitle != null)
+			// El valor en la fila de detalle (descendió con ValueFollowsDetail) usa los mismos gestos.
+			if (_valueDetail != null)
 			{
-				_valueWithTitle.MouseLeftButtonDown += ValueText_MouseLeftButtonDown;
-				_valueWithTitle.MouseMove += ValueText_MouseMove;
-				_valueWithTitle.MouseLeftButtonUp += ValueText_MouseLeftButtonUp;
+				_valueDetail.MouseLeftButtonDown += ValueText_MouseLeftButtonDown;
+				_valueDetail.MouseMove += ValueText_MouseMove;
+				_valueDetail.MouseLeftButtonUp += ValueText_MouseLeftButtonUp;
 			}
 
 			// Recalcular el relleno de la barra cuando cambie el espacio disponible,
@@ -121,11 +127,11 @@ namespace NumericSelector
 				_valueText.MouseLeftButtonUp -= ValueText_MouseLeftButtonUp;
 			}
 
-			if (_valueWithTitle != null)
+			if (_valueDetail != null)
 			{
-				_valueWithTitle.MouseLeftButtonDown -= ValueText_MouseLeftButtonDown;
-				_valueWithTitle.MouseMove -= ValueText_MouseMove;
-				_valueWithTitle.MouseLeftButtonUp -= ValueText_MouseLeftButtonUp;
+				_valueDetail.MouseLeftButtonDown -= ValueText_MouseLeftButtonDown;
+				_valueDetail.MouseMove -= ValueText_MouseMove;
+				_valueDetail.MouseLeftButtonUp -= ValueText_MouseLeftButtonUp;
 			}
 
 			if (_barGrid != null)
@@ -158,12 +164,20 @@ namespace NumericSelector
 			string min = Minimum.ToString("N0", FormatCulture);
 			string max = Maximum.ToString("N0", FormatCulture);
 
+			// El DPI se lee una sola vez por tanda de recálculo y se comparte entre todas
+			// las mediciones de la tanda: cada monitor puede tener el suyo y no conviene
+			// guardarlo, pero medir dos textos seguidos en la misma pasada con escalas
+			// distintas no tiene sentido.
+			double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+
 			// Alcanza con los dos extremos: entre los negativos el más ancho es el más
 			// negativo (Minimum) y entre los positivos el más grande (Maximum), porque la
 			// cantidad de dígitos crece con el valor absoluto y el signo es constante.
 			// Verificado además de forma empírica sobre rangos con cambio de signo y cruces
 			// de separador de miles.
-			double texto = Math.Max(MeasureStringWidth(min), MeasureStringWidth(max));
+			double texto = Math.Max(
+				TextMeasure.Measure(_measureContext!, dpi, min).Width,
+				TextMeasure.Measure(_measureContext!, dpi, max).Width);
 
 			// +1 de tolerancia, en el espíritu del LNSlider: que sobre no molesta, que falte
 			// corta el número. FormattedText y TextBlock pueden diferir por fracciones.
@@ -179,10 +193,34 @@ namespace NumericSelector
 			SetCurrentValue(MinWidthProperty, piso);
 		}
 
+		// Arma el contexto de medición con la tipografía "global" del control y la cultura
+		// de formato. Se reconstruye sólo cuando cambia alguno de esos insumos (ver
+		// OnPropertyChanged): el Typeface es la parte cara de la medición y por eso se
+		// amortiza, mientras que el DPI se pasa por tanda sin cachear.
+		private void RebuildMeasureContext()
+		{
+			_measureContext = new TextMeasureContext(
+				new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
+				FontSize,
+				FormatCulture,
+				FlowDirection);
+		}
+
 		// Recalcula el piso ante todo lo que cambie el ancho del número: el rango y la fuente.
 		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
+
+			// La tipografía y la cultura que miden los textos viven en el contexto: se
+			// reconstruye sólo cuando cambian esos insumos. El DPI no: se obtiene por tanda.
+			if (e.Property == FontSizeProperty || e.Property == FontFamilyProperty ||
+				e.Property == FontStyleProperty || e.Property == FontWeightProperty ||
+				e.Property == FontStretchProperty ||
+				// La cultura (de Language) y la dirección entran en la medición del texto.
+				e.Property == LanguageProperty || e.Property == FlowDirectionProperty)
+			{
+				RebuildMeasureContext();
+			}
 
 			if (e.Property == MinimumProperty || e.Property == MaximumProperty ||
 				e.Property == ControlBorderPixelsProperty ||
@@ -196,7 +234,7 @@ namespace NumericSelector
 				UpdateMinimumRequiredWidth();
 			}
 
-			if (e.Property == IsDisplayOnlyProperty || e.Property == ValueChangeModeProperty)
+			if (e.Property == IsReadOnlyProperty || e.Property == ValueChangeModeProperty)
 			{
 				UpdateCursors();
 			}
@@ -275,7 +313,7 @@ namespace NumericSelector
 			// linea y cierra el caso de un foco que llegue por algun otro camino.
 			// El modo MustFocusFirst NO entra aca: es una regla de mouse. Si el control
 			// tiene el foco para recibir la tecla, el requisito ya esta cumplido.
-			if (IsDisplayOnly || !IsEnabled)
+			if (IsReadOnly || !IsEnabled)
 				return;
 
 			switch (e.Key)
@@ -452,8 +490,8 @@ namespace NumericSelector
 			base.OnMouseWheel(e);
 
 			// La rueda ya exigia foco en los dos modos, asi que MustFocusFirst no le agrega
-			// nada. IsDisplayOnly si: sin el, un foco heredado la dejaria viva.
-			if (IsDisplayOnly || !IsKeyboardFocused)
+			// nada. IsReadOnly si: sin el, un foco heredado la dejaria viva.
+			if (IsReadOnly || !IsKeyboardFocused)
 				return;
 
 			int before = Value;
@@ -471,7 +509,7 @@ namespace NumericSelector
 			// ya estaba puesto ANTES de esta pulsacion (ver _hadFocusOnPress).
 			_hadFocusOnPress = IsKeyboardFocused;
 
-			if (IsDisplayOnly)
+			if (IsReadOnly)
 				return;
 
 			Focus();
@@ -492,7 +530,7 @@ namespace NumericSelector
 		}
 
 		// Soltar el foco de teclado si el control lo tiene puesto.
-		// Ni quitar Focusable (IsDisplayOnly) ni IsEnabled=false lo sueltan por su cuenta:
+		// Ni quitar Focusable (IsReadOnly) ni IsEnabled=false lo sueltan por su cuenta:
 		// verificado en los dos casos, IsKeyboardFocused seguía en true. Y mientras el
 		// control lo conserve el teclado le SIGUE llegando, porque las teclas se rutean al
 		// elemento enfocado y no al que está bajo el puntero: medido, una flecha movía el
@@ -516,14 +554,14 @@ namespace NumericSelector
 		// --- Cursores ---
 
 		// El cursor dice la verdad sobre si el gesto va a hacer algo:
-		//   IsDisplayOnly                -> Arrow (gana sobre todo lo demas)
+		//   IsReadOnly                -> Arrow (gana sobre todo lo demas)
 		//   MustFocusFirst y sin foco    -> Arrow (el proximo click solo va a enfocar)
 		//   resto                        -> el cursor del gesto
 		// En ChangeOnClick NO depende del foco: ahi el gesto funciona igual sin el, y
 		// mostrar Arrow seria mentir.
 		private void UpdateCursors()
 		{
-			bool gestures = !IsDisplayOnly &&
+			bool gestures = !IsReadOnly &&
 				(ValueChangeMode == ValueChangeMode.ChangeOnClick || IsKeyboardFocused);
 
 			// Arrastre horizontal sobre la barra.
@@ -533,7 +571,7 @@ namespace NumericSelector
 			// El casillero del valor se arrastra en vertical en cualquier orientacion.
 			var valueCursor = gestures ? Cursors.SizeNS : Cursors.Arrow;
 			if (_valueText != null) _valueText.Cursor = valueCursor;
-			if (_valueWithTitle is FrameworkElement fe) fe.Cursor = valueCursor;
+			if (_valueDetail is FrameworkElement fed) fed.Cursor = valueCursor;
 
 			// WPF resuelve el cursor durante el movimiento del mouse. Este cambio ocurre
 			// con el puntero QUIETO (se hace click, llega el foco, la mano no se movio),
@@ -551,7 +589,7 @@ namespace NumericSelector
 		// Quitar Focusable NO alcanza para frenar el mouse: verificado, los handlers de las
 		// partes siguen corriendo igual y el valor cambiaba.
 		private bool MouseGesturesAllowed =>
-			!IsDisplayOnly &&
+			!IsReadOnly &&
 			(ValueChangeMode == ValueChangeMode.ChangeOnClick || _hadFocusOnPress);
 
 		// Actualiza el tamaño del rectangulo de relleno para que represente
@@ -579,25 +617,5 @@ namespace NumericSelector
 		}
 
 		// --- Medición de texto ---
-
-		// Ancho en píxeles que ocupa un texto con la fuente actual del control. Se usa para
-		// el piso del ancho (UpdateMinimumRequiredWidth). FormattedText puede diferir por
-		// fracciones de lo que termina dibujando el TextBlock de la plantilla, por eso el
-		// cálculo del piso suma una tolerancia de 1.
-		private double MeasureStringWidth(string text)
-		{
-			if (string.IsNullOrEmpty(text)) return 0;
-
-			var ft = new FormattedText(
-				text,
-				FormatCulture,
-				FlowDirection,
-				new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
-				FontSize,
-				Brushes.Black,
-				VisualTreeHelper.GetDpi(this).PixelsPerDip);
-
-			return ft.Width;
-		}
 	}
 }

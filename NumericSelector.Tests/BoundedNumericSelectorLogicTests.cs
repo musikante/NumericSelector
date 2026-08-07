@@ -20,8 +20,8 @@ public class BoundedNumericSelectorLogicTests
 			Assert.AreEqual(10, selector.LargeChange);
 
 			// API de disposición tras el rediseño.
-			Assert.IsFalse(selector.ShowTitle);
-			Assert.IsTrue(selector.ValueFollowsTitle);
+			Assert.IsFalse(selector.ShowDetail);
+			Assert.IsTrue(selector.ValueFollowsDetail);
 			Assert.AreEqual(ValueBoxSide.Right, selector.ValueBoxSide);
 		});
 	}
