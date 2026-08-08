@@ -159,6 +159,10 @@ Las incoherencias de texto y las cinco limpiezas de código que figuraban acá e
 - `[TemplatePart]` sobre la clase, para documentar el contrato de la plantilla.
 - Validación de valores inválidos en los enums públicos: hoy `(ValueBoxDock)99` se asigna sin protestar.
 
+### Traducción pendiente
+
+- Los comentarios del código (~717 líneas en C#, 51 bloques en XAML) y los cinco `.md` del repo siguen en español. La convención es **todo en inglés**; esto es deuda de la etapa anterior. Se encara en una pasada dedicada, después de actualizar la captura del README.
+
 ### Publicación
 
 - El repositorio **no tiene remoto todavía**: publicarlo en GitHub es decisión del usuario.
