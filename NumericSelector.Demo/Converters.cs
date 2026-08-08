@@ -30,7 +30,7 @@ namespace NumericSelector.Demo
 	/// </summary>
 	public class ColorIndexConverter : IValueConverter
 	{
-		public static readonly Color[] Colores =
+		public static readonly Color[] Palette =
 		{
 			Colors.Black,
 			Colors.DimGray,
@@ -62,9 +62,9 @@ namespace NumericSelector.Demo
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			if (i < 0 || i >= Colores.Length)
+			if (i < 0 || i >= Palette.Length)
 				return $"(#{i})";
-			Color c = Colores[i];
+			Color c = Palette[i];
 			return $"#{c.A:X2}{c.R:X2}{c.G:X2}{c.B:X2}";
 		}
 
@@ -77,49 +77,49 @@ namespace NumericSelector.Demo
 	/// Mapea el Value de un BoundedNumericSelector (0..n-1) a una fuente del sistema.
 	/// </summary>
 	/// <remarks>
-	/// Hay DOS listas y la distinción importa: <see cref="Todas"/> es inmutable y es la
-	/// fuente de la verdad; <see cref="Familias"/> es la que dejó pasar el filtro y es la
+	/// Hay DOS listas y la distinción importa: <see cref="All"/> es inmutable y es la
+	/// fuente de la verdad; <see cref="Filtered"/> es la que dejó pasar el filtro y es la
 	/// única que indexan el picker y este converter. Si se desincronizaran, el selector
-	/// mostraría el nombre de una fuente y aplicaría otra. Por eso <see cref="Familias"/>
-	/// sólo se escribe desde <see cref="Filtrar"/>.
+	/// mostraría el nombre de una fuente y aplicaría otra. Por eso <see cref="Filtered"/>
+	/// sólo se escribe desde <see cref="Filter"/>.
 	/// </remarks>
 	public class FontIndexConverter : IValueConverter
 	{
 		/// <summary>Todas las fuentes del sistema, ordenadas por nombre. No cambia nunca.</summary>
-		public static readonly FontFamily[] Todas =
+		public static readonly FontFamily[] All =
 			Fonts.SystemFontFamilies
 				.OrderBy(f => f.Source, StringComparer.CurrentCultureIgnoreCase)
 				.ToArray();
 
 		/// <summary>Las que sobrevivieron al filtro. Arranca siendo todas.</summary>
-		public static FontFamily[] Familias { get; private set; } = Todas;
+		public static FontFamily[] Filtered { get; private set; } = All;
 
 		/// <summary>
-		/// Deja en <see cref="Familias"/> las fuentes cuyo nombre contiene <paramref name="texto"/>
+		/// Deja en <see cref="Filtered"/> las fuentes cuyo nombre contiene <paramref name="text"/>
 		/// (sin distinguir mayúsculas) y devuelve cuántas quedaron. Un filtro vacío las devuelve
 		/// todas.
 		/// </summary>
-		public static int Filtrar(string? texto)
+		public static int Filter(string? text)
 		{
-			string patron = texto?.Trim() ?? "";
-			Familias = patron.Length == 0
-				? Todas
-				: Todas.Where(f => f.Source.Contains(patron, StringComparison.CurrentCultureIgnoreCase))
+			string pattern = text?.Trim() ?? "";
+			Filtered = pattern.Length == 0
+				? All
+				: All.Where(f => f.Source.Contains(pattern, StringComparison.CurrentCultureIgnoreCase))
 					   .ToArray();
-			return Familias.Length;
+			return Filtered.Length;
 		}
 
 		// Valor (int) -> nombre de la fuente, para mostrarlo en el DetailText.
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			if (Familias.Length == 0)
+			if (Filtered.Length == 0)
 				return "(no match)";
 
 			// El rango del control tiene siempre al menos 1 de ancho, así que con una sola
 			// coincidencia el índice 1 existe para el selector pero no en la lista. Se dice,
 			// no se disimula: el banco está para mostrar los límites reales de la API.
-			return (i >= 0 && i < Familias.Length) ? Familias[i].Source : $"(no font at #{i})";
+			return (i >= 0 && i < Filtered.Length) ? Filtered[i].Source : $"(no font at #{i})";
 		}
 
 		// No se usa: el selector no recibe la fuente de vuelta (el índice habla por él).
@@ -133,7 +133,7 @@ namespace NumericSelector.Demo
 	/// </summary>
 	public class FontStyleIndexConverter : IValueConverter
 	{
-		public static readonly FontStyle[] Estilos =
+		public static readonly FontStyle[] Styles =
 		{
 			FontStyles.Normal,
 			FontStyles.Italic,
@@ -144,10 +144,10 @@ namespace NumericSelector.Demo
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < Estilos.Length) ? Nombre(Estilos[i]) : $"(#{i})";
+			return (i >= 0 && i < Styles.Length) ? Describe(Styles[i]) : $"(#{i})";
 		}
 
-		private static string Nombre(FontStyle style) => style switch
+		private static string Describe(FontStyle style) => style switch
 		{
 			_ when style == FontStyles.Normal => "Normal",
 			_ when style == FontStyles.Italic => "Italic",
@@ -165,7 +165,7 @@ namespace NumericSelector.Demo
 	/// </summary>
 	public class FontWeightIndexConverter : IValueConverter
 	{
-		public static readonly FontWeight[] Pesos =
+		public static readonly FontWeight[] Weights =
 		{
 			FontWeights.Light,
 			FontWeights.Normal,
@@ -178,10 +178,10 @@ namespace NumericSelector.Demo
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < Pesos.Length) ? Nombre(Pesos[i]) : $"(#{i})";
+			return (i >= 0 && i < Weights.Length) ? Describe(Weights[i]) : $"(#{i})";
 		}
 
-		private static string Nombre(FontWeight weight) => weight switch
+		private static string Describe(FontWeight weight) => weight switch
 		{
 			_ when weight == FontWeights.Light => "Light",
 			_ when weight == FontWeights.Normal => "Normal",
@@ -203,7 +203,7 @@ namespace NumericSelector.Demo
 	/// </summary>
 	public class MouseBehaviorIndexConverter : IValueConverter
 	{
-		public static readonly MouseInteractionBehavior[] Modos =
+		public static readonly MouseInteractionBehavior[] Modes =
 		{
 			MouseInteractionBehavior.ChangeOnClick,
 			MouseInteractionBehavior.MustFocusFirst,
@@ -211,13 +211,13 @@ namespace NumericSelector.Demo
 
 		// Source (MouseInteractionBehavior) -> Target (int).
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-			=> Array.IndexOf(Modos, value);
+			=> Array.IndexOf(Modes, value);
 
 		// Target (int) -> Source (MouseInteractionBehavior).
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < Modos.Length) ? Modos[i] : Modos[0];
+			return (i >= 0 && i < Modes.Length) ? Modes[i] : Modes[0];
 		}
 	}
 
@@ -230,8 +230,8 @@ namespace NumericSelector.Demo
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < MouseBehaviorIndexConverter.Modos.Length)
-				? MouseBehaviorIndexConverter.Modos[i].ToString()
+			return (i >= 0 && i < MouseBehaviorIndexConverter.Modes.Length)
+				? MouseBehaviorIndexConverter.Modes[i].ToString()
 				: $"(#{i})";
 		}
 
@@ -247,7 +247,7 @@ namespace NumericSelector.Demo
 	/// </summary>
 	public class InteractionModeIndexConverter : IValueConverter
 	{
-		public static readonly UserInteractionMode[] Modos =
+		public static readonly UserInteractionMode[] Modes =
 		{
 			UserInteractionMode.Interactive,
 			UserInteractionMode.ReadOnly,
@@ -255,13 +255,13 @@ namespace NumericSelector.Demo
 
 		// Source (UserInteractionMode) -> Target (int).
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-			=> Array.IndexOf(Modos, value);
+			=> Array.IndexOf(Modes, value);
 
 		// Target (int) -> Source (UserInteractionMode).
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < Modos.Length) ? Modos[i] : Modos[0];
+			return (i >= 0 && i < Modes.Length) ? Modes[i] : Modes[0];
 		}
 	}
 
@@ -274,8 +274,8 @@ namespace NumericSelector.Demo
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < InteractionModeIndexConverter.Modos.Length)
-				? InteractionModeIndexConverter.Modos[i].ToString()
+			return (i >= 0 && i < InteractionModeIndexConverter.Modes.Length)
+				? InteractionModeIndexConverter.Modes[i].ToString()
 				: $"(#{i})";
 		}
 
@@ -294,7 +294,7 @@ namespace NumericSelector.Demo
 	/// </summary>
 	public class ValueBoxDockIndexConverter : IValueConverter
 	{
-		public static readonly ValueBoxDock[] Modos =
+		public static readonly ValueBoxDock[] Modes =
 		{
 			ValueBoxDock.Left,
 			ValueBoxDock.Right,
@@ -302,20 +302,20 @@ namespace NumericSelector.Demo
 
 		// Source (ValueBoxDock) -> Target (int).
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-			=> Array.IndexOf(Modos, value);
+			=> Array.IndexOf(Modes, value);
 
 		// Target (int) -> Source (ValueBoxDock).
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < Modos.Length) ? Modos[i] : Modos[0];
+			return (i >= 0 && i < Modes.Length) ? Modes[i] : Modes[0];
 		}
 	}
 
 	/// <summary>
 	/// Nombre del lado seleccionado (int -> "Left"/"Right"), para mostrarlo en el
 	/// DetailText del selector de <see cref="ValueBoxDock"/>. El orden es el de
-	/// <see cref="ValueBoxDockIndexConverter.Modos"/>, que sigue el eje de la barra
+	/// <see cref="ValueBoxDockIndexConverter.Modes"/>, que sigue el eje de la barra
 	/// (izquierda→0), no el del enum.
 	/// </summary>
 	public class ValueBoxDockTextConverter : IValueConverter
@@ -323,8 +323,8 @@ namespace NumericSelector.Demo
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < ValueBoxDockIndexConverter.Modos.Length)
-				? ValueBoxDockIndexConverter.Modos[i].ToString()
+			return (i >= 0 && i < ValueBoxDockIndexConverter.Modes.Length)
+				? ValueBoxDockIndexConverter.Modes[i].ToString()
 				: $"(#{i})";
 		}
 
@@ -341,7 +341,7 @@ namespace NumericSelector.Demo
 	/// </summary>
 	public class BoolIndexConverter : IValueConverter
 	{
-		public static readonly bool[] Valores = { false, true };
+		public static readonly bool[] Values = { false, true };
 
 		// Source (bool) -> Target (int).
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -351,7 +351,7 @@ namespace NumericSelector.Demo
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < Valores.Length) ? Valores[i] : Valores[0];
+			return (i >= 0 && i < Values.Length) ? Values[i] : Values[0];
 		}
 	}
 

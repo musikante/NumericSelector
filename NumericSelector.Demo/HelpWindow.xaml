@@ -58,7 +58,7 @@
                            Foreground="#FF5A6B7A"
                            Text="F1 or Esc closes this window."/>
                 <Button Content="Close" HorizontalAlignment="Right" Width="90" Padding="0,3"
-                        IsCancel="True" IsDefault="True" Click="Cerrar_Click"/>
+                        IsCancel="True" IsDefault="True" Click="Close_Click"/>
             </DockPanel>
         </Border>
 

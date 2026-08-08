@@ -23,14 +23,14 @@ public class InteractionModeTests
 	/// Incluye un botón aparte para poder sacarle el foco al control cuando la prueba
 	/// necesita el escenario "sin foco previo".
 	/// </summary>
-	private static Escenario Host(Action<BoundedNumericSelector>? configurar = null)
+	private static Scenario Host(Action<BoundedNumericSelector>? configure = null)
 	{
 		var selector = new BoundedNumericSelector { Minimum = 0, Maximum = 100, Value = 50 };
-		configurar?.Invoke(selector);
+		configure?.Invoke(selector);
 
-		var otro = new Button { Content = "otro" };
+		var other = new Button { Content = "other" };
 		var panel = new StackPanel();
-		panel.Children.Add(otro);
+		panel.Children.Add(other);
 		panel.Children.Add(selector);
 
 		var window = new Window
@@ -46,11 +46,11 @@ public class InteractionModeTests
 		window.UpdateLayout();
 
 		var bar = (FrameworkElement)selector.Template.FindName("PART_BarGrid", selector);
-		return new Escenario(window, selector, bar, otro);
+		return new Scenario(window, selector, bar, other);
 	}
 
-	private sealed record Escenario(
-		Window Window, BoundedNumericSelector Selector, FrameworkElement Bar, Button Otro);
+	private sealed record Scenario(
+		Window Window, BoundedNumericSelector Selector, FrameworkElement Bar, Button Other);
 
 	/// <summary>
 	/// Click izquierdo completo: primero la fase túnel (donde el control toma el foco y
@@ -58,19 +58,19 @@ public class InteractionModeTests
 	/// Las dos fases son imprescindibles: con la burbuja sola, MustFocusFirst nunca vería
 	/// el estado de foco previo y la prueba no probaría nada.
 	/// </summary>
-	private static void ClickIzquierdo(UIElement destino)
+	private static void LeftClick(UIElement target)
 	{
-		destino.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+		target.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
 		{ RoutedEvent = Mouse.PreviewMouseDownEvent });
-		destino.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+		target.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
 		{ RoutedEvent = UIElement.MouseLeftButtonDownEvent });
 	}
 
-	private static void ClickDerecho(UIElement destino)
+	private static void RightClick(UIElement target)
 	{
-		destino.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Right)
+		target.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Right)
 		{ RoutedEvent = Mouse.PreviewMouseDownEvent });
-		destino.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Right)
+		target.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Right)
 		{ RoutedEvent = UIElement.MouseRightButtonUpEvent });
 	}
 
@@ -85,17 +85,17 @@ public class InteractionModeTests
 	/// resultado desde afuera daba pruebas intermitentes. El puntero no se mueve durante la
 	/// prueba, así que ejecutar el gesto es la única fuente confiable de la expectativa.
 	/// </summary>
-	private static (int Esperado, int Distinto) Sondear(Escenario e, Action<UIElement> gesto)
+	private static (int Expected, int Different) Probe(Scenario e, Action<UIElement> gesture)
 	{
 		e.Selector.Focus();
-		gesto(e.Bar);
+		gesture(e.Bar);
 
-		int esperado = e.Selector.Value;
-		int distinto = esperado == e.Selector.Maximum ? e.Selector.Minimum : e.Selector.Maximum;
+		int expected = e.Selector.Value;
+		int different = expected == e.Selector.Maximum ? e.Selector.Minimum : e.Selector.Maximum;
 
 		// Se devuelve el control al estado "sin foco" para que la prueba arme su escenario.
-		e.Otro.Focus();
-		return (esperado, distinto);
+		e.Other.Focus();
+		return (expected, different);
 	}
 
 	// --- MouseBehavior ---
@@ -120,13 +120,13 @@ public class InteractionModeTests
 			var e = Host();
 			try
 			{
-				var (esperado, distinto) = Sondear(e, ClickIzquierdo);
-				e.Selector.Value = distinto;
+				var (expected, different) = Probe(e, LeftClick);
+				e.Selector.Value = different;
 				Assert.IsFalse(e.Selector.IsKeyboardFocused, "El escenario exige arrancar sin foco.");
 
-				ClickIzquierdo(e.Bar);
+				LeftClick(e.Bar);
 
-				Assert.AreEqual(esperado, e.Selector.Value,
+				Assert.AreEqual(expected, e.Selector.Value,
 					"En ChangeOnClick el click debe actuar aunque el control no tuviera el foco.");
 			}
 			finally { e.Window.Close(); }
@@ -141,17 +141,17 @@ public class InteractionModeTests
 			var e = Host(s => s.MouseBehavior = MouseInteractionBehavior.MustFocusFirst);
 			try
 			{
-				var (esperado, distinto) = Sondear(e, ClickIzquierdo);
-				e.Selector.Value = distinto;
+				var (expected, different) = Probe(e, LeftClick);
+				e.Selector.Value = different;
 
-				ClickIzquierdo(e.Bar);
-				Assert.AreEqual(distinto, e.Selector.Value,
+				LeftClick(e.Bar);
+				Assert.AreEqual(different, e.Selector.Value,
 					"El click que otorga el foco no debe además mover el valor.");
 				Assert.IsTrue(e.Selector.IsKeyboardFocused,
 					"Ese primer click sí tiene que dejar el control enfocado.");
 
-				ClickIzquierdo(e.Bar);
-				Assert.AreEqual(esperado, e.Selector.Value,
+				LeftClick(e.Bar);
+				Assert.AreEqual(expected, e.Selector.Value,
 					"Con el foco ya puesto, el click siguiente debe actuar normalmente.");
 			}
 			finally { e.Window.Close(); }
@@ -166,16 +166,16 @@ public class InteractionModeTests
 			var e = Host(s => s.MouseBehavior = MouseInteractionBehavior.MustFocusFirst);
 			try
 			{
-				var (esperado, distinto) = Sondear(e, ClickIzquierdo);
-				e.Selector.Value = distinto;
+				var (expected, different) = Probe(e, LeftClick);
+				e.Selector.Value = different;
 
 				// Foco entregado por código, como lo haría una tabulación: no es un click.
 				e.Selector.Focus();
 				Assert.IsTrue(e.Selector.IsKeyboardFocused);
 
-				ClickIzquierdo(e.Bar);
+				LeftClick(e.Bar);
 
-				Assert.AreEqual(esperado, e.Selector.Value,
+				Assert.AreEqual(expected, e.Selector.Value,
 					"Si el foco ya estaba puesto, el primer click debe actuar aunque no lo haya dado él.");
 			}
 			finally { e.Window.Close(); }
@@ -190,15 +190,15 @@ public class InteractionModeTests
 			var e = Host(s => s.MouseBehavior = MouseInteractionBehavior.MustFocusFirst);
 			try
 			{
-				var (esperado, distinto) = Sondear(e, ClickDerecho);
-				e.Selector.Value = distinto;
+				var (expected, different) = Probe(e, RightClick);
+				e.Selector.Value = different;
 
-				ClickDerecho(e.Bar);
-				Assert.AreEqual(distinto, e.Selector.Value,
+				RightClick(e.Bar);
+				Assert.AreEqual(different, e.Selector.Value,
 					"La regla vale para todos los gestos de mouse, no sólo para el click izquierdo.");
 
-				ClickDerecho(e.Bar);
-				Assert.AreEqual(esperado, e.Selector.Value,
+				RightClick(e.Bar);
+				Assert.AreEqual(expected, e.Selector.Value,
 					"Con el foco puesto, el click derecho por zonas debe actuar.");
 			}
 			finally { e.Window.Close(); }
@@ -272,29 +272,29 @@ public class InteractionModeTests
 			{
 				// Se sondea ANTES de entrar en el modo: hace falta saber qué valor produciría
 				// un gesto que funciona, para poder afirmar que después no produce ninguno.
-				var (esperado, distinto) = Sondear(e, ClickIzquierdo);
+				var (expected, different) = Probe(e, LeftClick);
 
 				e.Selector.InteractionMode = UserInteractionMode.ReadOnly;
-				e.Selector.Value = distinto;
+				e.Selector.Value = different;
 
-				ClickIzquierdo(e.Bar);
-				Assert.AreEqual(distinto, e.Selector.Value, "El click izquierdo no debe hacer nada.");
+				LeftClick(e.Bar);
+				Assert.AreEqual(different, e.Selector.Value, "El click izquierdo no debe hacer nada.");
 
-				ClickDerecho(e.Bar);
-				Assert.AreEqual(distinto, e.Selector.Value, "El click derecho no debe hacer nada.");
+				RightClick(e.Bar);
+				Assert.AreEqual(different, e.Selector.Value, "El click derecho no debe hacer nada.");
 
 				e.Selector.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice, 0, 120)
 				{ RoutedEvent = UIElement.MouseWheelEvent });
-				Assert.AreEqual(distinto, e.Selector.Value, "La rueda no debe hacer nada.");
+				Assert.AreEqual(different, e.Selector.Value, "La rueda no debe hacer nada.");
 
 				var fuente = PresentationSource.FromVisual(e.Window)!;
 				e.Selector.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, fuente, 0, Key.Right)
 				{ RoutedEvent = Keyboard.PreviewKeyDownEvent });
-				Assert.AreEqual(distinto, e.Selector.Value, "El teclado no debe hacer nada.");
+				Assert.AreEqual(different, e.Selector.Value, "El teclado no debe hacer nada.");
 
 				// Y que el sondeo no haya sido degenerado: el gesto sí producía un cambio.
-				Assert.AreNotEqual(esperado, distinto,
-					"Si el gesto no cambiaba nada de entrada, la prueba no estaría probando el bloqueo.");
+				Assert.AreNotEqual(expected, different,
+					"Si el gesture no cambiaba nada de entrada, la prueba no estaría probando el bloqueo.");
 			}
 			finally { e.Window.Close(); }
 		});

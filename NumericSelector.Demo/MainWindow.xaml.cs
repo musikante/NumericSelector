@@ -20,42 +20,42 @@ namespace NumericSelector.Demo
 		{
 			// El selector de fuente recorre la lista de fuentes del sistema; `Maximum` no es
 			// constante para esta máquina, así que se fija en runtime una vez conocida la lista.
-			FontPicker.Maximum = FontIndexConverter.Familias.Length - 1;
+			FontPicker.Maximum = FontIndexConverter.Filtered.Length - 1;
 
 			// FontFamily no implementa igualdad por valor, así que no podemos comparar la
 			// instancia del Master con las de la lista; la preseleccionamos por nombre.
-			string actual = MasterNumericSelector.FontFamily.Source;
-			int i = Array.FindIndex(FontIndexConverter.Familias, f => f.Source == actual);
+			string current = MasterNumericSelector.FontFamily.Source;
+			int i = Array.FindIndex(FontIndexConverter.Filtered, f => f.Source == current);
 			if (i >= 0) FontPicker.Value = i;
 
 			// FontStyle y FontWeight son structs con igualdad por valor: comparación directa.
-			Preseleccionar(FontStylePicker, FontStyleIndexConverter.Estilos, MasterNumericSelector.FontStyle);
-			Preseleccionar(FontWeightPicker, FontWeightIndexConverter.Pesos, MasterNumericSelector.FontWeight);
+			Preselect(FontStylePicker, FontStyleIndexConverter.Styles, MasterNumericSelector.FontStyle);
+			Preselect(FontWeightPicker, FontWeightIndexConverter.Weights, MasterNumericSelector.FontWeight);
 		}
 
 		// F1 (o el botón del pie) abre la ayuda del demo.
-		private void Ayuda_Executed(object sender, ExecutedRoutedEventArgs e) => HelpWindow.Mostrar(this);
+		private void Help_Executed(object sender, ExecutedRoutedEventArgs e) => HelpWindow.Open(this);
 
-		private static void Preseleccionar<T>(BoundedNumericSelector selector, T[] opciones, T actual)
+		private static void Preselect<T>(BoundedNumericSelector selector, T[] options, T current)
 			where T : struct
 		{
-			int i = Array.IndexOf(opciones, actual);
+			int i = Array.IndexOf(options, current);
 			if (i >= 0) selector.Value = i;
 		}
 
 		// Aplica la fuente elegida al Master (y se la da también al propio picker, para que
 		// el cambio se vea en el control que lo produce).
 		private void FontPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarFuente();
+			=> ApplyFont();
 
-		private void AplicarFuente()
+		private void ApplyFont()
 		{
 			int i = FontPicker.Value;
 			// Con la lista vacía —filtro sin coincidencias— no hay nada que aplicar y se
 			// conserva la última fuente puesta.
-			if (i < 0 || i >= FontIndexConverter.Familias.Length) return;
+			if (i < 0 || i >= FontIndexConverter.Filtered.Length) return;
 
-			var font = FontIndexConverter.Familias[i];
+			var font = FontIndexConverter.Filtered[i];
 			MasterNumericSelector.FontFamily = font;
 			FontPicker.FontFamily = font;
 		}
@@ -65,21 +65,21 @@ namespace NumericSelector.Demo
 		{
 			// Qué fuente estaba elegida, para reencontrarla si sobrevive al filtro. Se guarda
 			// el nombre y no la instancia porque FontFamily no tiene igualdad por valor.
-			int previo = FontPicker.Value;
-			string? elegida = (previo >= 0 && previo < FontIndexConverter.Familias.Length)
-				? FontIndexConverter.Familias[previo].Source
+			int previousIndex = FontPicker.Value;
+			string? chosen = (previousIndex >= 0 && previousIndex < FontIndexConverter.Filtered.Length)
+				? FontIndexConverter.Filtered[previousIndex].Source
 				: null;
 
-			int cuantas = FontIndexConverter.Filtrar(FontFilterBox.Text);
+			int matchCount = FontIndexConverter.Filter(FontFilterBox.Text);
 
 			// El rango del control tiene siempre al menos 1 de ancho: con 0 o 1 coincidencias
 			// esto pide 0 y la coerción lo sube a 1. Queda a la vista en el DetailText, que
 			// para ese índice sobrante avisa que no hay fuente. Es el límite real de la API.
-			FontPicker.Maximum = Math.Max(cuantas - 1, 0);
+			FontPicker.Maximum = Math.Max(matchCount - 1, 0);
 
-			int i = elegida is null
+			int i = chosen is null
 				? -1
-				: Array.FindIndex(FontIndexConverter.Familias, f => f.Source == elegida);
+				: Array.FindIndex(FontIndexConverter.Filtered, f => f.Source == chosen);
 			FontPicker.Value = i >= 0 ? i : 0;
 
 			// El DetailText se enlaza a Value, así que sólo se recalcula cuando Value cambia.
@@ -91,15 +91,15 @@ namespace NumericSelector.Demo
 
 			// Y por el mismo motivo hay que reaplicar: si el índice no cambió pero la lista sí,
 			// ValueChanged no se dispara y la fuente quedaría desfasada del nombre que se lee.
-			AplicarFuente();
+			ApplyFont();
 		}
 
 		private void FontStylePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
 		{
 			int i = FontStylePicker.Value;
-			if (i < 0 || i >= FontStyleIndexConverter.Estilos.Length) return;
+			if (i < 0 || i >= FontStyleIndexConverter.Styles.Length) return;
 
-			var style = FontStyleIndexConverter.Estilos[i];
+			var style = FontStyleIndexConverter.Styles[i];
 			MasterNumericSelector.FontStyle = style;
 			FontStylePicker.FontStyle = style;
 		}
@@ -107,9 +107,9 @@ namespace NumericSelector.Demo
 		private void FontWeightPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
 		{
 			int i = FontWeightPicker.Value;
-			if (i < 0 || i >= FontWeightIndexConverter.Pesos.Length) return;
+			if (i < 0 || i >= FontWeightIndexConverter.Weights.Length) return;
 
-			var weight = FontWeightIndexConverter.Pesos[i];
+			var weight = FontWeightIndexConverter.Weights[i];
 			MasterNumericSelector.FontWeight = weight;
 			FontWeightPicker.FontWeight = weight;
 		}
@@ -130,32 +130,32 @@ namespace NumericSelector.Demo
 		// lo produce (no hace falta darle foco al Master para apreciar p. ej.
 		// FocusBorderBrush). Cada picker está enganchado a una sola propiedad, la misma que
 		// anuncia en su MainText.
-		private void AplicarColor(BoundedNumericSelector picker, DependencyProperty property)
+		private void ApplyColor(BoundedNumericSelector picker, DependencyProperty property)
 		{
 			int i = picker.Value;
-			if (i < 0 || i >= ColorIndexConverter.Colores.Length) return;
+			if (i < 0 || i >= ColorIndexConverter.Palette.Length) return;
 
-			var brush = new SolidColorBrush(ColorIndexConverter.Colores[i]);
+			var brush = new SolidColorBrush(ColorIndexConverter.Palette[i]);
 			MasterNumericSelector.SetValue(property, brush);
 			picker.SetValue(property, brush);
 		}
 
 		private void BarFill_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarColor((BoundedNumericSelector)sender, BoundedNumericSelector.BarFillProperty);
+			=> ApplyColor((BoundedNumericSelector)sender, BoundedNumericSelector.BarFillProperty);
 
 		private void BarDividerBrush_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarColor((BoundedNumericSelector)sender, BoundedNumericSelector.BarDividerBrushProperty);
+			=> ApplyColor((BoundedNumericSelector)sender, BoundedNumericSelector.BarDividerBrushProperty);
 
 		private void BorderBrush_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarColor((BoundedNumericSelector)sender, Control.BorderBrushProperty);
+			=> ApplyColor((BoundedNumericSelector)sender, Control.BorderBrushProperty);
 
 		private void FocusBorderBrush_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarColor((BoundedNumericSelector)sender, BoundedNumericSelector.FocusBorderBrushProperty);
+			=> ApplyColor((BoundedNumericSelector)sender, BoundedNumericSelector.FocusBorderBrushProperty);
 
 		private void Foreground_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarColor((BoundedNumericSelector)sender, Control.ForegroundProperty);
+			=> ApplyColor((BoundedNumericSelector)sender, Control.ForegroundProperty);
 
 		private void Background_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarColor((BoundedNumericSelector)sender, Control.BackgroundProperty);
+			=> ApplyColor((BoundedNumericSelector)sender, Control.BackgroundProperty);
 	}
 }

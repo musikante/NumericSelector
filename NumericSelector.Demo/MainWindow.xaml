@@ -11,7 +11,7 @@
     <!-- F1 abre la ayuda: ApplicationCommands.Help ya trae ese gesto de fábrica, así que
          alcanza con enlazarlo y no hace falta declarar la tecla en ningún lado. -->
     <Window.CommandBindings>
-        <CommandBinding Command="Help" Executed="Ayuda_Executed"/>
+        <CommandBinding Command="Help" Executed="Help_Executed"/>
     </Window.CommandBindings>
 
     <Window.Resources>
@@ -32,7 +32,7 @@
         <test:FontStyleIndexConverter x:Key="FontStyleIndex"/>
         <test:FontWeightIndexConverter x:Key="FontWeightIndex"/>
 
-        <!-- Sin resource de colores ni de fuentes: la paleta vive en ColorIndexConverter.Colores
+        <!-- Sin resource de colores ni de fuentes: la paleta vive en ColorIndexConverter.Palette
              y las fuentes se enumeran en runtime (FontIndexConverter). Los pickers son
              selectores numéricos por índice, así que no hay lista que declarar en XAML. -->
 

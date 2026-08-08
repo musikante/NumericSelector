@@ -136,7 +136,7 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 
 ## Convenciones del proyecto
 
-- Comentarios y documentación en español
+- **Identificadores de código en inglés** (tipos, miembros, parámetros, variables locales y nombres de método de prueba), **comentarios y documentación en español**. Los dos idiomas conviven a propósito: el código lo lee cualquiera, la prosa la escribe el autor
 - Nombres claros, comentarios solo donde expliquen una decisión no obvia
 - Formato consistente con el código existente
 - Una corrección/mejora por PR
