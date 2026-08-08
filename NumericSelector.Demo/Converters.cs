@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -24,25 +23,10 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Casar la selección de un ComboBox por el valor del <see cref="Color"/> y no por la
-	/// referencia del brush. Los brushes de la paleta (StaticResource) son instancias
-	/// distintas de las que tiene el control; por referencia un SelectedItem nunca casaría
-	/// y la caja quedaría vacía.
-	/// </summary>
-	public class BrushToColorConverter : IValueConverter
-	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-			=> value is SolidColorBrush b ? b.Color : Colors.Transparent;
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-			=> new SolidColorBrush(value is Color c ? c : Colors.Transparent);
-	}
-
-	/// <summary>
 	/// Mapea el Value de un BoundedNumericSelector (0..23) a un color de la paleta del demo.
 	/// Devuelve el color como "#FFRRGGBB" (para el DetailText del selector) pero también expone
 	/// la lista, en el mismo orden, para que el code-behind la use al pintar el Master.
-	/// El orden coincide con el de x:Array "Paleta" de MainWindow.xaml.
+	/// Es la única fuente de la paleta: el XAML ya no declara una copia en paralelo.
 	/// </summary>
 	public class ColorIndexConverter : IValueConverter
 	{

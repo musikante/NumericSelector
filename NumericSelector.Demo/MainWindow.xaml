@@ -10,7 +10,6 @@
 
     <Window.Resources>
         <test:ThicknessToIntConverter x:Key="ThickToInt"/>
-        <test:BrushToColorConverter x:Key="BrushToColor"/>
         <test:ColorIndexConverter x:Key="ColorIndex"/>
         <test:MouseBehaviorIndexConverter x:Key="MouseBehaviorIndex"/>
         <test:MouseBehaviorTextConverter x:Key="MouseBehaviorText"/>
@@ -26,42 +25,9 @@
         <test:FontStyleIndexConverter x:Key="FontStyleIndex"/>
         <test:FontWeightIndexConverter x:Key="FontWeightIndex"/>
 
-        <!-- Paleta para los selectores de color -->
-        <x:Array x:Key="Paleta" Type="{x:Type SolidColorBrush}">
-            <SolidColorBrush Color="Black"/>
-            <SolidColorBrush Color="DimGray"/>
-            <SolidColorBrush Color="Gray"/>
-            <SolidColorBrush Color="Silver"/>
-            <SolidColorBrush Color="LightGray"/>
-            <SolidColorBrush Color="White"/>
-            <SolidColorBrush Color="DarkRed"/>
-            <SolidColorBrush Color="Crimson"/>
-            <SolidColorBrush Color="Red"/>
-            <SolidColorBrush Color="Orange"/>
-            <SolidColorBrush Color="DarkOrange"/>
-            <SolidColorBrush Color="Gold"/>
-            <SolidColorBrush Color="Yellow"/>
-            <SolidColorBrush Color="DarkGreen"/>
-            <SolidColorBrush Color="SeaGreen"/>
-            <SolidColorBrush Color="Green"/>
-            <SolidColorBrush Color="LimeGreen"/>
-            <SolidColorBrush Color="Teal"/>
-            <SolidColorBrush Color="DarkBlue"/>
-            <SolidColorBrush Color="RoyalBlue"/>
-            <SolidColorBrush Color="DodgerBlue"/>
-            <SolidColorBrush Color="SkyBlue"/>
-            <SolidColorBrush Color="Purple"/>
-            <SolidColorBrush Color="Transparent"/>
-        </x:Array>
-
-        <DataTemplate x:Key="MuestraDeColor">
-            <StackPanel Orientation="Horizontal">
-                <Rectangle Width="18" Height="12" Fill="{Binding}" Stroke="Gray" StrokeThickness="1"/>
-                <TextBlock Text="{Binding Color}" Margin="6,0,0,0" FontFamily="Consolas" FontSize="11"/>
-            </StackPanel>
-        </DataTemplate>
-
-        <!-- Sin resource de fuentes: el FontPicker enumera el sistema en runtime (FontIndexConverter). -->
+        <!-- Sin resource de colores ni de fuentes: la paleta vive en ColorIndexConverter.Colores
+             y las fuentes se enumeran en runtime (FontIndexConverter). Los pickers son
+             selectores numéricos por índice, así que no hay lista que declarar en XAML. -->
 
         <Style TargetType="TextBlock" x:Key="Etiqueta">
             <Setter Property="VerticalAlignment" Value="Center"/>
