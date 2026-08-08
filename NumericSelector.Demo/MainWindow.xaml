@@ -4,7 +4,7 @@
         xmlns:local="clr-namespace:NumericSelector;assembly=NumericSelector"
         xmlns:test="clr-namespace:NumericSelector.Demo"
         Title="BoundedNumericSelector - Demonstration &amp; Test Environment"
-        Height="820"
+        Height="720"
         Width="880"
         WindowStartupLocation="CenterScreen">
 
@@ -103,7 +103,12 @@
 
         <!-- ============ CONTROLES DE PRUEBA ============ -->
         <!-- Va en un ScrollViewer: además de acomodar todo, sirve para probar que la
-             rueda del mouse sobre un selector sin foco NO se come el scroll. -->
+             rueda del mouse sobre un selector sin foco NO se come el scroll.
+             El alto de la ventana (720) sale de medir: el contenido de la columna más alta
+             pide 424 px y con 820 el viewport daba 551, o sea 127 px de aire al pie. Se
+             dejan unos 27 px de holgura y no cero, porque con el alto exacto cualquier
+             fuente de sistema más grande sacaría la barra de scroll de entrada. -->
+
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid>
                 <Grid.ColumnDefinitions>

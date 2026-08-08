@@ -100,9 +100,10 @@
                     behave like this — the font picker walks every font installed on this machine.
                 </TextBlock>
                 <TextBlock Style="{StaticResource Paragraph}">
-                    The three text boxes are the exception, and a necessary one: MainText and
-                    DetailText hold strings, the font filter takes a string, and this control is
-                    for numbers.
+                    Text boxes are the only foreign control in the bench, and an unavoidable one:
+                    MainText, DetailText and the font filter all take strings, and this control is
+                    for numbers. Everything else you see is either a selector or a plain label
+                    that names something and takes no input.
                 </TextBlock>
 
                 <TextBlock Style="{StaticResource Section}" Text="The font filter"/>
