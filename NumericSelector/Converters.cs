@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Media;
 
 namespace NumericSelector
 {
@@ -94,51 +93,5 @@ namespace NumericSelector
 
 		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
 			=> throw new NotSupportedException();
-	}
-
-	/// <summary>
-	/// Tipografía y formato que usa un control para medir sus textos: la "fuente global"
-	/// del control, única para todos sus textos (título, leyenda y valor). Es un record
-	/// inmutable y de igualdad por valor: se arma una vez por cambio de tipografía y se
-	/// reutiliza en todas las mediciones. El DPI no vive acá —se pasa por tanda de
-	/// medición (ver <see cref="TextMeasure"/>)— porque cambia de monitor y se obtiene
-	/// en vivo, sin riesgo de quedarse con una escala vencida.
-	/// </summary>
-	internal sealed record TextMeasureContext(
-		Typeface Typeface,
-		double FontSize,
-		CultureInfo Culture,
-		FlowDirection Flow);
-
-	/// <summary>
-	/// Medición pura de texto: dado el <see cref="TextMeasureContext"/> y el DPI de la
-	/// escala activa, devuelve el <see cref="Size"/> (ancho y alto) netos que ocuparía el
-	/// texto, sin padding ni bordes —esos los suma el llamador. El alto es de una sola
-	/// línea: se mide con ancho ilimitado. Función pura: no depende de ventana ni de
-	/// instancia del control, y se prueba sin ella.
-	/// </summary>
-	internal static class TextMeasure
-	{
-		/// <summary>
-		/// Mide el ancho y alto netos del texto dado, con la tipografía del contexto a la
-		/// escala <paramref name="dpi"/> (PixelsPerDip). Texto vacío o nulo devuelve
-		/// <see cref="Size.Empty"/>.
-		/// </summary>
-		public static Size Measure(TextMeasureContext context, double dpi, string text)
-		{
-			if (string.IsNullOrEmpty(text))
-				return Size.Empty;
-
-			var ft = new FormattedText(
-				text,
-				context.Culture,
-				context.Flow,
-				context.Typeface,
-				context.FontSize,
-				Brushes.Black,
-				dpi);
-
-			return new Size(ft.Width, ft.Height);
-		}
 	}
 }

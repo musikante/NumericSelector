@@ -36,7 +36,7 @@ Por ahora, agregá una referencia al proyecto `NumericSelector` desde tu aplicac
         Maximum="100"
         Value="50"
         ResetValue="50"
-        LegendText="Volumen"
+        CaptionText="Volumen"
         ValueChanged="Selector_ValueChanged" />
 </Window>
 ```

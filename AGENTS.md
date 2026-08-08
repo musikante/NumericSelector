@@ -44,7 +44,7 @@ dotnet test .\NumericSelector.Tests\NumericSelector.Tests.csproj
 | `BoundedNumericSelector.cs` | Lógica de interacción, medición, cursores, manejo de eventos |
 | `BoundedNumericSelector.Dependencies.cs` | Propiedades de dependencia, coerciones, evento ValueChanged |
 | `Themes/Generic.xaml` | Plantilla por defecto (estilo, triggers, partes) |
-| `Converters.cs` | `ValueBorderResolver` (matriz de costuras) y `TextMeasureContext`/`TextMeasure` (medición de texto): funciones puras |
+| `Converters.cs` | `ValueBorderResolver` (matriz de costuras): función pura |
 | `ValueBoxDock.cs`, `MouseInteractionBehavior.cs` | Enums de la API pública |
 
 ### Modelo de celdas
@@ -106,7 +106,7 @@ Teclado: `←`/`↓`/`-` y `→`/`↑`/`+` cambian o restan `SmallChange`; `Page
 
 ### Tipos de pruebas
 
-1. **Lógica pura** (`BoundedNumericSelectorLogicTests.cs`, `TextMeasureTests.cs`): no necesitan ventana; validan defaults, coerciones, pasos, disposición, ValueChanged y los invariantes de la medición de texto (`TextMeasure.Measure`)
+1. **Lógica pura** (`BoundedNumericSelectorLogicTests.cs`, `ValueBorderResolverTests.cs`): no necesitan ventana; validan defaults, coerciones, pasos, disposición, ValueChanged y la matriz de costuras
 2. **Interacción** (`InteractionModeTests.cs`): necesitan ventana real (STA + Dispatcher) porque los gestos llegan por eventos ruteados y el foco no existe fuera del visual tree
 
 ### Helper `StaTest`
@@ -117,7 +117,6 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 
 - Defaults, coerciones de rango, pasos, disposición, ValueChanged
 - Valor de la matriz de costuras (`ValueBorderResolver.Resolve`) en todas las configuraciones
-- Invariantes de medición de texto (`TextMeasure.Measure`): vacío, monotonía, tamaño de fuente, independencia del DPI, efecto de la cultura y pureza
 - Disposición (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxDock`) y trazo separador del valor
 - Medición y `BaseWidth` (`MeasureAndBaseWidthTests.cs`): el ancho pedido nunca excede un hueco fijo y `BaseWidth` actúa como piso con espacio infinito
 - MouseBehavior (ChangeOnClick, MustFocusFirst)

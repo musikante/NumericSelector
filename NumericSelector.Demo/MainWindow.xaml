@@ -299,12 +299,19 @@
                                                   Minimum="0" Maximum="23" Value="0"
                                                   ValueChanged="Foreground_ValueChanged"/>
 
+                    <!-- OJO con el Value inicial de cada picker: el ValueChanged corre ya
+                         durante la carga, así que el índice de arranque SE APLICA al Master.
+                         Tiene que ser el color que el control trae por defecto, o el demo
+                         arranca mostrando algo que no es el aspecto real del control. Acá
+                         importa especialmente: Background es lo que se ve como la parte NO
+                         rellenada de la barra, y con Transparent (23) se veía el fondo del
+                         contenedor en vez del blanco del control. El default es White = 5. -->
                     <local:BoundedNumericSelector x:Name="BackgroundPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
                                                   CaptionText="Background"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
-                                                  Minimum="0" Maximum="23" Value="23"
+                                                  Minimum="0" Maximum="23" Value="5"
                                                   ValueChanged="Background_ValueChanged"/>
 
                     <TextBlock Text="Font properties" Style="{StaticResource Seccion}"/>

@@ -518,7 +518,5 @@ namespace NumericSelector
 			_barRect.Width = _barGrid.ActualWidth * ratio;
 			_barRect.Height = _barGrid.ActualHeight;
 		}
-
-		// --- Medición de texto ---
 	}
 }
