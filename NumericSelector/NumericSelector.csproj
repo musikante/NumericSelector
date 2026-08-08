@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
 	<PropertyGroup>
 		<TargetFramework>net10.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
@@ -7,8 +8,53 @@
 		<Nullable>enable</Nullable>
 		<AssemblyName>NumericSelector</AssemblyName>
 		<RootNamespace>NumericSelector</RootNamespace>
-		<Authors>Jorge Rogelio Zir</Authors>
-		<Description>WPF control for entering an integer value bounded to a range: there is no way to get a value outside [Minimum, Maximum], so the input never has to be validated.</Description>
-		<Version>0.1.0</Version>
 	</PropertyGroup>
+
+	<!-- Ships the XML documentation alongside the DLL, which is what turns the summaries of
+	     the public API into IntelliSense on the consumer's side. CS1591 ("missing XML comment
+	     for publicly visible type or member") is silenced on purpose: the DependencyProperty
+	     fields and the converter's Convert/ConvertBack are boilerplate whose meaning is
+	     already in the property they back, and documenting them one by one would add noise
+	     without adding information. With -warnaserror in CI, leaving it on would turn every
+	     one of those into a build error. -->
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
+	</PropertyGroup>
+
+	<!-- NuGet package metadata. -->
+	<PropertyGroup>
+		<PackageId>NumericSelector</PackageId>
+		<Version>0.1.0</Version>
+		<Authors>Jorge Rogelio Zir</Authors>
+		<Copyright>Copyright (c) 2026 Jorge Rogelio Zir</Copyright>
+		<Description>WPF control for entering an integer value bounded to a range: there is no way to get a value outside [Minimum, Maximum], so the input never has to be validated.</Description>
+		<PackageTags>wpf;control;numeric;integer;bounded;selector;lookless</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/musikante/NumericSelector</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<!-- SourceLink: lets whoever uses the package step into this source code from their own
+	     debugger. Since .NET 8 it needs no PackageReference, only these properties plus the
+	     symbol package. ContinuousIntegrationBuild normalizes the paths embedded in the
+	     assembly, and it is only turned on inside GitHub Actions because on a development
+	     machine it would just make local debugging harder. -->
+	<PropertyGroup>
+		<RepositoryUrl>https://github.com/musikante/NumericSelector.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+	</PropertyGroup>
+
+	<!-- The README lives at the root of the repository, one folder above this project, and the
+	     package needs its own copy: PackageReadmeFile names the file as it ends up INSIDE the
+	     .nupkg, so it has to be packed explicitly. -->
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
 </Project>

@@ -8,7 +8,10 @@ The control is called **`BoundedNumericSelector`** and lives in the `NumericSele
 
 > Status: the API is settled and the control is ready for a first stable version. Still pending: NuGet packaging and CI.
 
-![Preview of the NumericSelector demo](docs/images/numeric-selector-demo.png)
+<!-- The image is referenced by absolute URL, not by relative path: this same README is what
+     nuget.org renders as the package page, and there relative paths do not resolve — the
+     picture would show up broken. GitHub renders the absolute URL just as well. -->
+![Preview of the NumericSelector demo](https://raw.githubusercontent.com/musikante/NumericSelector/main/docs/images/numeric-selector-demo.png)
 
 ## What it gives you
 
