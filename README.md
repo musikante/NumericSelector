@@ -1,5 +1,7 @@
 # NumericSelector
 
+[![CI](https://github.com/musikante/NumericSelector/actions/workflows/ci.yml/badge.svg)](https://github.com/musikante/NumericSelector/actions/workflows/ci.yml)
+
 *Lookless* WPF control for picking an integer value **bounded to a range**: there is no way for the control to hand out a value outside `[Minimum, Maximum]`, so the consumer never has to validate the input. The bar is what picks the value; the main text is written over it and the number stays readable at all times.
 
 The control is called **`BoundedNumericSelector`** and lives in the `NumericSelector` assembly.
@@ -184,8 +186,9 @@ dotnet build .\NumericSelector.slnx --configuration Release
 - [x] Template contract documented with `TemplatePart`, to make alternative styles easier.
 - [x] Explicit validation of invalid values in the public enumerations.
 - [x] Demo help on **F1**: why the test bench is built out of the control itself, plus the list of gestures.
+- [x] CI on GitHub Actions: `build` and `test` on every push and pull request.
 - [ ] NuGet packaging, semantic versioning and initial `0.x` release.
-- [ ] CI automation on GitHub Actions and an animated capture of the demo.
+- [ ] An animated capture of the demo.
 
 ## Current limits
 
@@ -195,4 +198,6 @@ dotnet build .\NumericSelector.slnx --configuration Release
 
 ## Development and contributions
 
-The repository ships a [contribution guide](CONTRIBUTING.md), its [security policy](SECURITY.md), the [changelog](CHANGELOG.md) and an [MIT](LICENSE) license. The recommended next step before publishing is to create the remote Git repository and add a GitHub Actions workflow for `build` and `test`.
+The repository ships a [contribution guide](CONTRIBUTING.md), its [security policy](SECURITY.md), the [changelog](CHANGELOG.md) and an [MIT](LICENSE) license.
+
+Every push and pull request against `main` builds the solution in Release —with warnings treated as errors— and runs the test suite on a Windows runner: see [.github/workflows/ci.yml](.github/workflows/ci.yml). The pending step is the NuGet package.

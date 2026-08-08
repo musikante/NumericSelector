@@ -1,0 +1,41 @@
+# Build and test on every push and pull request.
+#
+# The runner has to be Windows: the target is net10.0-windows with UseWPF, which does not
+# build anywhere else. Part of the test suite also opens real windows on an STA thread —
+# without a desktop session those tests cannot apply the control template and would measure 0.
+#
+# The SDK is taken from global.json instead of being written here, so that CI and the
+# development machine never drift apart: whoever bumps the pin bumps both at once.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up the .NET SDK pinned in global.json
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore NumericSelector.slnx
+
+      # -warnaserror holds the project standard —Release with 0 errors and 0 warnings— from
+      # the outside as well. A new SDK that starts emitting a warning turns the build red
+      # instead of letting it pile up unnoticed.
+      - name: Build (Release, warnings are errors)
+        run: dotnet build NumericSelector.slnx --configuration Release --no-restore -warnaserror
+
+      - name: Test
+        run: dotnet test NumericSelector.slnx --configuration Release --no-build

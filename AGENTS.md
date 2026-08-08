@@ -11,7 +11,11 @@ NumericSelector.Demo/     → WPF demonstration application (manual test bench)
                             HelpWindow: the help (F1), plain text, does not use the control
 NumericSelector.Tests/    → Automated tests (MSTest)
 docs/images/              → Screenshots illustrating the README
+.github/workflows/ci.yml  → CI: build and test on a Windows runner
 ```
+
+Published at <https://github.com/musikante/NumericSelector> (public, MIT). The remote is
+`origin` and the default branch is `main`.
 
 ## Essential commands
 
@@ -149,7 +153,7 @@ Tests that create WPF controls use `StaTest.Run()` to execute on an isolated STA
 - Formatting consistent with the existing code
 - One fix/improvement per PR
 - Update `README.md` and `CHANGELOG.md` if the public API changes
-- No CI configured yet (planned: GitHub Actions)
+- CI runs the same three commands as above on a Windows runner, and adds `-warnaserror` to the build: a warning turns it red
 
 ## Warnings
 
@@ -165,5 +169,11 @@ is left is the publication.
 
 ### Publication
 
-- The repository **has no remote yet**: publishing it on GitHub is the user's decision.
-- NuGet packaging and version `0.1.0`; CI on GitHub Actions for `build` and `test`.
+- The repository is **already on GitHub** and CI is running there. Commits are made locally as
+  the work goes; **pushing is the author's call**, not something to do unprompted.
+- What is left is the **NuGet package** for version `0.1.0`, deliberately postponed by the
+  author. It needs packaging metadata the `.csproj` does not carry yet (`PackageId`,
+  `PackageLicenseExpression`, `PackageProjectUrl`, `RepositoryUrl`, `PackageTags`,
+  `PackageReadmeFile`), plus an account and an API key on nuget.org. Watch out for one detail:
+  the README references its screenshot with a relative path, and nuget.org does not resolve
+  relative images — the package README needs an absolute URL.

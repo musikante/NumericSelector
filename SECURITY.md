@@ -11,7 +11,7 @@ While the project has no published versions, the main development branch is the 
 
 ## Reporting a vulnerability
 
-Do not publish potential vulnerabilities in public issues. Send a private description to the repository maintainer through the contact channel that gets set up when the project is published on GitHub.
+Do not publish potential vulnerabilities in public issues. Report it privately through the repository's **Security** tab, with *Report a vulnerability*: that opens a private conversation with the maintainer, visible to nobody else until there is a fix.
 
 The report should include:
 

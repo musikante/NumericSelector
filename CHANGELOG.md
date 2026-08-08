@@ -43,7 +43,7 @@ Not published yet; when it is, this becomes `0.1.0`. Since none of this ever rea
 
 **Tests.** 43 MSTest tests covering defaults, coercions, layout, the seam matrix, measurement and `BaseWidth`, the interaction modes, the enum validation and the template contract. The ones that need a window run on an isolated STA thread.
 
-**Documentation and infrastructure.** `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `AGENTS.md`, an MIT license and Git exclusion rules. `.gitattributes` normalizes line endings (LF in the repository, each platform's own on the working disk) so that a contributor on another system does not produce whole-file differences.
+**Documentation and infrastructure.** `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `AGENTS.md`, an MIT license and Git exclusion rules. CI on GitHub Actions builds the solution in Release —warnings treated as errors— and runs the tests on a Windows runner, on every push and pull request. `.gitattributes` normalizes line endings (LF in the repository, each platform's own on the working disk) so that a contributor on another system does not produce whole-file differences.
 
 ### Known limits
 
