@@ -112,6 +112,16 @@
                                         <Binding Path="ValueBoxDock" RelativeSource="{RelativeSource TemplatedParent}"/>
                                     </MultiBinding>
                                 </Border.BorderThickness>
+                                <!-- PADDING "3,0,4,1": LA ASIMETRÍA ES DELIBERADA, NO EMPAREJARLA.
+                                     El píxel de más a la derecha se decidió MIRANDO la pantalla:
+                                     con el padding simétrico "3,0,3,1" el número se veía corrido
+                                     del centro, y este lo devuelve a su lugar. No lo respalda una
+                                     fórmula, así que si alguien lo "normaliza" a simétrico el
+                                     defecto vuelve sin que nada falle ni ninguna prueba se queje.
+                                     Los TRES TextBlock —el visible y los dos medidores ocultos—
+                                     tienen que compartir el mismo valor: los medidores son los que
+                                     fijan el ancho de la columna Auto, y si difirieran, la columna
+                                     mediría distinto de lo que se dibuja. -->
                                 <Grid>
                                     <TextBlock x:Name="PART_ValueSizerMin" Visibility="Hidden"
                                                Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
@@ -190,6 +200,8 @@
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="0"
                                     Visibility="Collapsed">
+                                <!-- Mismo padding asimétrico "3,0,4,1" que el casillero de arriba,
+                                     por el mismo motivo y con la misma advertencia (ver allá). -->
                                 <Grid>
                                     <TextBlock x:Name="PART_DetailSizerMin" Visibility="Hidden"
                                                Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
