@@ -9,8 +9,9 @@
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False">
 
-    <!-- Ventana de ayuda del demo (F1). Es texto plano a propósito: acá NO se usa el
-         control, porque lo que se explica es justamente cómo y por qué se lo usa afuera. -->
+    <!-- The demo help window (F1). It is plain text on purpose: the control is NOT used
+         here, because what is being explained is precisely how and why it is used out
+         there. -->
     <Window.Resources>
         <Style TargetType="TextBlock" x:Key="Title">
             <Setter Property="FontSize" Value="18"/>
@@ -33,13 +34,13 @@
             <Setter Property="Margin" Value="0,0,0,8"/>
             <Setter Property="LineHeight" Value="19"/>
         </Style>
-        <!-- Celda izquierda de las tablas de gestos: el gesto. -->
+        <!-- Left cell of the gesture tables: the gesture. -->
         <Style TargetType="TextBlock" x:Key="Gesture">
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,0,14,5"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
-        <!-- Celda derecha: qué hace. -->
+        <!-- Right cell: what it does. -->
         <Style TargetType="TextBlock" x:Key="Effect">
             <Setter Property="Margin" Value="0,0,0,5"/>
             <Setter Property="TextWrapping" Value="Wrap"/>

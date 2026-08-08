@@ -8,8 +8,8 @@
         Width="880"
         WindowStartupLocation="CenterScreen">
 
-    <!-- F1 abre la ayuda: ApplicationCommands.Help ya trae ese gesto de fábrica, así que
-         alcanza con enlazarlo y no hace falta declarar la tecla en ningún lado. -->
+    <!-- F1 opens the help: ApplicationCommands.Help already brings that gesture out of the
+         box, so binding it is enough and the key needs declaring nowhere. -->
     <Window.CommandBindings>
         <CommandBinding Command="Help" Executed="Help_Executed"/>
     </Window.CommandBindings>
@@ -23,8 +23,8 @@
         <test:InteractionModeTextConverter x:Key="InteractionModeText"/>
         <test:ValueBoxDockIndexConverter x:Key="ValueBoxDockIndex"/>
         <test:ValueBoxDockTextConverter x:Key="ValueBoxDockText"/>
-        <!-- Un solo BoolIndex para las dos propiedades booleanas: la conversión es la misma.
-             Lo que cambia entre ellas es el texto, y ése sí tiene un converter por propiedad. -->
+        <!-- A single BoolIndex for both boolean properties: the conversion is the same one.
+             What differs between them is the text, and that does get a converter per property. -->
         <test:BoolIndexConverter x:Key="BoolIndex"/>
         <test:ValueFollowsDetailTextConverter x:Key="ValueFollowsDetailText"/>
         <test:ShowDetailTextConverter x:Key="ShowDetailText"/>
@@ -32,9 +32,9 @@
         <test:FontStyleIndexConverter x:Key="FontStyleIndex"/>
         <test:FontWeightIndexConverter x:Key="FontWeightIndex"/>
 
-        <!-- Sin resource de colores ni de fuentes: la paleta vive en ColorIndexConverter.Palette
-             y las fuentes se enumeran en runtime (FontIndexConverter). Los pickers son
-             selectores numéricos por índice, así que no hay lista que declarar en XAML. -->
+        <!-- No resource for colors or fonts: the palette lives in ColorIndexConverter.Palette
+             and the fonts are enumerated at runtime (FontIndexConverter). The pickers are
+             numeric selectors working by index, so there is no list to declare in XAML. -->
 
         <Style TargetType="TextBlock" x:Key="Label">
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -45,9 +45,9 @@
             <Setter Property="Margin" Value="0,12,0,6"/>
             <Setter Property="Foreground" Value="#FF20507A"/>
         </Style>
-        <!-- Los selectores auxiliares: de una sola línea y de un ancho base uniforme.
-             BaseWidth es un piso desde el que crecen para acomodar su texto; si el
-             contenedor no les da ese hueco, la leyenda se trunca con elipsis. -->
+        <!-- The auxiliary selectors: single line and of a uniform base width.
+             BaseWidth is a floor they grow from to fit their text; if the container does not
+             give them that room, MainText is truncated with an ellipsis. -->
         <Style TargetType="{x:Type local:BoundedNumericSelector}" x:Key="Auxiliary">
             <Setter Property="BaseWidth" Value="240"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
@@ -83,21 +83,22 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ============ EL SUJETO DE PRUEBA (Master) ============ -->
+        <!-- ============ THE SUBJECT UNDER TEST (Master) ============ -->
         <Border Grid.Row="0" Margin="0,0,0,12"
                 BorderBrush="#FFBFD4E6" BorderThickness="1"
                 Background="#FFF6FAFD"
                 Padding="5">
-            <!-- Los dos textos del Master están escritos así A PROPÓSITO; no "normalizarlos":
-                 • empiezan con el nombre exacto de la propiedad, para que se lea tal cual se
-                   teclea en código;
-                 • "(Interact here)" invita a interactuar sobre esta zona, que es el sujeto de
-                   prueba del demo;
-                 • "(Vertical extremes: jÑ)" son caracteres de control visual: la j baja del
-                   renglón y la Ñ sube con su diacrítico, así que entre las dos ocupan todo el
-                   alto de la línea y se ve enseguida si el texto se recorta arriba o abajo al
-                   cambiar la fuente o el tamaño.
-                 El rótulo de arriba sólo identifica la zona; la invitación no se duplica. -->
+            <!-- The two texts of the Master are written this way ON PURPOSE; do not
+                 "normalize" them:
+                 • they start with the exact name of the property, so that it reads just as it
+                   is typed in code;
+                 • "(Interact here)" invites interaction with this area, which is the demo's
+                   subject under test;
+                 • "(Vertical extremes: jÑ)" are visual control characters: the j drops below
+                   the line and the Ñ rises with its diacritic, so between the two they take up
+                   the whole height of the line and it shows at once whether the text is being
+                   clipped at the top or the bottom when the font or the size changes.
+                 The label above only identifies the area; the invitation is not duplicated. -->
             <Grid>
                 <TextBlock Text="Master"
                            VerticalAlignment="Top" HorizontalAlignment="Center"
@@ -117,7 +118,7 @@
             </Grid>
         </Border>
 
-        <!-- ============ CONTROLES DE PRUEBA ============ -->
+        <!-- ============ THE TEST CONTROLS ============ -->
         <!-- It lives in a ScrollViewer: besides fitting everything in, it is what proves that
              the mouse wheel over an unfocused selector does NOT swallow the scroll.
              The window height (770) comes from measuring, not from taste. Two floors have to
@@ -138,7 +139,7 @@
                     <ColumnDefinition Width="280"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- === Columna A: valor, interacción y textos === -->
+                <!-- === Column A: value, interaction and texts === -->
                 <StackPanel Grid.Column="0" Margin="0,0,20,0">
 
                     <TextBlock Text="Value &amp; range" Style="{StaticResource SectionSpaced}" Margin="0,12,0,12"/>
@@ -171,8 +172,8 @@
 
                     <TextBlock Text="Interaction properties" Style="{StaticResource SectionSpaced}"/>
 
-                    <!-- El MouseBehavior con un selector numérico (0 = ChangeOnClick,
-                         1 = MustFocusFirst), dos vías con el Master. -->
+                    <!-- MouseBehavior driven with a numeric selector (0 = ChangeOnClick,
+                         1 = MustFocusFirst), two-way with the Master. -->
                     <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="MouseBehavior"
@@ -180,9 +181,9 @@
                                                   Minimum="0" Maximum="1"
                                                   Value="{Binding MouseBehavior, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource MouseBehaviorIndex}}"/>
 
-                    <!-- El InteractionMode con un selector numérico (0 = Interactive,
-                         1 = ReadOnly), dos vías con el Master. En ReadOnly el control
-                         conserva el aspecto pero no responde a mouse ni teclado. -->
+                    <!-- InteractionMode driven with a numeric selector (0 = Interactive,
+                         1 = ReadOnly), two-way with the Master. In ReadOnly the control keeps
+                         its appearance but responds to neither mouse nor keyboard. -->
                     <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="InteractionMode"
@@ -190,12 +191,13 @@
                                                   Minimum="0" Maximum="1"
                                                   Value="{Binding InteractionMode, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource InteractionModeIndex}}"/>
 
-                    <!-- "Default texts": los textos con los que el Master arranca. Escribir en
-                         las cajas los reemplaza.
-                         VA ÚLTIMO A PROPÓSITO: la etiqueta de la caja de DetailText remite a
-                         ShowDetail, que vive en "Disposition", al pie de la columna del medio.
-                         Puesto acá, los dos bloques quedan uno enfrente del otro y la remisión
-                         se resuelve de un vistazo. Si se reordena la columna, se pierde. -->
+                    <!-- "Default texts": the texts the Master starts out with. Typing in the
+                         boxes replaces them.
+                         IT GOES LAST ON PURPOSE: the label of the DetailText box refers to
+                         ShowDetail, which lives under "Disposition", at the foot of the middle
+                         column. Placed here, the two blocks end up facing each other and the
+                         cross-reference is resolved at a glance. Reorder the column and it is
+                         lost. -->
                     <TextBlock Text="Default texts" Style="{StaticResource SectionSpaced}"/>
 
                     <TextBlock Text="MainText" Style="{StaticResource Label}"/>
@@ -207,10 +209,10 @@
                              Text="{Binding DetailText, ElementName=MasterNumericSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
 
-                <!-- === Columna B: el evento, el marco y la disposición === -->
+                <!-- === Column B: the event, the frame and the layout === -->
                 <StackPanel Grid.Column="1" Margin="0,0,20,0">
 
-                    <!-- === Evento ValueChanged === -->
+                    <!-- === The ValueChanged event === -->
                     <Border Width="240" Margin="0,0,0,16"
                             HorizontalAlignment="Left"
                             Background="#FFF0F0F0" BorderBrush="LightGray" BorderThickness="1"
@@ -245,14 +247,14 @@
                                                   Minimum="0" Maximum="23" Value="20"
                                                   ValueChanged="FocusBorderBrush_ValueChanged"/>
 
-                    <!-- "Disposition" vive acá, y no en la columna de la izquierda con los
-                         textos, por dos motivos: comparte naturaleza con "Border properties"
-                         —las dos son geometría— y equilibra el alto de las tres columnas.
-                         Queda enfrente de "Default texts", que es lo que necesita ShowDetail. -->
+                    <!-- "Disposition" lives here, and not in the left column with the texts,
+                         for two reasons: it shares its nature with "Border properties" —both
+                         are geometry— and it balances the height of the three columns. It ends
+                         up facing "Default texts", which is what needs ShowDetail. -->
                     <TextBlock Text="Disposition" Style="{StaticResource SectionSpaced}"/>
 
-                    <!-- El ShowDetail con un selector numérico (0 = false: oculta la fila de
-                         detalle, 1 = true: la muestra), dos vías con el Master. -->
+                    <!-- ShowDetail driven with a numeric selector (0 = false: hides the detail
+                         row, 1 = true: shows it), two-way with the Master. -->
                     <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="ShowDetail"
@@ -260,9 +262,9 @@
                                                   Minimum="0" Maximum="1"
                                                   Value="{Binding ShowDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BoolIndex}}"/>
 
-                    <!-- El ValueFollowsDetail con un selector numérico (0 = false: mantener
-                         el valor junto al texto principal, 1 = true: el valor sigue al
-                         detalle), dos vías con el Master. -->
+                    <!-- ValueFollowsDetail driven with a numeric selector (0 = false: keep the
+                         value next to the main text, 1 = true: the value follows the detail),
+                         two-way with the Master. -->
                     <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="ValueFollowsDetail"
@@ -270,8 +272,8 @@
                                                   Minimum="0" Maximum="1"
                                                   Value="{Binding ValueFollowsDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BoolIndex}}"/>
 
-                    <!-- El ValueBoxDock con un selector numérico (0 = Left, 1 = Right),
-                         dos vías con el Master; el default del control es Right. -->
+                    <!-- ValueBoxDock driven with a numeric selector (0 = Left, 1 = Right),
+                         two-way with the Master; the control's default is Right. -->
                     <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="ValueBoxDock"
@@ -279,7 +281,7 @@
                                                   Minimum="0" Maximum="1"
                                                   Value="{Binding ValueBoxDock, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ValueBoxDockIndex}}"/>
 
-                    <!-- El BaseWidth, debajo de ValueBoxDock (misma sección Disposition). -->
+                    <!-- BaseWidth, below ValueBoxDock (same Disposition section). -->
                     <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}" MainText="BaseWidth"
                                                   ShowDetail="True"
                                                   DetailText="Base Width It Grows From"
@@ -287,16 +289,16 @@
                                                   Value="{Binding BaseWidth, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
                 </StackPanel>
 
-                <!-- === Columna C: colores y tipografía === -->
+                <!-- === Column C: colors and typography === -->
                 <StackPanel Grid.Column="2">
 
                     <TextBlock Text="Bar properties" Style="{StaticResource Section}" Margin="0,6,0,6"/>
 
-                    <!-- Seis selectores de color, uno por cada propiedad que el control
-                         maneja como brush. Cada uno engancha su Value (0..23) al color de la
-                         paleta y, al cambiar, aplica ese color a su propiedad sobre el Master
-                         y sobre sí mismo para que el cambio se aprecie en el control que lo
-                         produce. El MainText de cada uno dice a qué propiedad está ligado. -->
+                    <!-- Six color selectors, one per property the control handles as a brush.
+                         Each one hooks its Value (0..23) to a color of the palette and, on
+                         change, applies that color to its property on the Master and on itself,
+                         so that the change is visible on the control that produced it. The
+                         MainText of each says which property it is wired to. -->
                     <local:BoundedNumericSelector x:Name="BarFillPicker"
                                                   Style="{StaticResource Auxiliary}"
                                                   ShowDetail="True"
@@ -323,13 +325,14 @@
                                                   Minimum="0" Maximum="23" Value="0"
                                                   ValueChanged="Foreground_ValueChanged"/>
 
-                    <!-- OJO con el Value inicial de cada picker: el ValueChanged corre ya
-                         durante la carga, así que el índice de arranque SE APLICA al Master.
-                         Tiene que ser el color que el control trae por defecto, o el demo
-                         arranca mostrando algo que no es el aspecto real del control. Acá
-                         importa especialmente: Background es lo que se ve como la parte NO
-                         rellenada de la barra, y con Transparent (23) se veía el fondo del
-                         contenedor en vez del blanco del control. El default es White = 5. -->
+                    <!-- MIND the initial Value of every picker: ValueChanged already runs
+                         during loading, so the starting index IS APPLIED to the Master. It has
+                         to be the color the control comes with by default, or the demo starts
+                         out showing something that is not the real appearance of the control.
+                         It matters especially here: Background is what shows as the NON-filled
+                         part of the bar, and with Transparent (23) the container's background
+                         was showing through instead of the control's white. The default is
+                         White = 5. -->
                     <local:BoundedNumericSelector x:Name="BackgroundPicker"
                                                   Style="{StaticResource Auxiliary}"
                                                   ShowDetail="True"
@@ -360,14 +363,15 @@
                                                   Minimum="0" Maximum="4"
                                                   ValueChanged="FontWeightPicker_ValueChanged"/>
 
-                    <!-- Filtro de la lista de fuentes. Es la tercera caja de texto del banco y,
-                         como las otras dos, está porque el dato es texto y el control es para
-                         números. La etiqueta va a la IZQUIERDA (las otras dos la llevan arriba)
-                         para distinguir a simple vista lo que es herramienta del banco de lo que
-                         es una propiedad del control.
-                         Lo interesante no es el filtro: es que al cambiarlo cambia el Maximum del
-                         selector de abajo EN CALIENTE, y ahí se ve la re-coerción de Value,
-                         ResetValue y los pasos, que ningún otro control de este banco ejercita. -->
+                    <!-- Filter for the font list. It is the third text box of the bench and,
+                         like the other two, it is there because the data is text and the
+                         control is for numbers. Its label goes on the LEFT (the other two carry
+                         theirs on top) so that what is a tool of the bench can be told at a
+                         glance from what is a property of the control.
+                         The interesting part is not the filter: it is that changing it changes
+                         the Maximum of the selector below IT WHILE IT IS LIVE, and that is
+                         where the re-coercion of Value, ResetValue and the steps shows up,
+                         which no other control in this bench exercises. -->
                     <DockPanel Width="240" HorizontalAlignment="Left" Margin="0,0,0,4">
                         <TextBlock DockPanel.Dock="Left" Text="Font filter:"
                                    VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -375,8 +379,8 @@
                                  TextChanged="FontFilter_TextChanged"/>
                     </DockPanel>
 
-                    <!-- Al final porque la altura del selector cambia con la fuente y empuja
-                         lo que hubiera debajo. -->
+                    <!-- Last because the height of the selector changes with the font and
+                         pushes whatever were below it. -->
                     <local:BoundedNumericSelector x:Name="FontPicker"
                                                   Style="{StaticResource Auxiliary}"
                                                   ShowDetail="True"
@@ -389,8 +393,9 @@
             </Grid>
         </ScrollViewer>
 
-        <!-- Pie: la tercera fila del Grid estaba libre. El botón está para que la ayuda se
-             descubra sin adivinar la tecla; el gesto real lo aporta ApplicationCommands.Help. -->
+        <!-- Footer: the third row of the Grid was free. The button is there so that the help
+             can be discovered without guessing the key; the real gesture is contributed by
+             ApplicationCommands.Help. -->
         <Border Grid.Row="2" Margin="0,12,0,0" Padding="10,6"
                 Background="#FFF6FAFD" BorderBrush="#FFBFD4E6" BorderThickness="1">
             <DockPanel>

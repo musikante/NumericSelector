@@ -7,8 +7,8 @@ namespace NumericSelector.Demo
 	/// </summary>
 	public partial class App : Application
 	{
-		// Nota: acá NO se toca FrameworkElement.Language. El propio BoundedNumericSelector ajusta
-		// su default a la cultura del sistema (ver su constructor estático), así que el
-		// formato de números sale correcto sin que la aplicación haga nada.
+		// Note: FrameworkElement.Language is NOT touched here. BoundedNumericSelector itself
+		// adjusts its default to the system culture (see its static constructor), so number
+		// formatting comes out right without the application doing anything.
 	}
 }

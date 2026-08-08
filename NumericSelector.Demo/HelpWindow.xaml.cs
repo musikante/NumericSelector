@@ -4,13 +4,13 @@ using System.Windows.Input;
 namespace NumericSelector.Demo
 {
 	/// <summary>
-	/// Ayuda del demo (F1). Explica por qué el banco de pruebas está hecho con el propio
-	/// control y lista los gestos de mouse y teclado.
+	/// The demo help (F1). It explains why the test bench is built out of the control itself
+	/// and lists the mouse and keyboard gestures.
 	/// </summary>
 	/// <remarks>
-	/// Se abre SIN modal a propósito: la mitad de lo que explica son gestos, y hay que poder
-	/// probarlos en la ventana principal con la ayuda a la vista. De eso se encarga
-	/// <see cref="Open"/>, que además evita que se acumulen copias.
+	/// It opens NON-modal on purpose: half of what it explains are gestures, and they have to
+	/// be reachable in the main window with the help in sight. That is what <see cref="Open"/>
+	/// takes care of, and it also keeps copies from piling up.
 	/// </remarks>
 	public partial class HelpWindow : Window
 	{
@@ -22,8 +22,8 @@ namespace NumericSelector.Demo
 		}
 
 		/// <summary>
-		/// Muestra la ayuda de <paramref name="owner"/>. Si ya estaba abierta la trae al
-		/// frente en vez de abrir otra.
+		/// Shows the help for <paramref name="owner"/>. If it was already open it is brought to
+		/// the front instead of opening another one.
 		/// </summary>
 		public static void Open(Window owner)
 		{
@@ -40,8 +40,8 @@ namespace NumericSelector.Demo
 			_instance.Show();
 		}
 
-		// F1 cierra además de abrir, para que la misma tecla sirva de ida y vuelta. El Esc lo
-		// resuelve el botón con IsCancel, que no necesita código.
+		// F1 closes as well as opens, so that the same key works both ways. Esc is resolved by
+		// the button with IsCancel, which needs no code.
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			if (e.Key == Key.F1)

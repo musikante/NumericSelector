@@ -7,6 +7,17 @@ using NumericSelector;
 
 namespace NumericSelector.Demo
 {
+	/// <summary>
+	/// The demo's test bench. The Master at the top is the control under test, and every knob
+	/// driving it is another BoundedNumericSelector, so the demo exercises the control while
+	/// showing it off.
+	/// </summary>
+	/// <remarks>
+	/// The pickers that cannot be expressed as a plain binding (fonts, brushes) work by index:
+	/// the selector moves over a list —see Converters.cs— and the handler applies the chosen
+	/// item to the Master AND to the picker itself, so that the change is visible on the very
+	/// control that produced it.
+	/// </remarks>
 	public partial class MainWindow : Window
 	{
 		private int _valueChangedCount;
@@ -18,22 +29,22 @@ namespace NumericSelector.Demo
 		}
 		private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			// El selector de fuente recorre la lista de fuentes del sistema; `Maximum` no es
-			// constante para esta máquina, así que se fija en runtime una vez conocida la lista.
+			// The font picker walks the list of system fonts; `Maximum` is not a constant for
+			// this machine, so it is set at runtime once the list is known.
 			FontPicker.Maximum = FontIndexConverter.Filtered.Length - 1;
 
-			// FontFamily no implementa igualdad por valor, así que no podemos comparar la
-			// instancia del Master con las de la lista; la preseleccionamos por nombre.
+			// FontFamily does not implement equality by value, so we cannot compare the
+			// Master's instance against the ones in the list; we preselect it by name.
 			string current = MasterNumericSelector.FontFamily.Source;
 			int i = Array.FindIndex(FontIndexConverter.Filtered, f => f.Source == current);
 			if (i >= 0) FontPicker.Value = i;
 
-			// FontStyle y FontWeight son structs con igualdad por valor: comparación directa.
+			// FontStyle and FontWeight are structs with equality by value: direct comparison.
 			Preselect(FontStylePicker, FontStyleIndexConverter.Styles, MasterNumericSelector.FontStyle);
 			Preselect(FontWeightPicker, FontWeightIndexConverter.Weights, MasterNumericSelector.FontWeight);
 		}
 
-		// F1 (o el botón del pie) abre la ayuda del demo.
+		// F1 (or the button in the footer) opens the demo help.
 		private void Help_Executed(object sender, ExecutedRoutedEventArgs e) => HelpWindow.Open(this);
 
 		private static void Preselect<T>(BoundedNumericSelector selector, T[] options, T current)
@@ -43,16 +54,16 @@ namespace NumericSelector.Demo
 			if (i >= 0) selector.Value = i;
 		}
 
-		// Aplica la fuente elegida al Master (y se la da también al propio picker, para que
-		// el cambio se vea en el control que lo produce).
+		// Applies the chosen font to the Master (and gives it to the picker itself as well, so
+		// that the change is visible on the control that produced it).
 		private void FontPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
 			=> ApplyFont();
 
 		private void ApplyFont()
 		{
 			int i = FontPicker.Value;
-			// Con la lista vacía —filtro sin coincidencias— no hay nada que aplicar y se
-			// conserva la última fuente puesta.
+			// With an empty list —a filter with no matches— there is nothing to apply and the
+			// last font that was set is kept.
 			if (i < 0 || i >= FontIndexConverter.Filtered.Length) return;
 
 			var font = FontIndexConverter.Filtered[i];
@@ -60,11 +71,12 @@ namespace NumericSelector.Demo
 			FontPicker.FontFamily = font;
 		}
 
-		// Filtra la lista de fuentes que recorre FontPicker. Se aplica en cada tecla.
+		// Filters the list of fonts FontPicker walks over. It is applied on every keystroke.
 		private void FontFilter_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			// Qué fuente estaba elegida, para reencontrarla si sobrevive al filtro. Se guarda
-			// el nombre y no la instancia porque FontFamily no tiene igualdad por valor.
+			// Which font was chosen, so as to find it again if it survives the filter. The name
+			// is what gets saved and not the instance, because FontFamily has no equality by
+			// value.
 			int previousIndex = FontPicker.Value;
 			string? chosen = (previousIndex >= 0 && previousIndex < FontIndexConverter.Filtered.Length)
 				? FontIndexConverter.Filtered[previousIndex].Source
@@ -72,9 +84,9 @@ namespace NumericSelector.Demo
 
 			int matchCount = FontIndexConverter.Filter(FontFilterBox.Text);
 
-			// El rango del control tiene siempre al menos 1 de ancho: con 0 o 1 coincidencias
-			// esto pide 0 y la coerción lo sube a 1. Queda a la vista en el DetailText, que
-			// para ese índice sobrante avisa que no hay fuente. Es el límite real de la API.
+			// The range of the control is always at least 1 wide: with 0 or 1 matches this asks
+			// for 0 and the coercion raises it to 1. It shows in the DetailText, which for that
+			// spare index says there is no font. It is the real limit of the API.
 			FontPicker.Maximum = Math.Max(matchCount - 1, 0);
 
 			int i = chosen is null
@@ -82,15 +94,16 @@ namespace NumericSelector.Demo
 				: Array.FindIndex(FontIndexConverter.Filtered, f => f.Source == chosen);
 			FontPicker.Value = i >= 0 ? i : 0;
 
-			// El DetailText se enlaza a Value, así que sólo se recalcula cuando Value cambia.
-			// Al filtrar puede cambiar la LISTA sin cambiar el índice, y entonces el nombre
-			// mostrado sería el de la fuente anterior: hay que pedir el refresco a mano.
+			// The DetailText is bound to Value, so it is only recomputed when Value changes.
+			// Filtering can change the LIST without changing the index, and then the name being
+			// shown would be that of the previous font: the refresh has to be asked for by hand.
 			BindingOperations
 				.GetBindingExpression(FontPicker, BoundedNumericSelector.DetailTextProperty)
 				?.UpdateTarget();
 
-			// Y por el mismo motivo hay que reaplicar: si el índice no cambió pero la lista sí,
-			// ValueChanged no se dispara y la fuente quedaría desfasada del nombre que se lee.
+			// And for the same reason it has to be reapplied: if the index did not change but
+			// the list did, ValueChanged does not fire and the font would drift out of step with
+			// the name being read.
 			ApplyFont();
 		}
 
@@ -116,20 +129,20 @@ namespace NumericSelector.Demo
 
 		private void Master_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
 		{
-			// El evento ya se dispara mientras el XAML asigna Value="50", es decir antes de
-			// que InitializeComponent() haya creado los elementos que vienen más abajo.
-			// Sin este guard, EventLog todavía es null y la ventana revienta al abrirse.
+			// The event already fires while the XAML assigns Value="50", that is, before
+			// InitializeComponent() has created the elements that come further down.
+			// Without this guard, EventLog is still null and the window blows up on opening.
 			if (EventLog is null) return;
 
 			_valueChangedCount++;
 			EventLog.Text = $"#{_valueChangedCount}   {e.OldValue} -> {e.NewValue}";
 		}
 
-		// Aplica el color elegido por un picker a su propiedad sobre el Master (el sujeto
-		// de prueba) y sobre el propio picker, para que el cambio se vea en el control que
-		// lo produce (no hace falta darle foco al Master para apreciar p. ej.
-		// FocusBorderBrush). Cada picker está enganchado a una sola propiedad, la misma que
-		// anuncia en su MainText.
+		// Applies the color chosen by a picker to its property on the Master (the subject under
+		// test) and on the picker itself, so that the change is visible on the control that
+		// produced it (there is no need to focus the Master to appreciate e.g.
+		// FocusBorderBrush). Each picker is wired to a single property, the same one it
+		// announces in its MainText.
 		private void ApplyColor(BoundedNumericSelector picker, DependencyProperty property)
 		{
 			int i = picker.Value;

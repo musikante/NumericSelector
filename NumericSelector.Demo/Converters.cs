@@ -8,25 +8,25 @@ using System.Windows.Media;
 namespace NumericSelector.Demo
 {
 	/// <summary>
-	/// Convierte un Thickness uniforme a int y viceversa, para poder manejar
-	/// BorderThickness con un BoundedNumericSelector (que trabaja con enteros).
+	/// Converts a uniform Thickness to an int and back, so that BorderThickness can be driven
+	/// with a BoundedNumericSelector (which works with integers).
 	/// </summary>
 	public class ThicknessToIntConverter : IValueConverter
 	{
-		// Origen (Thickness) -> destino (int) : tomamos el lado izquierdo como representante.
+		// Source (Thickness) -> target (int): we take the left side as the representative.
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 			=> value is Thickness t ? (int)Math.Round(t.Left) : 0;
 
-		// Destino (int) -> origen (Thickness) : borde uniforme.
+		// Target (int) -> source (Thickness): a uniform border.
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			=> new Thickness(System.Convert.ToDouble(value, culture));
 	}
 
 	/// <summary>
-	/// Mapea el Value de un BoundedNumericSelector (0..23) a un color de la paleta del demo.
-	/// Devuelve el color como "#FFRRGGBB" (para el DetailText del selector) pero también expone
-	/// la lista, en el mismo orden, para que el code-behind la use al pintar el Master.
-	/// Es la única fuente de la paleta: el XAML ya no declara una copia en paralelo.
+	/// Maps the Value of a BoundedNumericSelector (0..23) to a color of the demo palette.
+	/// It returns the color as "#FFRRGGBB" (for the selector's DetailText) but it also exposes
+	/// the list, in the same order, so that the code-behind can use it to paint the Master.
+	/// It is the single source of the palette: the XAML no longer declares a parallel copy.
 	/// </summary>
 	public class ColorIndexConverter : IValueConverter
 	{
@@ -58,7 +58,7 @@ namespace NumericSelector.Demo
 			Colors.Transparent,
 		};
 
-		// Valor (int) -> "#FFRRGGBB" para mostrarlo en el DetailText.
+		// Value (int) -> "#FFRRGGBB", to show it in the DetailText.
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
@@ -68,36 +68,36 @@ namespace NumericSelector.Demo
 			return $"#{c.A:X2}{c.R:X2}{c.G:X2}{c.B:X2}";
 		}
 
-		// No se usa: el selector no recibe el color de vuelta.
+		// Not used: the selector does not get the color back.
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			=> throw new NotSupportedException();
 	}
 
 	/// <summary>
-	/// Mapea el Value de un BoundedNumericSelector (0..n-1) a una fuente del sistema.
+	/// Maps the Value of a BoundedNumericSelector (0..n-1) to a system font.
 	/// </summary>
 	/// <remarks>
-	/// Hay DOS listas y la distinción importa: <see cref="All"/> es inmutable y es la
-	/// fuente de la verdad; <see cref="Filtered"/> es la que dejó pasar el filtro y es la
-	/// única que indexan el picker y este converter. Si se desincronizaran, el selector
-	/// mostraría el nombre de una fuente y aplicaría otra. Por eso <see cref="Filtered"/>
-	/// sólo se escribe desde <see cref="Filter"/>.
+	/// There are TWO lists and the distinction matters: <see cref="All"/> is immutable and is
+	/// the source of truth; <see cref="Filtered"/> is the one the filter let through and the
+	/// only one the picker and this converter index into. If they drifted apart, the selector
+	/// would show the name of one font and apply another. That is why <see cref="Filtered"/>
+	/// is only ever written from <see cref="Filter"/>.
 	/// </remarks>
 	public class FontIndexConverter : IValueConverter
 	{
-		/// <summary>Todas las fuentes del sistema, ordenadas por nombre. No cambia nunca.</summary>
+		/// <summary>Every system font, sorted by name. It never changes.</summary>
 		public static readonly FontFamily[] All =
 			Fonts.SystemFontFamilies
 				.OrderBy(f => f.Source, StringComparer.CurrentCultureIgnoreCase)
 				.ToArray();
 
-		/// <summary>Las que sobrevivieron al filtro. Arranca siendo todas.</summary>
+		/// <summary>The ones that survived the filter. It starts out being all of them.</summary>
 		public static FontFamily[] Filtered { get; private set; } = All;
 
 		/// <summary>
-		/// Deja en <see cref="Filtered"/> las fuentes cuyo nombre contiene <paramref name="text"/>
-		/// (sin distinguir mayúsculas) y devuelve cuántas quedaron. Un filtro vacío las devuelve
-		/// todas.
+		/// Leaves in <see cref="Filtered"/> the fonts whose name contains <paramref name="text"/>
+		/// (case insensitive) and returns how many are left. An empty filter returns all of
+		/// them.
 		/// </summary>
 		public static int Filter(string? text)
 		{
@@ -109,27 +109,27 @@ namespace NumericSelector.Demo
 			return Filtered.Length;
 		}
 
-		// Valor (int) -> nombre de la fuente, para mostrarlo en el DetailText.
+		// Value (int) -> the name of the font, to show it in the DetailText.
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
 			if (Filtered.Length == 0)
 				return "(no match)";
 
-			// El rango del control tiene siempre al menos 1 de ancho, así que con una sola
-			// coincidencia el índice 1 existe para el selector pero no en la lista. Se dice,
-			// no se disimula: el banco está para mostrar los límites reales de la API.
+			// The range of the control is always at least 1 wide, so with a single match index 1
+			// exists for the selector but not in the list. It is said out loud, not papered over:
+			// the bench is there to show the real limits of the API.
 			return (i >= 0 && i < Filtered.Length) ? Filtered[i].Source : $"(no font at #{i})";
 		}
 
-		// No se usa: el selector no recibe la fuente de vuelta (el índice habla por él).
+		// Not used: the selector does not get the font back (the index speaks for it).
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			=> throw new NotSupportedException();
 	}
 
 	/// <summary>
-	/// Mapea el Value de un BoundedNumericSelector (0..2) a un FontStyle. Igual patrón que
-	/// <see cref="FontIndexConverter"/>: lista estática compartida entre XAML y code-behind.
+	/// Maps the Value of a BoundedNumericSelector (0..2) to a FontStyle. Same pattern as
+	/// <see cref="FontIndexConverter"/>: a static list shared between XAML and code-behind.
 	/// </summary>
 	public class FontStyleIndexConverter : IValueConverter
 	{
@@ -140,7 +140,7 @@ namespace NumericSelector.Demo
 			FontStyles.Oblique,
 		};
 
-		// Valor (int) -> nombre del estilo, para mostrarlo en el DetailText.
+		// Value (int) -> the name of the style, to show it in the DetailText.
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
@@ -160,8 +160,8 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Mapea el Value de un BoundedNumericSelector (0..4) a un FontWeight. Igual patrón que
-	/// <see cref="FontIndexConverter"/>: lista estática compartida entre XAML y code-behind.
+	/// Maps the Value of a BoundedNumericSelector (0..4) to a FontWeight. Same pattern as
+	/// <see cref="FontIndexConverter"/>: a static list shared between XAML and code-behind.
 	/// </summary>
 	public class FontWeightIndexConverter : IValueConverter
 	{
@@ -174,7 +174,7 @@ namespace NumericSelector.Demo
 			FontWeights.Black,
 		};
 
-		// Valor (int) -> nombre del peso, para mostrarlo en el DetailText.
+		// Value (int) -> the name of the weight, to show it in the DetailText.
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
@@ -196,10 +196,10 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Mapea el <see cref="MouseInteractionBehavior"/> del Master a un índice entero y de vuelta
+	/// Maps the Master's <see cref="MouseInteractionBehavior"/> to an integer index and back
 	/// (0 = <see cref="MouseInteractionBehavior.ChangeOnClick"/>, 1 =
-	/// <see cref="MouseInteractionBehavior.MustFocusFirst"/>), para poder manejar esta propiedad
-	/// con un selector numérico. Lista estática compartida entre XAML y code-behind.
+	/// <see cref="MouseInteractionBehavior.MustFocusFirst"/>), so that this property can be
+	/// driven with a numeric selector. A static list shared between XAML and code-behind.
 	/// </summary>
 	public class MouseBehaviorIndexConverter : IValueConverter
 	{
@@ -222,8 +222,8 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Nombre del modo seleccionado (int -> "ChangeOnClick"/"MustFocusFirst"), para mostrarlo
-	/// en el DetailText del selector de <see cref="MouseInteractionBehavior"/>.
+	/// The name of the selected mode (int -> "ChangeOnClick"/"MustFocusFirst"), to show it in
+	/// the DetailText of the <see cref="MouseInteractionBehavior"/> selector.
 	/// </summary>
 	public class MouseBehaviorTextConverter : IValueConverter
 	{
@@ -240,10 +240,10 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Mapea el <see cref="UserInteractionMode"/> del Master a un índice entero y de vuelta
+	/// Maps the Master's <see cref="UserInteractionMode"/> to an integer index and back
 	/// (0 = <see cref="UserInteractionMode.Interactive"/>, 1 =
-	/// <see cref="UserInteractionMode.ReadOnly"/>), para poder manejar esta propiedad con un
-	/// selector numérico. Lista estática compartida entre XAML y code-behind.
+	/// <see cref="UserInteractionMode.ReadOnly"/>), so that this property can be driven with a
+	/// numeric selector. A static list shared between XAML and code-behind.
 	/// </summary>
 	public class InteractionModeIndexConverter : IValueConverter
 	{
@@ -266,8 +266,8 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Nombre del modo seleccionado (int -> "Interactive"/"ReadOnly"), para mostrarlo en el
-	/// DetailText del selector de <see cref="UserInteractionMode"/>.
+	/// The name of the selected mode (int -> "Interactive"/"ReadOnly"), to show it in the
+	/// DetailText of the <see cref="UserInteractionMode"/> selector.
 	/// </summary>
 	public class InteractionModeTextConverter : IValueConverter
 	{
@@ -284,13 +284,13 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Mapea el <see cref="ValueBoxDock"/> del Master a un índice entero y de vuelta
-	/// (0 = <see cref="ValueBoxDock.Left"/>, 1 = <see cref="ValueBoxDock.Right"/>), para
-	/// poder manejar esta propiedad con un selector numérico. La lista sigue el eje de
-	/// la barra del selector (izquierda→0, derecha→1), de modo que el clic en la parte
-	/// izquierda seleccione <see cref="ValueBoxDock.Left"/>. El default del control
-	/// sigue siendo <see cref="ValueBoxDock.Right"/> (lo fija la metadata de la DP, no
-	/// el orden de esta lista). Lista estática compartida entre XAML y code-behind.
+	/// Maps the Master's <see cref="ValueBoxDock"/> to an integer index and back
+	/// (0 = <see cref="ValueBoxDock.Left"/>, 1 = <see cref="ValueBoxDock.Right"/>), so that
+	/// this property can be driven with a numeric selector. The list follows the axis of the
+	/// selector's bar (left→0, right→1), so that clicking on the left part selects
+	/// <see cref="ValueBoxDock.Left"/>. The control's default is still
+	/// <see cref="ValueBoxDock.Right"/> (that is set by the metadata of the DP, not by the
+	/// order of this list). A static list shared between XAML and code-behind.
 	/// </summary>
 	public class ValueBoxDockIndexConverter : IValueConverter
 	{
@@ -313,10 +313,10 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Nombre del lado seleccionado (int -> "Left"/"Right"), para mostrarlo en el
-	/// DetailText del selector de <see cref="ValueBoxDock"/>. El orden es el de
-	/// <see cref="ValueBoxDockIndexConverter.Modes"/>, que sigue el eje de la barra
-	/// (izquierda→0), no el del enum.
+	/// The name of the selected side (int -> "Left"/"Right"), to show it in the DetailText of
+	/// the <see cref="ValueBoxDock"/> selector. The order is that of
+	/// <see cref="ValueBoxDockIndexConverter.Modes"/>, which follows the axis of the bar
+	/// (left→0), not that of the enum.
 	/// </summary>
 	public class ValueBoxDockTextConverter : IValueConverter
 	{
@@ -333,11 +333,11 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Mapea un bool del Master a un índice entero y de vuelta (0 = false, 1 = true), para
-	/// poder manejar una propiedad booleana con un selector numérico. Es genérico a
-	/// propósito: lo comparten <c>ShowDetail</c> y <c>ValueFollowsDetail</c>, porque la
-	/// conversión no tiene nada de propio de ninguna de las dos. Lo que sí es propio —el
-	/// texto que describe cada estado— vive en el TextConverter de cada una.
+	/// Maps a bool of the Master to an integer index and back (0 = false, 1 = true), so that a
+	/// boolean property can be driven with a numeric selector. It is generic on purpose:
+	/// <c>ShowDetail</c> and <c>ValueFollowsDetail</c> share it, because there is nothing in
+	/// the conversion that belongs to either of them. What does belong to each —the text
+	/// describing every state— lives in their own TextConverter.
 	/// </summary>
 	public class BoolIndexConverter : IValueConverter
 	{
@@ -356,8 +356,8 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Descripción del estado (int -> "Keep Value with Caption"/"Value follows Detail"),
-	/// para mostrarlo en el DetailText del selector de <see cref="ValueFollowsDetail"/>.
+	/// A description of the state (int -> "Keep Value with MainText"/"Value follows Detail"),
+	/// to show it in the DetailText of the <see cref="ValueFollowsDetail"/> selector.
 	/// </summary>
 	public class ValueFollowsDetailTextConverter : IValueConverter
 	{
@@ -366,7 +366,7 @@ namespace NumericSelector.Demo
 			int i = (value is int n) ? n : -1;
 			return i switch
 			{
-				0 => "false: (Keep Value with Caption)",
+				0 => "false: (Keep Value with MainText)",
 				1 => "true: (Value Follows Detail)",
 				_ => $"(#{i})",
 			};
@@ -377,8 +377,8 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Descripción del estado (int -> "Hide Detail Row"/"Show Detail Row"), para mostrarlo
-	/// en el DetailText del selector de <see cref="ShowDetail"/>.
+	/// A description of the state (int -> "Hide Detail Row"/"Show Detail Row"), to show it in
+	/// the DetailText of the <see cref="ShowDetail"/> selector.
 	/// </summary>
 	public class ShowDetailTextConverter : IValueConverter
 	{
