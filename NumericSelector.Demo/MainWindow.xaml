@@ -66,19 +66,24 @@
                 BorderBrush="#FFBFD4E6" BorderThickness="1"
                 Background="#FFF6FAFD"
                 Padding="5">
-            <!-- El rótulo va acá, FUERA del selector, y no dentro de su CaptionText: los
-                 textos que el Master muestra son los nombres de sus propias propiedades,
-                 tal cual se escriben en código, para que se aprendan de tanto verlos.
-                 CaptionText y DetailText NO se asignan a propósito: el control ya trae por
-                 defecto el nombre de cada una, y así lo que se ve arranca siendo el default
-                 de verdad —es lo que anuncia la sección "Default texts" de más abajo—. -->
+            <!-- Los dos textos del Master están escritos así A PROPÓSITO; no "normalizarlos":
+                 • empiezan con el nombre exacto de la propiedad, para que se lea tal cual se
+                   teclea en código;
+                 • "(Interact here)" invita a interactuar sobre esta zona, que es el sujeto de
+                   prueba del demo;
+                 • "Ñ j |" son caracteres de control visual: la Ñ lleva diacrítico, la j baja
+                   del renglón y la barra marca el alto completo, así se ve enseguida si el
+                   texto se recorta al cambiar la fuente o el tamaño.
+                 El rótulo de arriba sólo identifica la zona; la invitación no se duplica. -->
             <Grid>
-                <TextBlock Text="Master — interact here"
+                <TextBlock Text="Master"
                            VerticalAlignment="Top" HorizontalAlignment="Center"
                            FontWeight="Bold" Foreground="#FF20507A"/>
                 <local:BoundedNumericSelector x:Name="MasterNumericSelector"
                                           ValueChanged="Master_ValueChanged"
                                           ShowDetail="True"
+                                          CaptionText="CaptionText (Interact here)"
+                                          DetailText="DetailText Ñ j |"
                                           Minimum="0"
                                           Maximum="100"
                                           Value="50"
@@ -131,9 +136,8 @@
                         Minimum="1" Maximum="100"
                         Value="{Binding LargeChange, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <!-- "Default texts": las dos cajas arrancan mostrando lo que el control
-                         trae de fábrica, que es el nombre de cada propiedad, porque el Master
-                         no las asigna. Escribir acá las reemplaza. -->
+                    <!-- "Default texts": los textos con los que el Master arranca. Escribir en
+                         las cajas los reemplaza. -->
                     <TextBlock Text="Default texts" Style="{StaticResource Seccion}"/>
 
                     <TextBlock Text="CaptionText" Style="{StaticResource Etiqueta}"/>
