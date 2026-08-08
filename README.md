@@ -107,8 +107,8 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 
 | Propiedad | Tipo | Predeterminado | Descripción |
 | --- | --- | --- | --- |
-| `CaptionText` | `string` | `DefaultCaption` | Leyenda sobre el relleno de la barra. |
-| `DetailText` | `string` | `DefaultDetail` | Texto de la fila de detalle inferior. |
+| `CaptionText` | `string` | `Default Caption` | Leyenda sobre el relleno de la barra. |
+| `DetailText` | `string` | `Default Detail` | Texto de la fila de detalle inferior. |
 | `ShowDetail` | `bool` | `false` | Muestra la fila de detalle enmarcada. |
 | `ValueFollowsDetail` | `bool` | `true` | Con `ShowDetail`, baja el casillero del valor junto al detalle; con `false`, queda junto a la barra. |
 | `ValueBoxDock` | `enum` | `Right` | Lado del casillero del valor (`Right` o `Left`) respecto de su compañero de fila. |

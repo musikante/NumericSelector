@@ -96,6 +96,10 @@ namespace NumericSelector
 
 		// Propiedad para la CAPTION: el texto identificador del control, que se dibuja sobre
 		// la barra y es el rótulo permanente (como la etiqueta de un ComboBox).
+		// El texto de relleno lo fija esta metadata y NADIE MÁS: el Style de Generic.xaml no
+		// lo repite. Un Setter en el Style le ganaría a la metadata, y entonces el control
+		// perdería su default al reemplazarse la plantilla —que es justamente lo que un
+		// control lookless espera que su consumidor haga—.
 		public static readonly DependencyProperty CaptionTextProperty =
 			DependencyProperty.Register(
 				nameof(CaptionText),
@@ -119,7 +123,7 @@ namespace NumericSelector
 				nameof(DetailText),
 				typeof(string),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata("Default Detail Text")); // Valor por defecto.
+				new PropertyMetadata("Default Detail")); // Única fuente, igual que CaptionText.
 
 		/// <summary>
 		/// Obtiene o establece el texto de la fila de detalle, que se despliega debajo de la
