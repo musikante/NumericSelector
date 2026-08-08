@@ -8,10 +8,10 @@ The control is called **`BoundedNumericSelector`** and lives in the `NumericSele
 
 > Status: published on nuget.org. The API is settled; the `0.x` numbering says it has had no use in the field yet, not that it is unfinished.
 
-<!-- The image is referenced by absolute URL, not by relative path: this same README is what
+<!-- Images are referenced by absolute URL, not by relative path: this same README is what
      nuget.org renders as the package page, and there relative paths do not resolve — the
-     picture would show up broken. GitHub renders the absolute URL just as well. -->
-![Preview of the NumericSelector demo](https://raw.githubusercontent.com/musikante/NumericSelector/main/docs/images/numeric-selector-demo.png)
+     pictures would show up broken. GitHub renders the absolute URL just as well. -->
+![The control reacting to Value, ShowDetail, ValueBoxDock and BarFill](https://raw.githubusercontent.com/musikante/NumericSelector/main/docs/images/numeric-selector-motion.gif)
 
 ## What it gives you
 
@@ -172,7 +172,9 @@ The width of the value box is reserved by the template's **hidden sizers** (one 
 
 ## Demonstration application
 
-The `NumericSelector.Demo` project is where every property, font, color, range and gesture can be tried out visually. The control under test takes a fixed-height top row and the options are laid out in three columns.
+The `NumericSelector.Demo` project is where every property, font, color, range and gesture can be tried out visually. The control under test takes a fixed-height top row and the options are laid out in three columns — and every knob driving it is another `BoundedNumericSelector`, so the bench exercises the control while it shows it off.
+
+![The demonstration application](https://raw.githubusercontent.com/musikante/NumericSelector/main/docs/images/numeric-selector-demo.png)
 
 ```powershell
 dotnet run --project .\NumericSelector.Demo\NumericSelector.Demo.csproj
@@ -197,8 +199,8 @@ dotnet build .\NumericSelector.slnx --configuration Release
 - [x] Demo help on **F1**: why the test bench is built out of the control itself, plus the list of gestures.
 - [x] CI on GitHub Actions: `build` and `test` on every push and pull request.
 - [x] NuGet package with semantic versioning: `0.1.0`, with README, XML documentation and symbols.
-- [ ] Publish the next versions from CI with trusted publishing, instead of by hand.
-- [ ] An animated capture of the demo.
+- [x] Publish the next versions from CI with trusted publishing, instead of by hand.
+- [x] An animated capture of the control for the README.
 
 ## Current limits
 
