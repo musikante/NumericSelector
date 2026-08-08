@@ -1,9 +1,9 @@
-# Normaliza los finales de línea: en el repositorio siempre LF, en el disco de
-# cada quien los de su plataforma. Sin esto, un colaborador en otro sistema puede
-# generar diffs de archivo entero por un cambio de CRLF a LF.
+# Normalizes line endings: always LF in the repository, each platform's own on everybody's
+# working disk. Without this, a contributor on another system can produce whole-file diffs
+# out of a CRLF-to-LF change.
 * text=auto
 
-# Código y marcado: texto, con diff especializado donde Git lo ofrece.
+# Code and markup: text, with a specialized diff where Git offers one.
 *.cs      text diff=csharp
 *.xaml    text
 *.csproj  text
@@ -15,7 +15,7 @@
 *.txt     text
 *.svg     text
 
-# Binarios: que Git no intente normalizarlos ni mostrar diffs de texto.
+# Binaries: Git should neither normalize them nor show text diffs of them.
 *.png binary
 *.jpg binary
 *.gif binary
@@ -23,7 +23,7 @@
 *.pdf binary
 *.docx binary
 
-# Archivos de Windows que exigen CRLF para funcionar.
+# Windows files that require CRLF to work.
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.ps1 text eol=crlf

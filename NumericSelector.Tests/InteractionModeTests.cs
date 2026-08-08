@@ -8,20 +8,20 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace NumericSelector.Tests;
 
 /// <summary>
-/// Pruebas de los dos modos de interacción: MouseBehavior e InteractionMode.
-/// A diferencia de las de lógica pura, éstas necesitan una ventana real: los gestos
-/// llegan por eventos ruteados y el foco no existe fuera del árbol visual.
+/// Tests for the two interaction modes: MouseBehavior and InteractionMode.
+/// Unlike the pure-logic ones, these need a real window: gestures arrive through routed
+/// events and focus does not exist outside the visual tree.
 /// </summary>
 [TestClass]
 public class InteractionModeTests
 {
-	// --- Andamiaje ---
+	// --- Scaffolding ---
 
 	/// <summary>
-	/// Monta el control en una ventana visible y espera a que la plantilla se aplique.
-	/// Sin ventana no hay PART_BarGrid ni foco de teclado, así que no habría nada que probar.
-	/// Incluye un botón aparte para poder sacarle el foco al control cuando la prueba
-	/// necesita el escenario "sin foco previo".
+	/// Mounts the control in a visible window and waits for the template to be applied.
+	/// Without a window there is no PART_BarGrid and no keyboard focus, so there would be
+	/// nothing to test. It includes a separate button so that the focus can be taken away from
+	/// the control when a test needs the "no previous focus" scenario.
 	/// </summary>
 	private static Scenario Host(Action<BoundedNumericSelector>? configure = null)
 	{
@@ -53,10 +53,10 @@ public class InteractionModeTests
 		Window Window, BoundedNumericSelector Selector, FrameworkElement Bar, Button Other);
 
 	/// <summary>
-	/// Click izquierdo completo: primero la fase túnel (donde el control toma el foco y
-	/// anota si ya lo tenía) y después la burbuja (donde el handler de la barra decide).
-	/// Las dos fases son imprescindibles: con la burbuja sola, MustFocusFirst nunca vería
-	/// el estado de foco previo y la prueba no probaría nada.
+	/// A complete left click: first the tunnel phase (where the control takes the focus and
+	/// notes down whether it already had it) and then the bubble one (where the handler of the
+	/// bar decides). Both phases are indispensable: with the bubble alone, MustFocusFirst would
+	/// never see the previous focus state and the test would be testing nothing.
 	/// </summary>
 	private static void LeftClick(UIElement target)
 	{
@@ -75,15 +75,16 @@ public class InteractionModeTests
 	}
 
 	/// <summary>
-	/// Averigua qué valor produce el gesto EJECUTÁNDOLO una vez con el control ya enfocado
-	/// (es decir, con el gesto habilitado en cualquiera de los dos modos), y devuelve además
-	/// un valor de partida garantizadamente distinto.
+	/// Finds out which value the gesture produces by RUNNING it once with the control already
+	/// focused (that is, with the gesture enabled in either of the two modes), and also returns
+	/// a starting value guaranteed to be a different one.
 	///
-	/// Por qué así y no calculando la posición: un click simulado resuelve e.GetPosition()
-	/// durante el ruteo, y esa posición NO coincide con la que devuelve Mouse.GetPosition()
-	/// desde afuera del evento (medido: -181 contra 392 sobre la misma barra). Predecir el
-	/// resultado desde afuera daba pruebas intermitentes. El puntero no se mueve durante la
-	/// prueba, así que ejecutar el gesto es la única fuente confiable de la expectativa.
+	/// Why this way and not by computing the position: a simulated click resolves
+	/// e.GetPosition() during the routing, and that position does NOT match the one
+	/// Mouse.GetPosition() returns from outside the event (measured: -181 against 392 over the
+	/// same bar). Predicting the result from outside gave flaky tests. The pointer does not
+	/// move during the test, so running the gesture is the only reliable source of the
+	/// expectation.
 	/// </summary>
 	private static (int Expected, int Different) Probe(Scenario e, Action<UIElement> gesture)
 	{
@@ -93,7 +94,8 @@ public class InteractionModeTests
 		int expected = e.Selector.Value;
 		int different = expected == e.Selector.Maximum ? e.Selector.Minimum : e.Selector.Maximum;
 
-		// Se devuelve el control al estado "sin foco" para que la prueba arme su escenario.
+		// The control is put back into the "unfocused" state so that the test can set up its
+		// own scenario.
 		e.Other.Focus();
 		return (expected, different);
 	}
@@ -122,12 +124,12 @@ public class InteractionModeTests
 			{
 				var (expected, different) = Probe(e, LeftClick);
 				e.Selector.Value = different;
-				Assert.IsFalse(e.Selector.IsKeyboardFocused, "El escenario exige arrancar sin foco.");
+				Assert.IsFalse(e.Selector.IsKeyboardFocused, "The scenario requires starting with no focus.");
 
 				LeftClick(e.Bar);
 
 				Assert.AreEqual(expected, e.Selector.Value,
-					"En ChangeOnClick el click debe actuar aunque el control no tuviera el foco.");
+					"In ChangeOnClick the click has to act even if the control did not have the focus.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -146,13 +148,13 @@ public class InteractionModeTests
 
 				LeftClick(e.Bar);
 				Assert.AreEqual(different, e.Selector.Value,
-					"El click que otorga el foco no debe además mover el valor.");
+					"The click that grants the focus must not move the value as well.");
 				Assert.IsTrue(e.Selector.IsKeyboardFocused,
-					"Ese primer click sí tiene que dejar el control enfocado.");
+					"That first click does have to leave the control focused.");
 
 				LeftClick(e.Bar);
 				Assert.AreEqual(expected, e.Selector.Value,
-					"Con el foco ya puesto, el click siguiente debe actuar normalmente.");
+					"With the focus already taken, the next click has to act normally.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -169,14 +171,14 @@ public class InteractionModeTests
 				var (expected, different) = Probe(e, LeftClick);
 				e.Selector.Value = different;
 
-				// Foco entregado por código, como lo haría una tabulación: no es un click.
+				// Focus handed over from code, as a tab would do: it is not a click.
 				e.Selector.Focus();
 				Assert.IsTrue(e.Selector.IsKeyboardFocused);
 
 				LeftClick(e.Bar);
 
 				Assert.AreEqual(expected, e.Selector.Value,
-					"Si el foco ya estaba puesto, el primer click debe actuar aunque no lo haya dado él.");
+					"If the focus was already taken, the first click has to act even though it did not grant it.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -195,11 +197,11 @@ public class InteractionModeTests
 
 				RightClick(e.Bar);
 				Assert.AreEqual(different, e.Selector.Value,
-					"La regla vale para todos los gestos de mouse, no sólo para el click izquierdo.");
+					"The rule holds for every mouse gesture, not only for the left click.");
 
 				RightClick(e.Bar);
 				Assert.AreEqual(expected, e.Selector.Value,
-					"Con el foco puesto, el click derecho por zonas debe actuar.");
+					"With the focus taken, the right click by zones has to act.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -216,10 +218,10 @@ public class InteractionModeTests
 			Assert.IsTrue(selector.Focusable);
 
 			selector.InteractionMode = UserInteractionMode.ReadOnly;
-			Assert.IsFalse(selector.Focusable, "En sólo visualización el control no debe poder enfocarse.");
+			Assert.IsFalse(selector.Focusable, "In display-only mode the control must not be focusable.");
 
 			selector.InteractionMode = UserInteractionMode.Interactive;
-			Assert.IsTrue(selector.Focusable, "Al salir del modo, la focusabilidad tiene que volver sola.");
+			Assert.IsTrue(selector.Focusable, "On leaving the mode, focusability has to come back on its own.");
 		});
 	}
 
@@ -228,15 +230,15 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			// La focusabilidad se quita por coerción, no por asignación, justamente para
-			// no pisar la decisión de quien usa el control.
+			// Focusability is removed by coercion, not by assignment, precisely so as not to
+			// override the decision of whoever uses the control.
 			var selector = new BoundedNumericSelector { Focusable = false };
 
 			selector.InteractionMode = UserInteractionMode.ReadOnly;
 			selector.InteractionMode = UserInteractionMode.Interactive;
 
 			Assert.IsFalse(selector.Focusable,
-				"Salir del modo no debe encender la focusabilidad que el consumidor había apagado.");
+				"Leaving the mode must not switch on the focusability the consumer had switched off.");
 		});
 	}
 
@@ -253,10 +255,10 @@ public class InteractionModeTests
 
 				e.Selector.InteractionMode = UserInteractionMode.ReadOnly;
 
-				// Quitar Focusable no suelta por sí solo un foco ya puesto: si esto se rompe,
-				// el control queda con el borde de foco encendido y la rueda viva.
+				// Removing Focusable does not by itself release a focus already taken: if this
+				// breaks, the control is left with the focus border lit and the wheel alive.
 				Assert.IsFalse(e.Selector.IsKeyboardFocused,
-					"Entrar en sólo visualización tiene que soltar el foco que ya estuviera puesto.");
+					"Entering display-only mode has to release a focus that was already taken.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -270,51 +272,53 @@ public class InteractionModeTests
 			var e = Host();
 			try
 			{
-				// Se sondea ANTES de entrar en el modo: hace falta saber qué valor produciría
-				// un gesto que funciona, para poder afirmar que después no produce ninguno.
+				// It is probed BEFORE entering the mode: we need to know which value a working
+				// gesture would produce, in order to claim that afterwards it produces none.
 				var (expected, different) = Probe(e, LeftClick);
 
 				e.Selector.InteractionMode = UserInteractionMode.ReadOnly;
 				e.Selector.Value = different;
 
 				LeftClick(e.Bar);
-				Assert.AreEqual(different, e.Selector.Value, "El click izquierdo no debe hacer nada.");
+				Assert.AreEqual(different, e.Selector.Value, "The left click must do nothing.");
 
 				RightClick(e.Bar);
-				Assert.AreEqual(different, e.Selector.Value, "El click derecho no debe hacer nada.");
+				Assert.AreEqual(different, e.Selector.Value, "The right click must do nothing.");
 
 				e.Selector.RaiseEvent(new MouseWheelEventArgs(Mouse.PrimaryDevice, 0, 120)
 				{ RoutedEvent = UIElement.MouseWheelEvent });
-				Assert.AreEqual(different, e.Selector.Value, "La rueda no debe hacer nada.");
+				Assert.AreEqual(different, e.Selector.Value, "The wheel must do nothing.");
 
-				var fuente = PresentationSource.FromVisual(e.Window)!;
-				e.Selector.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, fuente, 0, Key.Right)
+				var source = PresentationSource.FromVisual(e.Window)!;
+				e.Selector.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Right)
 				{ RoutedEvent = Keyboard.PreviewKeyDownEvent });
-				Assert.AreEqual(different, e.Selector.Value, "El teclado no debe hacer nada.");
+				Assert.AreEqual(different, e.Selector.Value, "The keyboard must do nothing.");
 
-				// Y que el sondeo no haya sido degenerado: el gesto sí producía un cambio.
+				// And that the probe was not degenerate: the gesture did produce a change.
 				Assert.AreNotEqual(expected, different,
-					"Si el gesture no cambiaba nada de entrada, la prueba no estaría probando el bloqueo.");
+					"If the gesture changed nothing to begin with, the test would not be testing the blocking.");
 			}
 			finally { e.Window.Close(); }
 		});
 	}
 
-	// --- ShowDetail y disposición ---
-	// Son de apariencia, pero sus pruebas viven acá porque la regla que importa es la
-	// interacción con el FOCO, y para eso hace falta una ventana real.
+	// --- ShowDetail and layout ---
+	// These are about appearance, but their tests live here because the rule that matters is
+	// the interaction with the FOCUS, and that needs a real window.
 
-	private static Border Celda(BoundedNumericSelector selector, string parte) =>
-		(Border)selector.Template.FindName(parte, selector);
+	private static Border Cell(BoundedNumericSelector selector, string part) =>
+		(Border)selector.Template.FindName(part, selector);
 
-	private static Border CeldaDetalle(BoundedNumericSelector selector) =>
-		Celda(selector, "PART_DetailCell");
+	private static Border DetailCell(BoundedNumericSelector selector) =>
+		Cell(selector, "PART_DetailCell");
 
-	private static Border CajaDeArriba(BoundedNumericSelector selector) =>
-		Celda(selector, "PART_ValueDetailCell");
+	// The two value boxes are named after the row they live in, not after "upper/lower": only
+	// one of them is visible at a time, and which one it is depends on ValueFollowsDetail.
+	private static Border DetailValueBox(BoundedNumericSelector selector) =>
+		Cell(selector, "PART_ValueDetailCell");
 
-	private static Border CajaDeAbajo(BoundedNumericSelector selector) =>
-		Celda(selector, "PART_ValueCell");
+	private static Border BarValueBox(BoundedNumericSelector selector) =>
+		Cell(selector, "PART_ValueCell");
 
 	[TestMethod]
 	public void Detail_row_is_hidden_by_default()
@@ -341,13 +345,13 @@ public class InteractionModeTests
 			{
 				Assert.AreEqual(Visibility.Visible,
 					((FrameworkElement)e.Selector.Template.FindName("PART_DetailRow", e.Selector)).Visibility);
-				Assert.AreEqual(e.Selector.BorderBrush, CeldaDetalle(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.BorderBrush, DetailCell(e.Selector).BorderBrush);
 
-				// Con el default de ValueFollowsDetail (true) el valor desciende: el detalle
-				// es marco fijo (Left,Right,Bottom) y sólo cede la parte superior a la costura
-				// que dibuja la barra (que ahora queda arriba).
-				Assert.AreEqual(new Thickness(2, 0, 2, 2), CeldaDetalle(e.Selector).BorderThickness,
-					"La fila de detalle lleva los tres lados y cede el superior a la barra.");
+				// With the default of ValueFollowsDetail (true) the value drops: the detail is a
+				// fixed frame (Left,Right,Bottom) and only yields its top side to the seam drawn
+				// by the bar (which is now above it).
+				Assert.AreEqual(new Thickness(2, 0, 2, 2), DetailCell(e.Selector).BorderThickness,
+					"The detail row carries three sides and yields the top one to the bar.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -365,12 +369,12 @@ public class InteractionModeTests
 			});
 			try
 			{
-				// El fondo del control se pinta a través de las celdas: si una no lo
-				// enlazara, quedaría un hueco sin color ahí.
-				Assert.AreEqual(e.Selector.Background, CeldaDetalle(e.Selector).Background);
-				Assert.AreEqual(e.Selector.Background, CajaDeAbajo(e.Selector).Background);
-				Assert.AreEqual(e.Selector.Background, Celda(e.Selector, "PART_BarCell").Background);
-				Assert.AreEqual(e.Selector.Background, CajaDeArriba(e.Selector).Background);
+				// The background of the control is painted through the cells: if one of them did
+				// not bind it, there would be a colorless gap right there.
+				Assert.AreEqual(e.Selector.Background, DetailCell(e.Selector).Background);
+				Assert.AreEqual(e.Selector.Background, BarValueBox(e.Selector).Background);
+				Assert.AreEqual(e.Selector.Background, Cell(e.Selector, "PART_BarCell").Background);
+				Assert.AreEqual(e.Selector.Background, DetailValueBox(e.Selector).Background);
 			}
 			finally { e.Window.Close(); }
 		});
@@ -386,23 +390,22 @@ public class InteractionModeTests
 			{
 				e.Selector.Focus();
 
-				// Con ShowDetail el contorno es la unión de los marcos, y todos se
-				// tiñen: no hay caja "frameless" que apagar, así que la regla es única.
-				Assert.AreEqual(e.Selector.FocusBorderBrush, CeldaDetalle(e.Selector).BorderBrush);
-				Assert.AreEqual(e.Selector.FocusBorderBrush, CajaDeArriba(e.Selector).BorderBrush);
-				Assert.AreEqual(e.Selector.FocusBorderBrush, Celda(e.Selector, "PART_BarCell").BorderBrush);
-				Assert.AreEqual(e.Selector.FocusBorderBrush, CajaDeAbajo(e.Selector).BorderBrush);
+				// With ShowDetail the outline is the union of the frames, and every one of them
+				// is tinted: there is no "frameless" box to turn off, so the rule is a single one.
+				Assert.AreEqual(e.Selector.FocusBorderBrush, DetailCell(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderBrush, DetailValueBox(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderBrush, Cell(e.Selector, "PART_BarCell").BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderBrush, BarValueBox(e.Selector).BorderBrush);
 			}
 			finally { e.Window.Close(); }
 		});
 	}
 
-	// --- Trazo separador del casillero del valor ---
+	// --- The separating stroke of the value box ---
 
 	/// <summary>
-	/// La regla de todo el modelo: la barra es el marco fijo (cuatro lados) y la caja del
-	/// valor cede el filo que comparten. Si los dos lo dibujaran, la costura mediría el
-	/// doble.
+	/// The rule of the whole model: the bar is the fixed frame (four sides) and the value box
+	/// yields the edge they share. If both drew it, the seam would measure twice as much.
 	/// </summary>
 	[TestMethod]
 	public void Beside_bar_the_bar_draws_the_shared_edge()
@@ -412,10 +415,10 @@ public class InteractionModeTests
 			var e = Host(s => s.BorderThickness = new Thickness(2));
 			try
 			{
-				Assert.AreEqual(new Thickness(0, 2, 2, 2), CajaDeAbajo(e.Selector).BorderThickness,
-					"El casillero cede el lado que mira a la barra.");
-				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness,
-					"La barra, marco fijo, dibuja el filo compartido.");
+				Assert.AreEqual(new Thickness(0, 2, 2, 2), BarValueBox(e.Selector).BorderThickness,
+					"The value box yields the side facing the bar.");
+				Assert.AreEqual(new Thickness(2), Cell(e.Selector, "PART_BarCell").BorderThickness,
+					"The bar, being the fixed frame, draws the shared edge.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -433,17 +436,17 @@ public class InteractionModeTests
 			});
 			try
 			{
-				Assert.AreEqual(new Thickness(2, 2, 0, 2), CajaDeAbajo(e.Selector).BorderThickness,
-					"El casillero cede el lado derecho, que es el que mira a la barra.");
-				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness,
-					"La barra, marco fijo, dibuja el filo compartido.");
-				Assert.AreEqual(1, Grid.GetColumn(Celda(e.Selector, "PART_BarCell")),
-					"La barra pasa a la segunda columna; el casillero queda primero.");
+				Assert.AreEqual(new Thickness(2, 2, 0, 2), BarValueBox(e.Selector).BorderThickness,
+					"The value box yields its right side, which is the one facing the bar.");
+				Assert.AreEqual(new Thickness(2), Cell(e.Selector, "PART_BarCell").BorderThickness,
+					"The bar, being the fixed frame, draws the shared edge.");
+				Assert.AreEqual(1, Grid.GetColumn(Cell(e.Selector, "PART_BarCell")),
+					"The bar moves to the second column; the value box comes first.");
 
-				// La columna "*" tiene que acompañar a la barra: si sólo se movieran las
-				// celdas, la barra caería en una columna "Auto" y se encogería a su contenido.
-				// Las columnas se nombran por posición, no por ocupante, justamente porque
-				// acá el ocupante cambia: la barra pasa a la 1 y el casillero a la 0.
+				// The "*" column has to go along with the bar: if only the cells moved, the bar
+				// would land in an "Auto" column and shrink to its content. The columns are named
+				// by position, not by occupant, precisely because here the occupant changes: the
+				// bar moves to 1 and the value box to 0.
 				Assert.AreEqual(GridLength.Auto,
 					((ColumnDefinition)e.Selector.Template.FindName("PART_Column0", e.Selector)).Width);
 				Assert.AreEqual(new GridLength(1, GridUnitType.Star),
@@ -454,9 +457,9 @@ public class InteractionModeTests
 	}
 
 	/// <summary>
-	/// Valor en detalle (ShowDetail y ValueFollowsDetail): la caja desciende a la fila del
-	/// detalle, cede el lado superior a la costura que dibuja la barra de arriba y cede el
-	/// lado que mira a la etiqueta de detalle, que lo dibuja.
+	/// Value in the detail row (ShowDetail and ValueFollowsDetail): the box drops to the detail
+	/// row, yields its top side to the seam drawn by the bar above, and yields the side facing
+	/// the detail label, which draws it.
 	/// </summary>
 	[TestMethod]
 	public void Value_down_moves_the_box_to_the_detail_row_and_yields_the_shared_edges()
@@ -471,12 +474,12 @@ public class InteractionModeTests
 			});
 			try
 			{
-				Assert.AreEqual(new Thickness(0, 0, 2, 2), CajaDeArriba(e.Selector).BorderThickness,
-					"La caja de detalle cede el superior a la barra y el lado que mira a la etiqueta.");
-				Assert.AreEqual(new Thickness(2, 0, 2, 2), CeldaDetalle(e.Selector).BorderThickness,
-					"La fila de detalle, marco fijo, dibuja el filo compartido y cede el superior.");
-				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness,
-					"La barra, marco base arriba, sigue con sus cuatro lados.");
+				Assert.AreEqual(new Thickness(0, 0, 2, 2), DetailValueBox(e.Selector).BorderThickness,
+					"The detail value box yields the top one to the bar and the side facing the label.");
+				Assert.AreEqual(new Thickness(2, 0, 2, 2), DetailCell(e.Selector).BorderThickness,
+					"The detail row, being a fixed frame, draws the shared edge and yields the top one.");
+				Assert.AreEqual(new Thickness(2), Cell(e.Selector, "PART_BarCell").BorderThickness,
+					"The bar, the base frame on top, keeps its four sides.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -490,10 +493,10 @@ public class InteractionModeTests
 			var e = Host(s => { s.ShowDetail = true; s.ValueFollowsDetail = true; });
 			try
 			{
-				// Con el valor abajo, la columna del valor de arriba mide 0: sin apagar el
-				// marco quedaría un trazo vertical suelto pegado al final de la barra.
-				Assert.AreEqual(new Thickness(0), CajaDeAbajo(e.Selector).BorderThickness,
-					"La caja de arriba, vacía, no debe dejar trazo separador.");
+				// With the value down below, the upper value column measures 0: without turning
+				// its frame off there would be a loose vertical stroke stuck to the end of the bar.
+				Assert.AreEqual(new Thickness(0), BarValueBox(e.Selector).BorderThickness,
+					"The upper box, being empty, must leave no separating stroke.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -507,13 +510,13 @@ public class InteractionModeTests
 			var e = Host();
 			try
 			{
-				Assert.AreEqual(e.Selector.BorderBrush, CajaDeAbajo(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.BorderBrush, BarValueBox(e.Selector).BorderBrush);
 
 				e.Selector.Focus();
 
-				// Es parte del mismo marco: si no se tiñera, al enfocar se vería un recuadro
-				// azul con una raya negra en el medio.
-				Assert.AreEqual(e.Selector.FocusBorderBrush, CajaDeAbajo(e.Selector).BorderBrush);
+				// It is part of the same frame: if it were not tinted, focusing would show a blue
+				// box with a black line down the middle.
+				Assert.AreEqual(e.Selector.FocusBorderBrush, BarValueBox(e.Selector).BorderBrush);
 			}
 			finally { e.Window.Close(); }
 		});
@@ -532,21 +535,21 @@ public class InteractionModeTests
 			});
 			try
 			{
-				// La caja sigue arriba, junto a la barra, y la fila de detalle abarca todo el
-				// ancho bajo la barra.
-				Assert.AreEqual(new Thickness(2, 0, 2, 2), CeldaDetalle(e.Selector).BorderThickness);
-				Assert.AreEqual(new Thickness(0, 2, 2, 2), CajaDeAbajo(e.Selector).BorderThickness);
-				Assert.AreEqual(new Thickness(2), Celda(e.Selector, "PART_BarCell").BorderThickness);
+				// The box stays up top, next to the bar, and the detail row spans the whole width
+				// below the bar.
+				Assert.AreEqual(new Thickness(2, 0, 2, 2), DetailCell(e.Selector).BorderThickness);
+				Assert.AreEqual(new Thickness(0, 2, 2, 2), BarValueBox(e.Selector).BorderThickness);
+				Assert.AreEqual(new Thickness(2), Cell(e.Selector, "PART_BarCell").BorderThickness);
 			}
 			finally { e.Window.Close(); }
 		});
 	}
 
 	// --- IsEnabled ---
-	// IsEnabled no es una propiedad del control sino de UIElement, pero el consumidor la
-	// puede usar igual y el control tiene que comportarse. WPF impide GANAR el foco estando
-	// deshabilitado, pero no suelta el que ya estuviera puesto, y las teclas se rutean al
-	// elemento enfocado: sin tratamiento, un control deshabilitado seguía respondiendo.
+	// IsEnabled is not a property of the control but of UIElement, yet the consumer can use it
+	// all the same and the control has to behave. WPF prevents GAINING the focus while
+	// disabled, but it does not release one already taken, and keys are routed to the focused
+	// element: with no treatment, a disabled control went on responding.
 
 	[TestMethod]
 	public void Disabling_releases_the_focus_it_already_had()
@@ -561,10 +564,10 @@ public class InteractionModeTests
 
 				e.Selector.IsEnabled = false;
 
-				// Si esto se rompe, el control deshabilitado queda con el marco de foco
-				// encendido —que además miente— y con el teclado y la rueda vivos.
+				// If this breaks, the disabled control is left with the focus frame lit —which is
+				// a lie on top of everything— and with the keyboard and the wheel alive.
 				Assert.IsFalse(e.Selector.IsKeyboardFocused,
-					"Deshabilitar tiene que soltar el foco que ya estuviera puesto.");
+					"Disabling has to release a focus that was already taken.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -581,16 +584,16 @@ public class InteractionModeTests
 				e.Selector.Focus();
 				e.Selector.IsEnabled = false;
 
-				int antes = e.Selector.Value;
-				var fuente = PresentationSource.FromVisual(e.Window)!;
-				e.Selector.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, fuente, 0, Key.Right)
+				int before = e.Selector.Value;
+				var source = PresentationSource.FromVisual(e.Window)!;
+				e.Selector.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Right)
 				{ RoutedEvent = Keyboard.PreviewKeyDownEvent });
 
-				// Se levanta el evento directamente sobre el control para saltear el ruteo:
-				// así la prueba verifica la GUARDA, no que WPF no haya entregado la tecla.
-				// Las dos defensas importan y ésta es la que queda si el foco llega por otro lado.
-				Assert.AreEqual(antes, e.Selector.Value,
-					"Con el control deshabilitado, el teclado no debe mover el valor.");
+				// The event is raised directly on the control to skip the routing: that way the
+				// test verifies the GUARD, not that WPF failed to deliver the key. Both defences
+				// matter and this is the one left standing if the focus arrives some other way.
+				Assert.AreEqual(before, e.Selector.Value,
+					"With the control disabled, the keyboard must not move the value.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -608,15 +611,15 @@ public class InteractionModeTests
 				e.Selector.IsEnabled = true;
 				e.Selector.Focus();
 
-				int antes = e.Selector.Value;
-				var fuente = PresentationSource.FromVisual(e.Window)!;
-				e.Selector.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, fuente, 0, Key.Right)
+				int before = e.Selector.Value;
+				var source = PresentationSource.FromVisual(e.Window)!;
+				e.Selector.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Right)
 				{ RoutedEvent = Keyboard.PreviewKeyDownEvent });
 
-				// El bloqueo no debe dejar secuelas: la guarda mira IsEnabled en vivo y el
-				// foco se puede volver a tomar.
-				Assert.AreEqual(antes + e.Selector.SmallChange, e.Selector.Value,
-					"Al rehabilitar, el teclado tiene que volver a funcionar.");
+				// The blocking must leave no after-effects: the guard looks at IsEnabled live and
+				// the focus can be taken again.
+				Assert.AreEqual(before + e.Selector.SmallChange, e.Selector.Value,
+					"On re-enabling, the keyboard has to work again.");
 			}
 			finally { e.Window.Close(); }
 		});
@@ -628,15 +631,15 @@ public class InteractionModeTests
 		StaTest.Run(() =>
 		{
 			var selector = new BoundedNumericSelector { InteractionMode = UserInteractionMode.ReadOnly };
-			var cambios = new List<(int OldValue, int NewValue)>();
-			selector.ValueChanged += (_, args) => cambios.Add((args.OldValue, args.NewValue));
+			var changes = new List<(int OldValue, int NewValue)>();
+			selector.ValueChanged += (_, args) => changes.Add((args.OldValue, args.NewValue));
 
-			// El sentido del modo es mostrar un valor que se actualiza solo: asignarlo por
-			// código tiene que seguir funcionando y seguir avisando.
+			// The point of the mode is to show a value that updates by itself: assigning it from
+			// code has to keep working and keep announcing the change.
 			selector.Value = 77;
 
 			Assert.AreEqual(77, selector.Value);
-			CollectionAssert.AreEqual(new List<(int OldValue, int NewValue)> { (0, 77) }, cambios);
+			CollectionAssert.AreEqual(new List<(int OldValue, int NewValue)> { (0, 77) }, changes);
 		});
 	}
 }

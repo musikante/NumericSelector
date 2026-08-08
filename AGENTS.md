@@ -137,8 +137,7 @@ Tests that create WPF controls use `StaTest.Run()` to execute on an isolated STA
 
 ## Project conventions
 
-- **Everything in English**: identifiers, XAML resource keys, comments, documentation and interface texts. No new code is written in Spanish
-- Identifiers, XAML keys, the texts seen in the demo and the five `.md` documents **are already migrated**. The code comments are still in Spanish and remain to be translated: that is debt from an earlier stage, not the convention
+- **Everything in English**: identifiers, XAML resource keys, comments, documentation, interface texts and commit messages. The migration is **finished** — if anything in Spanish turns up, it is an oversight, not a leftover of a pending stage
 - Clear names, comments only where they explain a non-obvious decision
 - Formatting consistent with the existing code
 - One fix/improvement per PR
@@ -159,10 +158,6 @@ The text inconsistencies and the five code cleanups that used to be listed here 
 
 - `[TemplatePart]` on the class, to document the template contract.
 - Validation of invalid values in the public enums: today `(ValueBoxDock)99` is assigned without complaint.
-
-### Pending translation
-
-- The code comments (~717 lines in C#, 51 blocks in XAML) are still in Spanish. The convention is **everything in English**; this is debt from the earlier stage. The five `.md` documents are already translated.
 
 ### Publication
 

@@ -4,10 +4,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace NumericSelector.Tests;
 
 /// <summary>
-/// Pruebas de la función pura de la matriz de costuras (ValueBorderResolver.Resolve).
-/// No necesitan ventana: la matriz es una función sin estado y ése es justamente el punto
-/// de aislarla — cada configuración de (ShowDetail, ValueFollowsDetail, ValueBoxDock) debe
-/// repartir los lados de las celdas del control sin que ningún filo se dibuje dos veces.
+/// Tests for the pure function of the seam matrix (ValueBorderResolver.Resolve).
+/// They need no window: the matrix is a stateless function and that is exactly the point of
+/// isolating it — every configuration of (ShowDetail, ValueFollowsDetail, ValueBoxDock) must
+/// hand out the sides of the control's cells without any edge being drawn twice.
 /// </summary>
 [TestClass]
 public class ValueBorderResolverTests
@@ -20,7 +20,7 @@ public class ValueBorderResolverTests
 		string cell)
 		=> ValueBorderResolver.Resolve(pixels, showDetail, followsDetail, side, cell);
 
-	// --- Marco fijo: la barra (arriba) no depende de la posición ---
+	// --- Fixed frame: the bar (on top) does not depend on the layout ---
 
 	[TestMethod]
 	public void The_bar_always_draws_its_four_sides()
@@ -33,26 +33,26 @@ public class ValueBorderResolverTests
 		Assert.AreEqual(pixels, Resolve(pixels, true, true, ValueBoxDock.Left, "Bar"));
 	}
 
-	// --- La fila de detalle (abajo) cede el borde superior a la barra ---
+	// --- The detail row (at the bottom) yields its top border to the bar ---
 
 	[TestMethod]
 	public void The_detail_row_yields_its_top_edge_to_the_bar()
 	{
-		// La barra está arriba y dibuja la costura: el detalle no deja su parte superior.
+		// The bar is above and draws the seam: the detail does not keep its top side.
 		var pixels = new Thickness(2);
 
 		Assert.AreEqual(new Thickness(2, 0, 2, 2), Resolve(pixels, true, false, ValueBoxDock.Right, "Detail"));
 		Assert.AreEqual(new Thickness(2, 0, 2, 2), Resolve(pixels, true, true, ValueBoxDock.Left, "Detail"));
 	}
 
-	// --- Valor junto a la barra (no desciende) ---
+	// --- Value next to the bar (it does not drop) ---
 
 	[TestMethod]
 	public void Docked_right_the_value_yields_the_shared_edge_to_the_bar()
 	{
 		var pixels = new Thickness(2);
 
-		// No desciende (down=false): conserva su parte superior. La barra dibuja el filo compartido.
+		// It does not drop (down=false): it keeps its top side. The bar draws the shared edge.
 		Assert.AreEqual(new Thickness(0, 2, 2, 2), Resolve(pixels, false, true, ValueBoxDock.Right, "Value"));
 		Assert.AreEqual(new Thickness(2), Resolve(pixels, false, true, ValueBoxDock.Right, "Bar"));
 	}
@@ -66,15 +66,15 @@ public class ValueBorderResolverTests
 		Assert.AreEqual(new Thickness(2), Resolve(pixels, false, true, ValueBoxDock.Left, "Bar"));
 	}
 
-	// --- Valor en la fila de detalle (desciende: ShowDetail && ValueFollowsDetail) ---
+	// --- Value in the detail row (it drops: ShowDetail && ValueFollowsDetail) ---
 
 	[TestMethod]
 	public void Value_in_the_detail_row_yields_its_top_and_its_inner_side()
 	{
 		var pixels = new Thickness(2);
 
-		// Desciende a la fila del detalle: cede la parte superior (la dibuja la barra de
-		// arriba) y el lado que mira a la etiqueta de detalle.
+		// It drops to the detail row: it yields the top side (drawn by the bar above) and the
+		// side facing the detail label.
 		Assert.AreEqual(new Thickness(0, 0, 2, 2), Resolve(pixels, true, true, ValueBoxDock.Right, "Value"));
 		Assert.AreEqual(new Thickness(2), Resolve(pixels, true, true, ValueBoxDock.Right, "Bar"));
 	}
@@ -93,12 +93,13 @@ public class ValueBorderResolverTests
 	{
 		var pixels = new Thickness(2);
 
-		// La fila de detalle es marco fijo: lleva derecha/izquierda y base, y cede el superior.
+		// The detail row is a fixed frame: it carries left/right and the bottom, and yields the
+		// top one.
 		Assert.AreEqual(new Thickness(2, 0, 2, 2), Resolve(pixels, true, true, ValueBoxDock.Right, "Detail"));
 		Assert.AreEqual(new Thickness(2, 0, 2, 2), Resolve(pixels, true, true, ValueBoxDock.Left, "Detail"));
 	}
 
-	// --- Los lados ceden de a uno, sin fundir el grosor por lado ---
+	// --- The sides are yielded one at a time, without merging the per-side thickness ---
 
 	[TestMethod]
 	public void An_asymmetric_thickness_is_carried_side_by_side()
@@ -114,18 +115,18 @@ public class ValueBorderResolverTests
 		Assert.AreEqual(new Thickness(1, 0, 0, 4), Resolve(pixels, true, true, ValueBoxDock.Left, "Value"));
 	}
 
-	// --- Una celda que no existe es un error, no un valor plausible ---
+	// --- A cell that does not exist is an error, not a plausible value ---
 
 	[TestMethod]
 	public void An_unknown_cell_is_not_taken_for_a_valid_one()
 	{
-		// El nombre de la celda es una cadena escrita a mano en el ConverterParameter de la
-		// plantilla. Si un typo devolviera el Thickness de otra celda, el marco saldría mal
-		// dibujado sin ningún aviso; por eso protesta.
+		// The name of the cell is a string typed by hand in the template's ConverterParameter.
+		// If a typo returned the Thickness of another cell, the frame would come out drawn
+		// wrong with no warning at all; that is why it complains.
 		Assert.ThrowsExactly<ArgumentException>(
 			() => Resolve(new Thickness(2), true, true, ValueBoxDock.Right, "Detai"));
 
-		// La cadena vacía tampoco: es lo que llega si falta el ConverterParameter.
+		// Nor is the empty string: that is what arrives if the ConverterParameter is missing.
 		Assert.ThrowsExactly<ArgumentException>(
 			() => Resolve(new Thickness(2), false, false, ValueBoxDock.Right, ""));
 	}

@@ -3,8 +3,8 @@ using System.Runtime.ExceptionServices;
 namespace NumericSelector.Tests;
 
 /// <summary>
-/// Ejecuta pruebas que crean controles WPF en un hilo STA aislado.
-/// Así las pruebas no dependen del modelo de apartamento del runner de pruebas.
+/// Runs tests that create WPF controls on an isolated STA thread.
+/// That way the tests do not depend on the apartment model of the test runner.
 /// </summary>
 internal static class StaTest
 {

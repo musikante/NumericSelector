@@ -1,9 +1,9 @@
 using System.Windows;
 
-// Indica a WPF dónde buscar el diccionario de recursos genérico (Themes/Generic.xaml)
-// que contiene el estilo por defecto del control. Sin este atributo, la plantilla
-// declarada en Generic.xaml no se aplica y el control se renderiza vacío.
+// Tells WPF where to look for the generic resource dictionary (Themes/Generic.xaml) holding
+// the default style of the control. Without this attribute the template declared in
+// Generic.xaml is not applied and the control renders empty.
 [assembly: ThemeInfo(
-	ResourceDictionaryLocation.None,            // dónde están los diccionarios específicos de tema
-	ResourceDictionaryLocation.SourceAssembly   // dónde está el diccionario genérico (este ensamblado)
+	ResourceDictionaryLocation.None,            // where the theme-specific dictionaries are
+	ResourceDictionaryLocation.SourceAssembly   // where the generic dictionary is (this assembly)
 )]

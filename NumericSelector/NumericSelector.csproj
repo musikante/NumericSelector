@@ -8,7 +8,7 @@
 		<AssemblyName>NumericSelector</AssemblyName>
 		<RootNamespace>NumericSelector</RootNamespace>
 		<Authors>Jorge Rogelio Zir</Authors>
-		<Description>Control WPF para ingresar un valor entero acotado a un rango: no hay forma de obtener un valor fuera de [Minimum, Maximum], así que no hace falta validar la entrada.</Description>
+		<Description>WPF control for entering an integer value bounded to a range: there is no way to get a value outside [Minimum, Maximum], so the input never has to be validated.</Description>
 		<Version>0.1.0</Version>
 	</PropertyGroup>
 </Project>
