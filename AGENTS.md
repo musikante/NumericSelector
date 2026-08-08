@@ -11,7 +11,8 @@ NumericSelector.Demo/     → WPF demonstration application (manual test bench)
                             HelpWindow: the help (F1), plain text, does not use the control
 NumericSelector.Tests/    → Automated tests (MSTest)
 docs/images/              → Screenshots illustrating the README
-.github/workflows/ci.yml  → CI: build and test on a Windows runner
+.github/workflows/ci.yml       → CI: build and test on a Windows runner
+.github/workflows/release.yml  → publishes to nuget.org when a v* tag is pushed
 ```
 
 Published at <https://github.com/musikante/NumericSelector> (public, MIT). The remote is
@@ -174,13 +175,31 @@ enums and the publication itself.
 - **NuGet:** `NumericSelector` `0.1.0`, owner `musikante`. The first version was uploaded by
   hand through *Upload Package* on the website.
 
+### Releasing a version
+
+`release.yml` publishes to nuget.org with **trusted publishing**: no API key is stored
+anywhere. GitHub issues a short-lived OIDC token for the job, nuget.org checks it against a
+policy naming this repository and that file, and returns a key that lasts one hour.
+
+The steps for a release:
+
+1. Bump `<Version>` in `NumericSelector/NumericSelector.csproj` and write the CHANGELOG entry.
+2. Commit and push.
+3. `git tag v0.1.1 && git push origin v0.1.1` — the tag is the trigger.
+
+The version is **not** taken from the tag: it stays in the `.csproj`, and the job refuses to
+publish if the two disagree. A published version **can never be replaced or deleted** and its
+number can never be reused, so a mistake in `0.1.0` is fixed by releasing `0.1.1`, not by
+retrying.
+
+**If this file is ever renamed, the policy on nuget.org has to be updated**: it names the
+workflow file, and the exchange fails without a match.
+
 ### What is left
 
-- **Publish the next versions from CI with trusted publishing**, instead of by hand: nuget.org
-  already flags API keys as "not recommended". It needs a policy on nuget.org (repository
-  owner, repository, and the workflow file name on its own) and a workflow with
-  `permissions: id-token: write` plus `NuGet/login@v1`, which trades a GitHub OIDC token for an
-  API key that lasts one hour.
-- A version that is published **can never be replaced or deleted**, and its number can never be
-  reused: a mistake in `0.1.0` is fixed by releasing `0.1.1`.
+- The **trusted publishing policy** on nuget.org (repository owner `musikante`, repository
+  `NumericSelector`, workflow file `release.yml`, no environment). Until it exists, the release
+  job fails at the login step. It is the author's to create; nothing in the repo can do it.
+- `release.yml` has **never run**: it is verified only as far as its YAML and its version check.
+  The first tag is its real test.
 - An animated capture of the demo for the README.

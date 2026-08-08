@@ -1,0 +1,76 @@
+# Publishes the package to nuget.org when a version tag is pushed.
+#
+# There is no API key anywhere: with trusted publishing, GitHub issues a short-lived OIDC token
+# for this job, nuget.org validates it against a policy that names this repository and this
+# very file, and hands back an API key that lasts one hour. That is why `id-token: write` is
+# required, and why the policy has to be updated if this file is ever renamed.
+#
+# Releasing a version:
+#   1. bump <Version> in NumericSelector/NumericSelector.csproj and write its CHANGELOG entry
+#   2. commit and push
+#   3. git tag v0.1.1 && git push origin v0.1.1
+#
+# The tag is what triggers this. The version itself is NOT taken from the tag: it stays in the
+# .csproj, which is what the CHANGELOG and the diffs talk about, and the job refuses to publish
+# if the two disagree — a published version can never be replaced, so it is better to fail here.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    permissions:
+      contents: read
+      id-token: write  # lets GitHub issue the OIDC token that nuget.org exchanges for a key
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up the .NET SDK pinned in global.json
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: The tag has to match the version in the project
+        shell: pwsh
+        run: |
+          $tag = '${{ github.ref_name }}' -replace '^v', ''
+          $xml = [xml](Get-Content NumericSelector/NumericSelector.csproj)
+          $version = @($xml.Project.PropertyGroup.Version | Where-Object { $_ })[0]
+          if ($tag -ne $version) {
+            throw "The tag says $tag and the .csproj says $version. Line them up before releasing."
+          }
+          Write-Host "Releasing version $version"
+
+      - name: Build (Release, warnings are errors)
+        run: dotnet build NumericSelector.slnx --configuration Release -warnaserror
+
+      # Nothing gets published without the suite passing: a bad version cannot be taken back.
+      - name: Test
+        run: dotnet test NumericSelector.slnx --configuration Release --no-build
+
+      - name: Pack
+        run: dotnet pack NumericSelector/NumericSelector.csproj --configuration Release --no-build --output artifacts
+
+      # The temporary key lasts one hour, so it is requested right before it is used.
+      - name: Log in to nuget.org (OIDC to short-lived key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: musikante
+
+      # Pushing the .nupkg also pushes the .snupkg sitting next to it, with the symbols.
+      - name: Push
+        run: dotnet nuget push artifacts/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+      # Keeps a copy of exactly what was published, attached to the run.
+      - name: Attach the package to the run
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package
+          path: artifacts/*
