@@ -45,7 +45,6 @@ Todavía sin publicar; al hacerlo pasa a ser `0.1.0`. Como nada de esto llegó n
 
 ### Límites conocidos
 
-- Sólo orientación **horizontal**; la vertical está descartada.
 - El dominio es **intencionalmente entero**: no hay soporte para decimales.
 - Los valores inválidos de las enumeraciones públicas todavía no se validan.
 - Falta el contrato de plantilla declarado con `TemplatePart`.

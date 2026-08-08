@@ -183,16 +183,12 @@ dotnet build .\NumericSelector.slnx --configuration Release
 - [ ] Ampliar las pruebas a cultura y formato de número.
 - [ ] Contrato de plantilla documentado con `TemplatePart` para facilitar estilos alternativos.
 - [ ] Validación explícita de valores inválidos en las enumeraciones públicas.
-- [ ] Modo ultra-minimalista: ocultar la barra (`ShowBar`) y dejar sólo el casillero con arrastre vertical.
 - [ ] Ayuda de gestos incorporada al demo.
 - [ ] Empaquetado NuGet, versionado semántico y publicación inicial `0.x`.
 - [ ] Automatización de CI en GitHub Actions y capturas/GIF reales del demo.
 
-La **orientación vertical está descartada**: el rediseño de la plantilla en cuatro celdas se hizo para el eje horizontal y el control no la contempla.
-
 ## Límites actuales
 
-- Sólo admite orientación horizontal.
 - El dominio es intencionalmente entero: no hay soporte para decimales.
 - El `BaseWidth` predeterminado del estilo es `300` (ancho base/piso desde el que crece).
 - El `FocusVisualStyle` predeterminado se desactiva; el indicador de foco es el borde.

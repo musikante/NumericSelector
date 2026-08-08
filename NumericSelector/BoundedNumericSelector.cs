@@ -471,7 +471,7 @@ namespace NumericSelector
 			if (_barGrid != null)
 				_barGrid.Cursor = gestures ? Cursors.SizeWE : Cursors.Arrow;
 
-			// El casillero del valor se arrastra en vertical en cualquier orientacion.
+			// El casillero del valor se arrastra en vertical.
 			var valueCursor = gestures ? Cursors.SizeNS : Cursors.Arrow;
 			if (_valueText != null) _valueText.Cursor = valueCursor;
 			if (_valueDetail is FrameworkElement fed) fed.Cursor = valueCursor;
@@ -512,7 +512,7 @@ namespace NumericSelector
 			long range = (long)Maximum - Minimum;
 			double ratio = (range > 0) ? Math.Clamp((double)(value - (long)Minimum) / range, 0, 1) : 0;
 
-			// Eje horizontal: el relleno crece hacia la derecha en proporcion al valor.
+			// El relleno crece hacia la derecha en proporcion al valor.
 			// El alto se fija por codigo porque el rectangulo vive dentro de un Canvas
 			// (ver Generic.xaml), que no estira a sus hijos.
 			_barRect.Width = _barGrid.ActualWidth * ratio;

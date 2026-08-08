@@ -143,7 +143,6 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 
 ## Advertencias
 
-- El control es **horizontal únicamente** (la orientación vertical se descartó en el rediseño)
 - El dominio es **intencionalmente entero** (sin soporte para decimales)
 - `FocusVisualStyle` se desactiva por defecto; el foco lo indica el borde (`FocusBorderBrush`)
 - **Un `TemplateBinding` mal escrito compila igual y falla en silencio.** Al tocar la plantilla o renombrar propiedades que ella consume, hay que instanciar el control y leer las partes con `Template.FindName` para comprobar que los valores llegan. Lo mismo vale para los `StaticResource` del demo: un recurso borrado revienta al **cargar** la ventana, no al compilar.
@@ -156,7 +155,6 @@ Las incoherencias de texto y las cinco limpiezas de código que figuraban acá e
 
 - `[TemplatePart]` sobre la clase, para documentar el contrato de la plantilla.
 - Validación de valores inválidos en los enums públicos: hoy `(ValueBoxDock)99` se asigna sin protestar.
-- `ShowBar` y el modo ultra-minimalista (sólo el casillero con arrastre vertical). El piso de ancho que necesita ya lo dan los medidores ocultos.
 - Ayuda de gestos en el demo. El material está en `TempText - Interaction help.txt`, en la raíz y **sin trackear** a propósito.
 
 ### Publicación
