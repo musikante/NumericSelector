@@ -201,6 +201,8 @@ dotnet build .\NumericSelector.slnx --configuration Release
 
 ## Development and contributions
 
-The repository ships a [contribution guide](CONTRIBUTING.md), its [security policy](SECURITY.md), the [changelog](CHANGELOG.md) and an [MIT](LICENSE) license.
+<!-- Absolute links, for the same reason as the image above: this README is also the package
+     page on nuget.org, where a relative path resolves against nuget.org and leads nowhere. -->
+The repository ships a [contribution guide](https://github.com/musikante/NumericSelector/blob/main/CONTRIBUTING.md), its [security policy](https://github.com/musikante/NumericSelector/blob/main/SECURITY.md), the [changelog](https://github.com/musikante/NumericSelector/blob/main/CHANGELOG.md) and an [MIT](https://github.com/musikante/NumericSelector/blob/main/LICENSE) license.
 
-Every push and pull request against `main` builds the solution in Release —with warnings treated as errors— and runs the test suite on a Windows runner: see [.github/workflows/ci.yml](.github/workflows/ci.yml). The pending step is the NuGet package.
+Every push and pull request against `main` builds the solution in Release —with warnings treated as errors— and runs the test suite on a Windows runner: see [.github/workflows/ci.yml](https://github.com/musikante/NumericSelector/blob/main/.github/workflows/ci.yml).
