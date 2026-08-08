@@ -183,7 +183,7 @@ dotnet build .\NumericSelector.slnx --configuration Release
 - [ ] Ampliar las pruebas a cultura y formato de número.
 - [ ] Contrato de plantilla documentado con `TemplatePart` para facilitar estilos alternativos.
 - [ ] Validación explícita de valores inválidos en las enumeraciones públicas.
-- [ ] Ayuda de gestos incorporada al demo.
+- [x] Ayuda del demo con **F1**: por qué el banco está hecho con el propio control, y la lista de gestos.
 - [ ] Empaquetado NuGet, versionado semántico y publicación inicial `0.x`.
 - [ ] Automatización de CI en GitHub Actions y capturas/GIF reales del demo.
 

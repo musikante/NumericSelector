@@ -8,6 +8,12 @@
         Width="880"
         WindowStartupLocation="CenterScreen">
 
+    <!-- F1 abre la ayuda: ApplicationCommands.Help ya trae ese gesto de fábrica, así que
+         alcanza con enlazarlo y no hace falta declarar la tecla en ningún lado. -->
+    <Window.CommandBindings>
+        <CommandBinding Command="Help" Executed="Ayuda_Executed"/>
+    </Window.CommandBindings>
+
     <Window.Resources>
         <test:ThicknessToIntConverter x:Key="ThickToInt"/>
         <test:ColorIndexConverter x:Key="ColorIndex"/>
@@ -333,5 +339,17 @@
                 </StackPanel>
             </Grid>
         </ScrollViewer>
+
+        <!-- Pie: la tercera fila del Grid estaba libre. El botón está para que la ayuda se
+             descubra sin adivinar la tecla; el gesto real lo aporta ApplicationCommands.Help. -->
+        <Border Grid.Row="2" Margin="0,12,0,0" Padding="10,6"
+                Background="#FFF6FAFD" BorderBrush="#FFBFD4E6" BorderThickness="1">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Help (F1)" Width="90" Padding="0,2"
+                        Command="Help"/>
+                <TextBlock VerticalAlignment="Center" Foreground="#FF5A6B7A"
+                           Text="Every knob in this window is a BoundedNumericSelector driving another one."/>
+            </DockPanel>
+        </Border>
     </Grid>
 </Window>

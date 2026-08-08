@@ -7,6 +7,8 @@ Control WPF *lookless* para seleccionar un valor entero acotado a un rango. El c
 ```
 NumericSelector/          → Librería del control (proyecto principal)
 NumericSelector.Demo/     → Aplicación WPF de demostración (banco de pruebas manual)
+                            MainWindow: el Master arriba y los selectores que lo manejan
+                            HelpWindow: la ayuda (F1), texto plano, sin usar el control
 NumericSelector.Tests/    → Pruebas automatizadas (MSTest)
 docs/images/              → Capturas que ilustran el README
 ```
@@ -155,7 +157,6 @@ Las incoherencias de texto y las cinco limpiezas de código que figuraban acá e
 
 - `[TemplatePart]` sobre la clase, para documentar el contrato de la plantilla.
 - Validación de valores inválidos en los enums públicos: hoy `(ValueBoxDock)99` se asigna sin protestar.
-- Ayuda de gestos en el demo. El material está en `TempText - Interaction help.txt`, en la raíz y **sin trackear** a propósito.
 
 ### Publicación
 

@@ -37,7 +37,7 @@ Todavía sin publicar; al hacerlo pasa a ser `0.1.0`. Como nada de esto llegó n
 
 **Apariencia.** `BorderBrush` y `BorderThickness` son las heredadas de `Control`, con el valor por defecto cambiado a negro y `1`; a ellas se suman `FocusBorderBrush`, `BarFill` y `BarDividerBrush`. Todas son `Brush`, así que aceptan degradados, imágenes o cualquier otra brocha, no sólo un color liso. El foco se indica tiñendo los marcos, no con el rectángulo punteado de WPF.
 
-**Aplicación de demostración.** `NumericSelector.Demo` permite probar a mano toda la API —rango, textos, disposición, brochas, fuentes y gestos— con el propio control como selector de sus opciones.
+**Aplicación de demostración.** `NumericSelector.Demo` permite probar a mano toda la API —rango, textos, disposición, brochas, fuentes y gestos— con el propio control como selector de sus opciones. **F1** abre una ayuda que explica ese criterio y lista los gestos de mouse y teclado.
 
 **Pruebas.** 38 pruebas MSTest sobre defaults, coerciones, disposición, la matriz de costuras, la medición y `BaseWidth`, y los modos de interacción. Las que necesitan ventana corren en un hilo STA aislado.
 

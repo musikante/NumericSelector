@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using NumericSelector;
 
@@ -30,6 +31,9 @@ namespace NumericSelector.Demo
 			Preseleccionar(FontStylePicker, FontStyleIndexConverter.Estilos, MasterNumericSelector.FontStyle);
 			Preseleccionar(FontWeightPicker, FontWeightIndexConverter.Pesos, MasterNumericSelector.FontWeight);
 		}
+
+		// F1 (o el botón del pie) abre la ayuda del demo.
+		private void Ayuda_Executed(object sender, ExecutedRoutedEventArgs e) => HelpWindow.Mostrar(this);
 
 		private static void Preseleccionar<T>(BoundedNumericSelector selector, T[] opciones, T actual)
 			where T : struct
