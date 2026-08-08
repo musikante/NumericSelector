@@ -142,4 +142,4 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 
 - El control es **horizontal únicamente** (la orientación vertical se descartó en el rediseño)
 - El dominio es **intencionalmente entero** (sin soporte para decimales)
-- `FocusVisualStyle` se desactiva por defecto; el foco lo indica el borde (`FocusBorderColor`)
+- `FocusVisualStyle` se desactiva por defecto; el foco lo indica el borde (`FocusBorderBrush`)

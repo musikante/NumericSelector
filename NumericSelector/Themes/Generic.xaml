@@ -52,10 +52,10 @@
                                  Caption (el texto identificador permanente). -->
                             <Border x:Name="PART_BarCell" Grid.Column="0"
                                     Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderColor}">
+                                    BorderBrush="{TemplateBinding BorderBrush}">
                                 <Border.BorderThickness>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Bar">
-                                        <Binding Path="BorderWidth" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="BorderThickness" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueBoxDock" RelativeSource="{RelativeSource TemplatedParent}"/>
@@ -72,8 +72,8 @@
                                          relleno es decoración: no debe dimensionar nada. -->
                                     <Canvas ClipToBounds="True">
                                         <Border x:Name="PART_BarRect"
-                                                Background="{TemplateBinding BarFillColor}"
-                                                BorderBrush="{TemplateBinding BarDividerColor}"
+                                                Background="{TemplateBinding BarFill}"
+                                                BorderBrush="{TemplateBinding BarDividerBrush}"
                                                 BorderThickness="0,0,1,0"
                                                 Width="0"/>
                                     </Canvas>
@@ -103,10 +103,10 @@
                                  fila de detalle. -->
                             <Border x:Name="PART_ValueCell" Grid.Column="1"
                                     Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderColor}">
+                                    BorderBrush="{TemplateBinding BorderBrush}">
                                 <Border.BorderThickness>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Value">
-                                        <Binding Path="BorderWidth" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="BorderThickness" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueBoxDock" RelativeSource="{RelativeSource TemplatedParent}"/>
@@ -157,10 +157,10 @@
                                  de la barra). -->
                             <Border x:Name="PART_DetailCell" Grid.Column="0"
                                     Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderColor}">
+                                    BorderBrush="{TemplateBinding BorderBrush}">
                                 <Border.BorderThickness>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Detail">
-                                        <Binding Path="BorderWidth" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="BorderThickness" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueBoxDock" RelativeSource="{RelativeSource TemplatedParent}"/>
@@ -187,7 +187,7 @@
                                  suelto ni un hueco vacío. -->
                             <Border x:Name="PART_ValueDetailCell" Grid.Column="1"
                                     Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderColor}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="0"
                                     Visibility="Collapsed">
                                 <Grid>
@@ -244,7 +244,7 @@
                             <Setter TargetName="PART_ValueDetailCell" Property="BorderThickness">
                                 <Setter.Value>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Value">
-                                        <Binding Path="BorderWidth" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="BorderThickness" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueBoxDock" RelativeSource="{RelativeSource TemplatedParent}"/>
@@ -275,10 +275,10 @@
                              "frameless" que apagar, así que el cambio aplica a las celdas
                              siempre. -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="PART_BarCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_ValueCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_ValueDetailCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            <Setter TargetName="PART_DetailCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_BarCell" Property="BorderBrush" Value="{Binding FocusBorderBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_ValueCell" Property="BorderBrush" Value="{Binding FocusBorderBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_ValueDetailCell" Property="BorderBrush" Value="{Binding FocusBorderBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="PART_DetailCell" Property="BorderBrush" Value="{Binding FocusBorderBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

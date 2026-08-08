@@ -9,7 +9,7 @@ namespace NumericSelector.Demo
 {
 	/// <summary>
 	/// Convierte un Thickness uniforme a int y viceversa, para poder manejar
-	/// BorderWidth con un BoundedNumericSelector (que trabaja con enteros).
+	/// BorderThickness con un BoundedNumericSelector (que trabaja con enteros).
 	/// </summary>
 	public class ThicknessToIntConverter : IValueConverter
 	{

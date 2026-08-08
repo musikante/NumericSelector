@@ -22,6 +22,16 @@ namespace NumericSelector
 			// sus propias razones para dejarlo en false.
 			FocusableProperty.OverrideMetadata(typeof(BoundedNumericSelector),
 				new FrameworkPropertyMetadata(true, null, CoerceFocusable));
+
+			// El marco es parte del aspecto de este control, así que sus dos propiedades
+			// heredadas de Control estrenan defaults visibles: en Control valen null y 0
+			// (un control sin marco), que acá dejaría el dibujo abierto. Se cambia sólo el
+			// valor por defecto; los flags de la metadata base (AffectsMeasure en
+			// BorderThickness) se conservan porque OverrideMetadata los fusiona.
+			BorderBrushProperty.OverrideMetadata(typeof(BoundedNumericSelector),
+				new FrameworkPropertyMetadata(Brushes.Black));
+			BorderThicknessProperty.OverrideMetadata(typeof(BoundedNumericSelector),
+				new FrameworkPropertyMetadata(new Thickness(1)));
 		}
 
 		private static object CoerceFocusable(DependencyObject d, object baseValue) =>
@@ -235,94 +245,69 @@ namespace NumericSelector
 			set => SetValue(ResetValueProperty, value);
 		}
 
-		// Propiedad para el color del borde del control.
-		public static readonly DependencyProperty BorderColorProperty =
-			DependencyProperty.Register(
-				nameof(BorderColor),
-				typeof(Brush),
-				typeof(BoundedNumericSelector),
-				new PropertyMetadata(Brushes.Black));
+		// El marco del control usa `Control.BorderBrush` y `Control.BorderThickness`, las
+		// heredadas de WPF: acá NO se declaran propias. Declararlas habría ocultado a las
+		// heredadas (CS0108) y, peor, un `TemplateBinding BorderBrush` de la plantilla se
+		// habría enlazado igual a la de `Control`, dejando la propia sin efecto. Lo único
+		// que hace falta es cambiarles el valor por defecto —en `Control` son `null` y `0`,
+		// o sea un control sin marco—, y eso va por OverrideMetadata (constructor estático).
 
-		/// <summary>
-		/// Obtiene o establece el color del borde del control (estado sin foco).
-		/// </summary>
-		public Brush BorderColor
-		{
-			get => (Brush)GetValue(BorderColorProperty);
-			set => SetValue(BorderColorProperty, value);
-		}
-
-		// Propiedad para el color del borde cuando el control tiene el foco.
-		public static readonly DependencyProperty FocusBorderColorProperty =
+		// Propiedad para la brocha de los marcos cuando el control tiene el foco.
+		public static readonly DependencyProperty FocusBorderBrushProperty =
 			DependencyProperty.Register(
-				nameof(FocusBorderColor),
+				nameof(FocusBorderBrush),
 				typeof(Brush),
 				typeof(BoundedNumericSelector),
 				new PropertyMetadata(Brushes.DodgerBlue));
 
 		/// <summary>
-		/// Obtiene o establece el color que toman los marcos de todas las celdas (barra,
+		/// Obtiene o establece la brocha que toman los marcos de todas las celdas (barra,
 		/// casillero del valor y detalle) cuando el control tiene el foco.
 		/// </summary>
-		public Brush FocusBorderColor
+		public Brush FocusBorderBrush
 		{
-			get => (Brush)GetValue(FocusBorderColorProperty);
-			set => SetValue(FocusBorderColorProperty, value);
+			get => (Brush)GetValue(FocusBorderBrushProperty);
+			set => SetValue(FocusBorderBrushProperty, value);
 		}
 
-		// Propiedad para el grosor de los bordes del control (Thickness en DIPs).
-		// No se llama BorderThickness por `Control.BorderThickness` (WPF); "BorderWidth"
-		// evita la colisión y describe el ancho de los marcos.
-		public static readonly DependencyProperty BorderWidthProperty =
+		// Propiedad para el relleno de la barra. Se llama `BarFill` y no `BarFillBrush` por
+		// la misma convención que `Shape.Fill`: cuando la propiedad ES el relleno, el tipo
+		// no necesita repetirse en el nombre.
+		public static readonly DependencyProperty BarFillProperty =
 			DependencyProperty.Register(
-				nameof(BorderWidth),
-				typeof(Thickness), // Usar Thickness para el grosor del borde
-				typeof(BoundedNumericSelector),
-				new PropertyMetadata(new Thickness(1), OnLayoutPropertyChanged)); // Asociar callback para redibujar si cambia.
-
-		/// <summary>
-		/// Obtiene o establece el grosor de los bordes del control.
-		/// </summary>
-		public Thickness BorderWidth
-		{
-			get => (Thickness)GetValue(BorderWidthProperty);
-			set => SetValue(BorderWidthProperty, value);
-		}
-
-		// Propiedad para el color de relleno de la barra.
-		public static readonly DependencyProperty BarFillColorProperty =
-			DependencyProperty.Register(
-				nameof(BarFillColor),
+				nameof(BarFill),
 				typeof(Brush),
 				typeof(BoundedNumericSelector),
 				new PropertyMetadata(Brushes.Orange));
 
 		/// <summary>
-		/// Obtiene o establece el color de relleno de la barra (la porción que representa el valor).
+		/// Obtiene o establece la brocha de relleno de la barra (la porción que representa
+		/// el valor). Al ser un <see cref="Brush"/> admite degradados, imágenes o cualquier
+		/// otra brocha, no sólo un color liso.
 		/// </summary>
-		public Brush BarFillColor
+		public Brush BarFill
 		{
-			get => (Brush)GetValue(BarFillColorProperty);
-			set => SetValue(BarFillColorProperty, value);
+			get => (Brush)GetValue(BarFillProperty);
+			set => SetValue(BarFillProperty, value);
 		}
 
-		// Propiedad para el color del divisor de la barra: el trazo vertical de 1px en el
-		// borde derecho del relleno, que separa visualmente la porción llena de la vacía.
-		public static readonly DependencyProperty BarDividerColorProperty =
+		// Propiedad para el divisor de la barra: el trazo vertical de 1px en el borde
+		// derecho del relleno, que separa visualmente la porción llena de la vacía.
+		public static readonly DependencyProperty BarDividerBrushProperty =
 			DependencyProperty.Register(
-				nameof(BarDividerColor),
+				nameof(BarDividerBrush),
 				typeof(Brush),
 				typeof(BoundedNumericSelector),
 				new PropertyMetadata(Brushes.Black));
 
 		/// <summary>
-		/// Obtiene o establece el color del divisor de la barra (el trazo que separa la
+		/// Obtiene o establece la brocha del divisor de la barra (el trazo que separa la
 		/// porción rellena de la vacía).
 		/// </summary>
-		public Brush BarDividerColor
+		public Brush BarDividerBrush
 		{
-			get => (Brush)GetValue(BarDividerColorProperty);
-			set => SetValue(BarDividerColorProperty, value);
+			get => (Brush)GetValue(BarDividerBrushProperty);
+			set => SetValue(BarDividerBrushProperty, value);
 		}
 
 // Propiedad para decidir si existe la fila de detalle debajo de la barra.
@@ -562,8 +547,8 @@ namespace NumericSelector
 			OnValueChangedHandler(Value);
 		}
 
-		// Los colores NO necesitan callback de redibujo: los tres (BorderColor,
-		// BarFillColor y BarDividerColor) llegan a la plantilla por TemplateBinding, y cada
+		// Las brochas NO necesitan callback de redibujo: las tres (BorderBrush,
+		// BarFill y BarDividerBrush) llegan a la plantilla por TemplateBinding, y cada
 		// elemento se repinta solo cuando su brocha cambia. El InvalidateVisual() que había
 		// acá forzaba el redibujo del control, que al ser lookless no dibuja nada propio
 		// (no sobrescribe OnRender): era trabajo sin destinatario.

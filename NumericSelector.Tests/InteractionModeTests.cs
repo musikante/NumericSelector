@@ -336,12 +336,12 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => { s.ShowDetail = true; s.BorderWidth = new Thickness(2); });
+			var e = Host(s => { s.ShowDetail = true; s.BorderThickness = new Thickness(2); });
 			try
 			{
 				Assert.AreEqual(Visibility.Visible,
 					((FrameworkElement)e.Selector.Template.FindName("PART_DetailRow", e.Selector)).Visibility);
-				Assert.AreEqual(e.Selector.BorderColor, CeldaDetalle(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.BorderBrush, CeldaDetalle(e.Selector).BorderBrush);
 
 				// Con el default de ValueFollowsDetail (true) el valor desciende: el detalle
 				// es marco fijo (Left,Right,Bottom) y sólo cede la parte superior a la costura
@@ -388,10 +388,10 @@ public class InteractionModeTests
 
 				// Con ShowDetail el contorno es la unión de los marcos, y todos se
 				// tiñen: no hay caja "frameless" que apagar, así que la regla es única.
-				Assert.AreEqual(e.Selector.FocusBorderColor, CeldaDetalle(e.Selector).BorderBrush);
-				Assert.AreEqual(e.Selector.FocusBorderColor, CajaDeArriba(e.Selector).BorderBrush);
-				Assert.AreEqual(e.Selector.FocusBorderColor, Celda(e.Selector, "PART_BarCell").BorderBrush);
-				Assert.AreEqual(e.Selector.FocusBorderColor, CajaDeAbajo(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderBrush, CeldaDetalle(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderBrush, CajaDeArriba(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderBrush, Celda(e.Selector, "PART_BarCell").BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderBrush, CajaDeAbajo(e.Selector).BorderBrush);
 			}
 			finally { e.Window.Close(); }
 		});
@@ -409,7 +409,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => s.BorderWidth = new Thickness(2));
+			var e = Host(s => s.BorderThickness = new Thickness(2));
 			try
 			{
 				Assert.AreEqual(new Thickness(0, 2, 2, 2), CajaDeAbajo(e.Selector).BorderThickness,
@@ -428,7 +428,7 @@ public class InteractionModeTests
 		{
 			var e = Host(s =>
 			{
-				s.BorderWidth = new Thickness(2);
+				s.BorderThickness = new Thickness(2);
 				s.ValueBoxDock = ValueBoxDock.Left;
 			});
 			try
@@ -463,7 +463,7 @@ public class InteractionModeTests
 		{
 			var e = Host(s =>
 			{
-				s.BorderWidth = new Thickness(2);
+				s.BorderThickness = new Thickness(2);
 				s.ShowDetail = true;
 				s.ValueFollowsDetail = true;
 			});
@@ -505,13 +505,13 @@ public class InteractionModeTests
 			var e = Host();
 			try
 			{
-				Assert.AreEqual(e.Selector.BorderColor, CajaDeAbajo(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.BorderBrush, CajaDeAbajo(e.Selector).BorderBrush);
 
 				e.Selector.Focus();
 
 				// Es parte del mismo marco: si no se tiñera, al enfocar se vería un recuadro
 				// azul con una raya negra en el medio.
-				Assert.AreEqual(e.Selector.FocusBorderColor, CajaDeAbajo(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.FocusBorderBrush, CajaDeAbajo(e.Selector).BorderBrush);
 			}
 			finally { e.Window.Close(); }
 		});
@@ -524,7 +524,7 @@ public class InteractionModeTests
 		{
 			var e = Host(s =>
 			{
-				s.BorderWidth = new Thickness(2);
+				s.BorderThickness = new Thickness(2);
 				s.ShowDetail = true;
 				s.ValueFollowsDetail = false;
 			});

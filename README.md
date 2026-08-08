@@ -84,7 +84,7 @@ La restricción de foco de la rueda evita cambios accidentales cuando el selecto
 | `Home`, `End` | `Minimum`, `Maximum` |
 | `Delete`, `Insert` | `ResetValue` |
 
-El foco se comunica con el color del borde (`FocusBorderColor`) en lugar del rectángulo punteado predeterminado de WPF.
+El foco se comunica con el color del borde (`FocusBorderBrush`) en lugar del rectángulo punteado predeterminado de WPF.
 
 ## API principal
 
@@ -112,7 +112,7 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 | `ShowDetail` | `bool` | `false` | Muestra la fila de detalle enmarcada. |
 | `ValueFollowsDetail` | `bool` | `true` | Con `ShowDetail`, baja el casillero del valor junto al detalle; con `false`, queda junto a la barra. |
 | `ValueBoxDock` | `enum` | `Right` | Lado del casillero del valor (`Right` o `Left`) respecto de su compañero de fila. |
-| `BorderWidth` | `Thickness` | `1` | Grosor de los marcos. El lado `Top` es además el grosor de la línea que separa la barra de la fila de detalle. |
+| `BorderThickness` | `Thickness` | `1` | Grosor de los marcos (heredada de `Control`, con el valor por defecto cambiado). El lado `Bottom` es además el grosor de la línea que separa la barra de la fila de detalle, porque esa costura la dibuja el borde inferior de la barra. |
 | `BaseWidth` | `double` | `NaN` | Ancho base desde el que el control crece para acomodar su contenido. `NaN` = automático. |
 
 ### Crecimiento (BaseWidth) y encaje en contenedor angosto
@@ -130,10 +130,16 @@ El número del casillero del valor queda siempre reservado por el **medidor ocul
 | --- | --- | --- | --- |
 | `MouseBehavior` | `MouseInteractionBehavior` | `ChangeOnClick` | Decide si el mouse actúa de inmediato o exige foco previo. |
 | `InteractionMode` | `UserInteractionMode` | `Interactive` | `ReadOnly` conserva el aspecto pero bloquea mouse, teclado y tabulación. |
-| `BorderColor` | `Brush` | `Black` | Marcos sin foco. |
-| `FocusBorderColor` | `Brush` | `DodgerBlue` | Marcos con foco. |
-| `BarFillColor` | `Brush` | `Orange` | Relleno proporcional de la barra. |
-| `BarDividerColor` | `Brush` | `Black` | Trazo que separa la porción rellena de la vacía. |
+| `BorderBrush` | `Brush` | `Black` | Marcos sin foco. Heredada de `Control`, con el valor por defecto cambiado (en WPF es `null`). |
+| `FocusBorderBrush` | `Brush` | `DodgerBlue` | Marcos con foco. |
+| `BarFill` | `Brush` | `Orange` | Relleno proporcional de la barra. |
+| `BarDividerBrush` | `Brush` | `Black` | Trazo que separa la porción rellena de la vacía. |
+
+Las cinco son `Brush` y no `Color`, así que **aceptan cualquier brocha**, no sólo un color liso: un degradado en `BarFill`, una imagen, un `VisualBrush`. Los nombres siguen la convención de WPF (`BorderBrush`, `Fill`), donde el sufijo `Brush` anuncia el tipo y se omite cuando la propiedad *es* el relleno.
+
+```xml
+<ns:BoundedNumericSelector BarFill="{StaticResource MiDegradado}" />
+```
 
 `MouseInteractionBehavior.MustFocusFirst` hace que el primer click que obtiene el foco no modifique el valor; los gestos posteriores sí. `InteractionMode = UserInteractionMode.ReadOnly` bloquea al usuario, no al programa: asignar `Value` desde código sigue actualizando el control y disparando `ValueChanged`.
 

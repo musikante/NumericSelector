@@ -74,7 +74,7 @@
                                           Maximum="100"
                                           Value="50"
                                           ResetValue="50"
-                                          BorderWidth="2"
+                                          BorderThickness="2"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"/>
         </Border>
@@ -185,27 +185,27 @@
 
                     <TextBlock Text="Border properties" Style="{StaticResource Seccion}" Margin="0,6,0,6"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="BorderWidth"
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="BorderThickness"
                         ShowDetail="True"
                         DetailText="Thickness of All Borders"
                         Minimum="0" Maximum="8"
-                        Value="{Binding BorderWidth, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ThickToInt}}"/>
+                        Value="{Binding BorderThickness, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ThickToInt}}"/>
 
-                    <local:BoundedNumericSelector x:Name="BorderColorPicker"
+                    <local:BoundedNumericSelector x:Name="BorderBrushPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="BorderColor"
+                                                  CaptionText="BorderBrush"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
                                                   Minimum="0" Maximum="23" Value="0"
-                                                  ValueChanged="BorderColor_ValueChanged"/>
+                                                  ValueChanged="BorderBrush_ValueChanged"/>
 
-                    <local:BoundedNumericSelector x:Name="FocusBorderColorPicker"
+                    <local:BoundedNumericSelector x:Name="FocusBorderBrushPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="FocusBorderColor"
+                                                  CaptionText="FocusBorderBrush"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
                                                   Minimum="0" Maximum="23" Value="20"
-                                                  ValueChanged="FocusBorderColor_ValueChanged"/>
+                                                  ValueChanged="FocusBorderBrush_ValueChanged"/>
 
                     <TextBlock Text="Interaction properties" Style="{StaticResource Seccion}"/>
 
@@ -239,21 +239,21 @@
                          paleta y, al cambiar, aplica ese color a su propiedad sobre el Master
                          y sobre sí mismo para que el cambio se aprecie en el control que lo
                          produce. El CaptionText de cada uno dice a qué propiedad está ligado. -->
-                    <local:BoundedNumericSelector x:Name="BarFillColorPicker"
+                    <local:BoundedNumericSelector x:Name="BarFillPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="BarFillColor"
+                                                  CaptionText="BarFill"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
                                                   Minimum="0" Maximum="23" Value="9"
-                                                  ValueChanged="BarFillColor_ValueChanged"/>
+                                                  ValueChanged="BarFill_ValueChanged"/>
 
-                    <local:BoundedNumericSelector x:Name="BarDividerColorPicker"
+                    <local:BoundedNumericSelector x:Name="BarDividerBrushPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="BarDividerColor"
+                                                  CaptionText="BarDividerBrush"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
                                                   Minimum="0" Maximum="23" Value="0"
-                                                  ValueChanged="BarDividerColor_ValueChanged"/>
+                                                  ValueChanged="BarDividerBrush_ValueChanged"/>
 
                     <TextBlock Text="Color properties" Style="{StaticResource Seccion}" Margin="0,6,0,6"/>
 

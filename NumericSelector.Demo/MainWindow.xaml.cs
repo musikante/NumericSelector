@@ -84,7 +84,7 @@ namespace NumericSelector.Demo
 		// Aplica el color elegido por un picker a su propiedad sobre el Master (el sujeto
 		// de prueba) y sobre el propio picker, para que el cambio se vea en el control que
 		// lo produce (no hace falta darle foco al Master para apreciar p. ej.
-		// FocusBorderColor). Cada picker está enganchado a una sola propiedad, la misma que
+		// FocusBorderBrush). Cada picker está enganchado a una sola propiedad, la misma que
 		// anuncia en su CaptionText.
 		private void AplicarColor(BoundedNumericSelector picker, DependencyProperty property)
 		{
@@ -96,17 +96,17 @@ namespace NumericSelector.Demo
 			picker.SetValue(property, brush);
 		}
 
-		private void BarFillColor_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarColor((BoundedNumericSelector)sender, BoundedNumericSelector.BarFillColorProperty);
+		private void BarFill_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
+			=> AplicarColor((BoundedNumericSelector)sender, BoundedNumericSelector.BarFillProperty);
 
-		private void BarDividerColor_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarColor((BoundedNumericSelector)sender, BoundedNumericSelector.BarDividerColorProperty);
+		private void BarDividerBrush_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
+			=> AplicarColor((BoundedNumericSelector)sender, BoundedNumericSelector.BarDividerBrushProperty);
 
-		private void BorderColor_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarColor((BoundedNumericSelector)sender, BoundedNumericSelector.BorderColorProperty);
+		private void BorderBrush_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
+			=> AplicarColor((BoundedNumericSelector)sender, Control.BorderBrushProperty);
 
-		private void FocusBorderColor_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
-			=> AplicarColor((BoundedNumericSelector)sender, BoundedNumericSelector.FocusBorderColorProperty);
+		private void FocusBorderBrush_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
+			=> AplicarColor((BoundedNumericSelector)sender, BoundedNumericSelector.FocusBorderBrushProperty);
 
 		private void Foreground_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
 			=> AplicarColor((BoundedNumericSelector)sender, Control.ForegroundProperty);
