@@ -137,7 +137,7 @@ El número del casillero del valor queda siempre reservado por el **medidor ocul
 
 `MouseInteractionBehavior.MustFocusFirst` hace que el primer click que obtiene el foco no modifique el valor; los gestos posteriores sí. `InteractionMode = UserInteractionMode.ReadOnly` bloquea al usuario, no al programa: asignar `Value` desde código sigue actualizando el control y disparando `ValueChanged`.
 
-El control se dibuja como **cuatro celdas independientes** —barra y caja del valor arriba, etiqueta del detalle y caja del detalle abajo—, cada una con su marco. **Cuáles** lados dibuja cada una lo resuelve una única matriz de costuras (`ValueBorderResolver`), con una regla única: *la barra y el detalle son el marco fijo, y la caja del valor cede el lado que mira a su compañero de fila*. Así ningún filo se dibuja dos veces. La costura horizontal entre filas la dibuja siempre el borde superior de la fila de detalle, que además hace de borde superior de la fila de la barra.
+El control se dibuja como **cuatro celdas independientes** —barra y caja del valor arriba, etiqueta del detalle y caja del detalle abajo—, cada una con su marco. **Cuáles** lados dibuja cada una lo resuelve una única matriz de costuras (`ValueBorderResolver`), con una regla única: *la barra y el detalle son el marco fijo, y la caja del valor cede el lado que mira a su compañero de fila*. Así ningún filo se dibuja dos veces. La costura horizontal entre filas la dibuja siempre el **borde inferior de la fila de la barra** —la fila de detalle cede su lado superior—, y ese mismo borde hace de borde inferior del control cuando no hay detalle.
 
 Cada una de las tres propiedades de disposición hace algo en todo momento, sin estados inválidos ni degradaciones que documentar:
 
