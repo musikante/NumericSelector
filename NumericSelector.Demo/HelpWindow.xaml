@@ -100,13 +100,13 @@
                     behave like this — the font picker walks every font installed on this machine.
                 </TextBlock>
                 <TextBlock Style="{StaticResource Parrafo}">
-                    The two text boxes are the exception, and a necessary one: CaptionText and
+                    The two text boxes are the exception, and a necessary one: MainText and
                     DetailText hold strings, and this control is for numbers.
                 </TextBlock>
 
                 <TextBlock Style="{StaticResource Seccion}" Text="How to read the labels"/>
                 <TextBlock Style="{StaticResource Parrafo}">
-                    Each selector carries in its CaptionText the exact name of the property it
+                    Each selector carries in its MainText the exact name of the property it
                     drives, spelled the way you will type it in XAML or C#. Nothing is paraphrased,
                     so the names become familiar just by using the bench. Where a name needs a
                     gloss, the explanation goes in the detail row underneath, which is what

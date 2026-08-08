@@ -16,11 +16,11 @@ Todavía sin publicar; al hacerlo pasa a ser `0.1.0`. Como nada de esto llegó n
 - `Value` y `ResetValue` se acotan al rango; los pasos, entre `1` y el ancho del rango.
 - `Value` usa binding bidireccional por defecto. El evento **`ValueChanged`** informa el valor viejo y el nuevo.
 
-**Textos y disposición.** `CaptionText` se dibuja sobre la barra; `DetailText` ocupa una fila inferior opcional. Tres propiedades independientes deciden dónde va el casillero del valor, sin combinaciones inválidas ni degradaciones: `ShowDetail`, `ValueFollowsDetail` y `ValueBoxDock` (`Right` | `Left`).
+**Textos y disposición.** `MainText` se dibuja sobre la barra; `DetailText` ocupa una fila inferior opcional. Tres propiedades independientes deciden dónde va el casillero del valor, sin combinaciones inválidas ni degradaciones: `ShowDetail`, `ValueFollowsDetail` y `ValueBoxDock` (`Right` | `Left`).
 
 **Marco de cuatro celdas.** La plantilla no anida secciones: son cuatro celdas hermanas con marco propio, así ningún borde se apila con otro sumando grosor. Qué lados dibuja cada una lo resuelve una única función pura (`ValueBorderResolver.Resolve`), de modo que ningún filo se dibuja dos veces. La costura horizontal la aporta siempre el borde inferior de la barra, que además cierra el control por abajo cuando no hay detalle.
 
-**Legibilidad garantizada del número.** El ancho del casillero lo reservan **medidores ocultos** de la plantilla (un `TextBlock` con el `Minimum` y otro con el `Maximum`, ocultos pero que ocupan sitio): la celda nunca se mide más angosta que el número más largo que el rango puede producir, sin depender del valor actual ni temblar al pasar de 99 a 100. La leyenda puede truncarse con elipsis; el número no.
+**Legibilidad garantizada del número.** El ancho del casillero lo reservan **medidores ocultos** de la plantilla (un `TextBlock` con el `Minimum` y otro con el `Maximum`, ocultos pero que ocupan sitio): la celda nunca se mide más angosta que el número más largo que el rango puede producir, sin depender del valor actual ni temblar al pasar de 99 a 100. `MainText` puede truncarse con elipsis; el número no.
 
 **Ancho: `BaseWidth`.** Es el ancho base desde el que el control crece y a la vez un piso, no un constraint duro: pide `max(BaseWidth, contenido)` pero nunca más que el hueco que le da el contenedor, así que los bordes no se recortan ni desbordan. El control no escribe `Width`/`MinWidth` en runtime.
 

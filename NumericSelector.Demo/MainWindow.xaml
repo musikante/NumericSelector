@@ -89,7 +89,7 @@
                 <local:BoundedNumericSelector x:Name="MasterNumericSelector"
                                           ValueChanged="Master_ValueChanged"
                                           ShowDetail="True"
-                                          CaptionText="CaptionText (Interact here)"
+                                          MainText="MainText (Interact here)"
                                           DetailText="DetailText (Vertical extremes: jÑ)"
                                           Minimum="0"
                                           Maximum="100"
@@ -117,29 +117,29 @@
 
                     <TextBlock Text="Value &amp; range" Style="{StaticResource Seccion}" Margin="0,6,0,6"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="Value"
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" MainText="Value"
                         Minimum="{Binding Minimum, ElementName=MasterNumericSelector}"
                         Maximum="{Binding Maximum, ElementName=MasterNumericSelector}"
                         Value="{Binding Value, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="Minimum"
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" MainText="Minimum"
                         Minimum="-1000" Maximum="999"
                         Value="{Binding Minimum, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="Maximum"
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" MainText="Maximum"
                         Minimum="-999" Maximum="1000"
                         Value="{Binding Maximum, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="ResetValue"
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" MainText="ResetValue"
                         Minimum="{Binding Minimum, ElementName=MasterNumericSelector}"
                         Maximum="{Binding Maximum, ElementName=MasterNumericSelector}"
                         Value="{Binding ResetValue, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="SmallChange"
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" MainText="SmallChange"
                         Minimum="1" Maximum="50"
                         Value="{Binding SmallChange, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="LargeChange"
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" MainText="LargeChange"
                         Minimum="1" Maximum="100"
                         Value="{Binding LargeChange, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
@@ -147,9 +147,9 @@
                          las cajas los reemplaza. -->
                     <TextBlock Text="Default texts" Style="{StaticResource Seccion}"/>
 
-                    <TextBlock Text="CaptionText" Style="{StaticResource Etiqueta}"/>
+                    <TextBlock Text="MainText" Style="{StaticResource Etiqueta}"/>
                     <TextBox Style="{StaticResource Caja}" Padding="0,0,0,2"
-                             Text="{Binding CaptionText, ElementName=MasterNumericSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{Binding MainText, ElementName=MasterNumericSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="DetailText  (Visible only if ShowDetail=true)" Style="{StaticResource Etiqueta}"/>
                     <TextBox Style="{StaticResource Caja}" Padding="0,0,0,2"
@@ -161,7 +161,7 @@
                          detalle, 1 = true: la muestra), dos vías con el Master. -->
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="ShowDetail"
+                                                  MainText="ShowDetail"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ShowDetailText}, Mode=OneWay}"
                                                   Minimum="0" Maximum="1"
                                                   Value="{Binding ShowDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BoolIndex}}"/>
@@ -171,7 +171,7 @@
                          dos vías con el Master. -->
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="ValueFollowsDetail"
+                                                  MainText="ValueFollowsDetail"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueFollowsDetailText}, Mode=OneWay}"
                                                   Minimum="0" Maximum="1"
                                                   Value="{Binding ValueFollowsDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BoolIndex}}"/>
@@ -180,13 +180,13 @@
                          dos vías con el Master; el default del control es Right. -->
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="ValueBoxDock"
+                                                  MainText="ValueBoxDock"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueBoxDockText}, Mode=OneWay}"
                                                   Minimum="0" Maximum="1"
                                                   Value="{Binding ValueBoxDock, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ValueBoxDockIndex}}"/>
 
                     <!-- El BaseWidth, debajo de ValueBoxDock (misma sección Disposition). -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="BaseWidth"
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" MainText="BaseWidth"
                                                   ShowDetail="True"
                                                   DetailText="Base Width It Grows From"
                                                   Minimum="30" Maximum="800"
@@ -209,7 +209,7 @@
 
                     <TextBlock Text="Border properties" Style="{StaticResource Seccion}" Margin="0,6,0,6"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="BorderThickness"
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" MainText="BorderThickness"
                         ShowDetail="True"
                         DetailText="Thickness of All Borders"
                         Minimum="0" Maximum="8"
@@ -218,7 +218,7 @@
                     <local:BoundedNumericSelector x:Name="BorderBrushPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="BorderBrush"
+                                                  MainText="BorderBrush"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
                                                   Minimum="0" Maximum="23" Value="0"
                                                   ValueChanged="BorderBrush_ValueChanged"/>
@@ -226,7 +226,7 @@
                     <local:BoundedNumericSelector x:Name="FocusBorderBrushPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="FocusBorderBrush"
+                                                  MainText="FocusBorderBrush"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
                                                   Minimum="0" Maximum="23" Value="20"
                                                   ValueChanged="FocusBorderBrush_ValueChanged"/>
@@ -237,7 +237,7 @@
                          1 = MustFocusFirst), dos vías con el Master. -->
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="MouseBehavior"
+                                                  MainText="MouseBehavior"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource MouseBehaviorText}, Mode=OneWay}"
                                                   Minimum="0" Maximum="1"
                                                   Value="{Binding MouseBehavior, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource MouseBehaviorIndex}}"/>
@@ -247,7 +247,7 @@
                          conserva el aspecto pero no responde a mouse ni teclado. -->
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="InteractionMode"
+                                                  MainText="InteractionMode"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource InteractionModeText}, Mode=OneWay}"
                                                   Minimum="0" Maximum="1"
                                                   Value="{Binding InteractionMode, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource InteractionModeIndex}}"/>
@@ -262,11 +262,11 @@
                          maneja como brush. Cada uno engancha su Value (0..23) al color de la
                          paleta y, al cambiar, aplica ese color a su propiedad sobre el Master
                          y sobre sí mismo para que el cambio se aprecie en el control que lo
-                         produce. El CaptionText de cada uno dice a qué propiedad está ligado. -->
+                         produce. El MainText de cada uno dice a qué propiedad está ligado. -->
                     <local:BoundedNumericSelector x:Name="BarFillPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="BarFill"
+                                                  MainText="BarFill"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
                                                   Minimum="0" Maximum="23" Value="9"
                                                   ValueChanged="BarFill_ValueChanged"/>
@@ -274,7 +274,7 @@
                     <local:BoundedNumericSelector x:Name="BarDividerBrushPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="BarDividerBrush"
+                                                  MainText="BarDividerBrush"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
                                                   Minimum="0" Maximum="23" Value="0"
                                                   ValueChanged="BarDividerBrush_ValueChanged"/>
@@ -284,7 +284,7 @@
                     <local:BoundedNumericSelector x:Name="ForegroundPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="Foreground"
+                                                  MainText="Foreground"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
                                                   Minimum="0" Maximum="23" Value="0"
                                                   ValueChanged="Foreground_ValueChanged"/>
@@ -299,14 +299,14 @@
                     <local:BoundedNumericSelector x:Name="BackgroundPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  CaptionText="Background"
+                                                  MainText="Background"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
                                                   Minimum="0" Maximum="23" Value="5"
                                                   ValueChanged="Background_ValueChanged"/>
 
                     <TextBlock Text="Font properties" Style="{StaticResource Seccion}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="FontSize"
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" MainText="FontSize"
                         Minimum="8" Maximum="40"
                         Value="{Binding FontSize, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
@@ -314,7 +314,7 @@
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource FontStyleIndex}, Mode=OneWay}"
-                                                  CaptionText="FontStyle"
+                                                  MainText="FontStyle"
                                                   Minimum="0" Maximum="2"
                                                   ValueChanged="FontStylePicker_ValueChanged"/>
 
@@ -322,7 +322,7 @@
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource FontWeightIndex}, Mode=OneWay}"
-                                                  CaptionText="FontWeight"
+                                                  MainText="FontWeight"
                                                   Minimum="0" Maximum="4"
                                                   ValueChanged="FontWeightPicker_ValueChanged"/>
 
@@ -332,7 +332,7 @@
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource FontIndex}, Mode=OneWay}"
-                                                  CaptionText="FontFamily"
+                                                  MainText="FontFamily"
                                                   Minimum="0"
                                                   ValueChanged="FontPicker_ValueChanged"/>
 

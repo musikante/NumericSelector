@@ -36,7 +36,7 @@ Por ahora, agregá una referencia al proyecto `NumericSelector` desde tu aplicac
         Maximum="100"
         Value="50"
         ResetValue="50"
-        CaptionText="Volumen"
+        MainText="Volumen"
         ValueChanged="Selector_ValueChanged" />
 </Window>
 ```
@@ -107,8 +107,8 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 
 | Propiedad | Tipo | Predeterminado | Descripción |
 | --- | --- | --- | --- |
-| `CaptionText` | `string` | `CaptionText` | Leyenda sobre el relleno de la barra. El texto de relleno es el nombre de la propiedad, para que se lea en el diseñador antes de asignarle nada. |
-| `DetailText` | `string` | `DetailText` | Texto de la fila de detalle inferior. Mismo criterio de relleno que `CaptionText`. |
+| `MainText` | `string` | `MainText` | Leyenda sobre el relleno de la barra. El texto de relleno es el nombre de la propiedad, para que se lea en el diseñador antes de asignarle nada. |
+| `DetailText` | `string` | `DetailText` | Texto de la fila de detalle inferior. Mismo criterio de relleno que `MainText`. |
 | `ShowDetail` | `bool` | `false` | Muestra la fila de detalle enmarcada. |
 | `ValueFollowsDetail` | `bool` | `true` | Con `ShowDetail`, baja el casillero del valor junto al detalle; con `false`, queda junto a la barra. |
 | `ValueBoxDock` | `enum` | `Right` | Lado del casillero del valor (`Right` o `Left`) respecto de su compañero de fila. |

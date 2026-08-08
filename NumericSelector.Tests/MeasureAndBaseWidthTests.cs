@@ -31,7 +31,7 @@ public class MeasureAndBaseWidthTests
 			{
 				Minimum = 0, Maximum = 100000, Value = 50000,
 				ShowDetail = true,
-				CaptionText = "Una leyenda muy larga que de ninguna manera cabe en un contenedor de ciento veinte píxeles de ancho",
+				MainText = "Una leyenda muy larga que de ninguna manera cabe en un contenedor de ciento veinte píxeles de ancho",
 				DetailText = "Otro detalle bastante extenso para asegurar que el contenido exceda por mucho el espacio disponible",
 			};
 
@@ -57,7 +57,7 @@ var selector = new BoundedNumericSelector
 			{
 				BaseWidth = 300,
 				Minimum = 0, Maximum = 100, Value = 50,
-				CaptionText = "Corto",
+				MainText = "Corto",
 			};
 
 			ShowWindow(selector);

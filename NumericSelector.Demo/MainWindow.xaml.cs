@@ -89,7 +89,7 @@ namespace NumericSelector.Demo
 		// de prueba) y sobre el propio picker, para que el cambio se vea en el control que
 		// lo produce (no hace falta darle foco al Master para apreciar p. ej.
 		// FocusBorderBrush). Cada picker está enganchado a una sola propiedad, la misma que
-		// anuncia en su CaptionText.
+		// anuncia en su MainText.
 		private void AplicarColor(BoundedNumericSelector picker, DependencyProperty property)
 		{
 			int i = picker.Value;

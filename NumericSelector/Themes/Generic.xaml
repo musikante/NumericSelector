@@ -85,8 +85,8 @@
 
                                     <!-- (2) Caption: el texto identificador del control, sobre
                                          el relleno de la barra y centrado en ella. -->
-                                    <TextBlock x:Name="PART_CaptionText"
-                                               Text="{TemplateBinding CaptionText}"
+                                    <TextBlock x:Name="PART_MainText"
+                                               Text="{TemplateBinding MainText}"
                                                Foreground="{TemplateBinding Foreground}"
                                                FontSize="{TemplateBinding FontSize}"
                                                FontFamily="{TemplateBinding FontFamily}"
@@ -314,7 +314,7 @@
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="UseLayoutRounding" Value="True" />
         <Setter Property="Background" Value="White"/>
-        <!-- CaptionText y DetailText NO se fijan acá: su texto de relleno —que es el nombre
+        <!-- MainText y DetailText NO se fijan acá: su texto de relleno —que es el nombre
              de cada propiedad— viene de la metadata de la DP, que es la única fuente. Un
              Setter le ganaría a la metadata y el default se perdería con cualquier plantilla
              de reemplazo. -->

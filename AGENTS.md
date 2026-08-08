@@ -52,7 +52,7 @@ dotnet test .\NumericSelector.Tests\NumericSelector.Tests.csproj
 ### Modelo de celdas
 
 El control son **cuatro celdas hermanas** con marco propio:
-- Barra, con su `CaptionText` dibujado encima (arriba, la fila siempre presente)
+- Barra, con su `MainText` dibujado encima (arriba, la fila siempre presente)
 - Caja del valor junto a la barra (arriba, a la derecha — o a la izquierda con `ValueBoxDock=Left`)
 - Etiqueta del detalle (abajo, sólo con `ShowDetail`)
 - Caja del valor en la fila de detalle (abajo, cuando `ValueFollowsDetail` la hace descender)
@@ -68,7 +68,7 @@ El code-behind resuelve **cuatro** por nombre, en `OnApplyTemplate`: `PART_BarGr
 Partes que define la plantilla:
 - `PART_MainGrid`, `PART_DetailRow`
 - `PART_BarAndValueGrid`, `PART_BarCell`, `PART_BarGrid`, `PART_BarRect`, `PART_BarRowDef`
-- `PART_CaptionText`, `PART_ValueCell`, `PART_ValueText`, `PART_ValueSizerMin/Max`
+- `PART_MainText`, `PART_ValueCell`, `PART_ValueText`, `PART_ValueSizerMin/Max`
 - La fila de detalle, con su caja de valor propia: `PART_DetailCell`, `PART_DetailText`, `PART_ValueDetailCell`, `PART_ValueDetailText`, `PART_DetailSizerMin/Max`
 - Las columnas se nombran **por posición**, no por ocupante, porque con `ValueBoxDock=Left` las celdas se intercambian: `PART_Column0`/`PART_Column1` (fila de la barra) y `PART_DetailColumn0`/`PART_DetailColumn1` (fila de detalle)
 
@@ -103,7 +103,7 @@ Teclado: `←`/`↓`/`-` y `→`/`↑`/`+` cambian o restan `SmallChange`; `Page
 
 ### Ancho: `BaseWidth` (piso) y encaje al contenedor
 
-- `BaseWidth` (`double`, default `NaN` = automático) es el ancho base desde el que el control crece; **no** es un constraint duro: se lee como piso en `MeasureOverride`, que pide `max(BaseWidth, contenido)` pero **nunca más ancho que el hueco disponible** (la CharacterEllipsis de la leyenda y el detalle trunca lo que no quepa)
+- `BaseWidth` (`double`, default `NaN` = automático) es el ancho base desde el que el control crece; **no** es un constraint duro: se lee como piso en `MeasureOverride`, que pide `max(BaseWidth, contenido)` pero **nunca más ancho que el hueco disponible** (la CharacterEllipsis de `MainText` y `DetailText` trunca lo que no quepa)
 - El control **no escribe** `FrameworkElement.Width`/`MinWidth` en runtime: hacerlo obligaba al elemento a ese tamaño y desbordaba/recortaba los bordes en un contenedor angosto (era la causa del recorte del marco). El piso del número lo dan los medidores ocultos de la plantilla
 - El ancho natural sale de `base.MeasureOverride(new Size(infinito, alto))`; la barra vive en una columna `*`, que con ancho infinito se comporta como `Auto` (no se estira a todo el contenedor)
 - No hay `Viewbox` en la plantilla: escalaría la tipografía en vez de truncar con elipsis, que es el comportamiento pedido

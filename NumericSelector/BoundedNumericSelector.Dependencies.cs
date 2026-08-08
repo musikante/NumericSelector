@@ -85,8 +85,9 @@ namespace NumericSelector
 		/// <summary>
 		/// Obtiene o establece el ancho base desde el que el control crece para acomodar su
 		/// contenido. No es un ancho fijo: el control crece hacia arriba cuanto le haga
-		/// falta y, si el contenedor no le da ese hueco, la leyenda se recorta con elipsis en
-		/// lugar de desbordar los bordes. NaN (por defecto) equivale a "automático".
+		/// falta y, si el contenedor no le da ese hueco, <see cref="MainText"/> se recorta
+		/// con elipsis en lugar de desbordar los bordes. NaN (por defecto) equivale a
+		/// "automático".
 		/// </summary>
 		public double BaseWidth
 		{
@@ -94,30 +95,33 @@ namespace NumericSelector
 			set => SetValue(BaseWidthProperty, value);
 		}
 
-		// Propiedad para la CAPTION: el texto identificador del control, que se dibuja sobre
-		// la barra y es el rótulo permanente (como la etiqueta de un ComboBox).
+		// Propiedad para el TEXTO PRINCIPAL: el rótulo permanente del control (la "leyenda"),
+		// que se dibuja sobre la barra y está siempre a la vista. Se llama MainText —y no
+		// CaptionText ni HeaderText— porque forma par con DetailText: línea principal y línea
+		// de detalle. "Caption" evocaba el epígrafe subordinado de una imagen, y "Header"
+		// prometería un texto ARRIBA de la barra cuando en realidad va ENCIMA de ella.
 		// El texto de relleno lo fija esta metadata y NADIE MÁS: el Style de Generic.xaml no
 		// lo repite. Un Setter en el Style le ganaría a la metadata, y entonces el control
 		// perdería su default al reemplazarse la plantilla —que es justamente lo que un
 		// control lookless espera que su consumidor haga—.
-		// Y el relleno es el NOMBRE DE LA PROPIEDAD, no un "Default Caption" cualquiera:
+		// Y el relleno es el NOMBRE DE LA PROPIEDAD, no un "Default Main Text" cualquiera:
 		// quien suelta el control en el diseñador sin asignarle nada lee ahí mismo cómo se
 		// llama lo que tiene que escribir en su XAML. Es la misma idea que sigue el demo.
-		public static readonly DependencyProperty CaptionTextProperty =
+		public static readonly DependencyProperty MainTextProperty =
 			DependencyProperty.Register(
-				nameof(CaptionText),
+				nameof(MainText),
 				typeof(string),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata(nameof(CaptionText)));
+				new PropertyMetadata(nameof(MainText)));
 
 		/// <summary>
 		/// Obtiene o establece el texto permanente que identifica al control. Se dibuja sobre
 		/// la barra, aprovechando el relleno como fondo (cuidar el contraste de colores).
 		/// </summary>
-		public string CaptionText
+		public string MainText
 		{
-			get => (string)GetValue(CaptionTextProperty);
-			set => SetValue(CaptionTextProperty, value);
+			get => (string)GetValue(MainTextProperty);
+			set => SetValue(MainTextProperty, value);
 		}
 
 		// Propiedad para la fila de DETALLE (desplazable debajo de la barra).
@@ -126,7 +130,7 @@ namespace NumericSelector
 				nameof(DetailText),
 				typeof(string),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata(nameof(DetailText))); // Igual que CaptionText: el nombre.
+				new PropertyMetadata(nameof(DetailText))); // Igual que MainText: el nombre.
 
 		/// <summary>
 		/// Obtiene o establece el texto de la fila de detalle, que se despliega debajo de la
