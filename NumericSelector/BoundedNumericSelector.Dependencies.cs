@@ -28,7 +28,6 @@ namespace NumericSelector
 			((BoundedNumericSelector)d).InteractionMode == UserInteractionMode.ReadOnly ? false : baseValue;
 
 		// --- Evento Ruteado ValueChanged ---
-		// Equivalente moderno del evento Change del control original en VB6.
 		public static readonly RoutedEvent ValueChangedEvent =
 			EventManager.RegisterRoutedEvent(
 				nameof(ValueChanged),
@@ -125,7 +124,7 @@ namespace NumericSelector
 		}
 
 		// Propiedad para el valor numérico del selector.
-		// Es 'int' porque el control es de entrada numérica discreta (herencia del LNSlider VB6).
+		// Es 'int' porque el control es de entrada numérica discreta.
 		public static readonly DependencyProperty ValueProperty =
 			DependencyProperty.Register(
 				nameof(Value),

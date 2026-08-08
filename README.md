@@ -119,7 +119,7 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 
 `BaseWidth` es el **ancho base** desde el que el control crece, y a la vez un **piso** que se conserva si hay espacio. No es un ancho fijo ni un constraint duro como el `Width`/`MinWidth` de WPF: el control pide `max(BaseWidth, contenido)` pero **nunca más ancho que el hueco que le da el contenedor**. De ese modo:
 
-- **Hay espacio** → el control crece para mostrar todo y mantiene al menos `BaseWidth` (el equivalente del viejo AutoGrow).
+- **Hay espacio** → el control crece para mostrar todo y mantiene al menos `BaseWidth`.
 - **El contenedor es angosto** → el control se queda dentro de lo disponible y sus bordes no se recortan; si el texto no cabe, la leyenda y el detalle se truncan con elipsis (`CharacterEllipsis`) en vez de desbordarse.
 
 El número del casillero del valor queda siempre reservado por el **medidor oculto** de la plantilla (ver "Garantía de legibilidad"): puede escalearse con el ancho, pero nunca se pide de más que el hueco disponible.

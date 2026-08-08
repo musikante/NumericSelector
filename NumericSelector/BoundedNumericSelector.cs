@@ -338,7 +338,7 @@ namespace NumericSelector
 			e.Handled = true;
 		}
 
-		// Doble-click en el numero -> ResetValue (gesto heredado del LNSlider VB6).
+		// Doble-click en el numero -> ResetValue.
 		// Un solo click y arrastre vertical -> ajusta el valor de a SmallChange.
 		private void ValueText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{

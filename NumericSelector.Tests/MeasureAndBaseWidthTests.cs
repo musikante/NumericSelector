@@ -21,8 +21,7 @@ public class MeasureAndBaseWidthTests
 	// El control no debe reportar más ancho que el que le ofrece el contenedor: el ancho
 	// natural de la leyenda puede ser enorme, pero si sólo hay 120 píxeles el control se
 	// mide a 120 (y la CharacterEllipsis de la plantilla trunca la leyenda, en vez de
-	// desbordar). Es justo lo que arreglamos sobre el AutoGrow que fijaba Width y recortaba
-	// los bordes.
+	// desbordar).
 	[TestMethod]
 	public void DesiredWidth_never_exceeds_constrained_width()
 	{
