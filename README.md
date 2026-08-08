@@ -181,8 +181,8 @@ dotnet build .\NumericSelector.slnx --configuration Release
 - [x] Automated tests for defaults, range coercions, steps, layout and events.
 - [x] Tests for focus, mouse gestures and growth (`BaseWidth`).
 - [ ] Extend the tests to culture and number formatting.
-- [ ] Template contract documented with `TemplatePart`, to make alternative styles easier.
-- [ ] Explicit validation of invalid values in the public enumerations.
+- [x] Template contract documented with `TemplatePart`, to make alternative styles easier.
+- [x] Explicit validation of invalid values in the public enumerations.
 - [x] Demo help on **F1**: why the test bench is built out of the control itself, plus the list of gestures.
 - [ ] NuGet packaging, semantic versioning and initial `0.x` release.
 - [ ] CI automation on GitHub Actions and an animated capture of the demo.

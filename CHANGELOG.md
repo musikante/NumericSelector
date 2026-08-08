@@ -37,12 +37,14 @@ Not published yet; when it is, this becomes `0.1.0`. Since none of this ever rea
 
 **Demonstration application.** `NumericSelector.Demo` is where the whole API —range, texts, layout, brushes, fonts and gestures— can be tried by hand, using the control itself as the selector for its own options. **F1** opens a help window explaining that criterion and listing the mouse and keyboard gestures.
 
-**Tests.** 39 MSTest tests covering defaults, coercions, layout, the seam matrix, measurement and `BaseWidth`, and the interaction modes. The ones that need a window run on an isolated STA thread.
+**Template contract.** The four parts the code-behind looks up —`PART_BarGrid`, `PART_BarRect`, `PART_ValueText` and `PART_ValueDetailText`— are declared on the class with `[TemplatePart]`, so a replacement template knows what is expected of it. The remaining `PART_*` names of the default template are internal to it and are not part of the contract.
+
+**Validated enums.** `ValueBoxDock`, `MouseBehavior` and `InteractionMode` reject a value that is not one of their declared members: a cast such as `(ValueBoxDock)99` compiles, and used to go in and be drawn as if the default had been asked for. Now the assignment throws an `ArgumentException` and the property keeps what it had.
+
+**Tests.** 43 MSTest tests covering defaults, coercions, layout, the seam matrix, measurement and `BaseWidth`, the interaction modes, the enum validation and the template contract. The ones that need a window run on an isolated STA thread.
 
 **Documentation and infrastructure.** `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `AGENTS.md`, an MIT license and Git exclusion rules. `.gitattributes` normalizes line endings (LF in the repository, each platform's own on the working disk) so that a contributor on another system does not produce whole-file differences.
 
 ### Known limits
 
 - The domain is **deliberately integer**: there is no decimal support.
-- Invalid values of the public enumerations are not validated yet.
-- The template contract declared with `TemplatePart` is still missing.

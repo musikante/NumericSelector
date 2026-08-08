@@ -64,7 +64,9 @@ The value box is declared in both rows, but only one is visible at a time: `Show
 
 ### Template parts (PART_)
 
-The code-behind resolves **four** of them by name, in `OnApplyTemplate`: `PART_BarGrid`, `PART_BarRect`, `PART_ValueText` and `PART_ValueDetailText`. The rest of the names exist so that the template triggers can point at them with `TargetName`; nobody looks them up from C#.
+The code-behind resolves **four** of them by name, in `OnApplyTemplate`: `PART_BarGrid`, `PART_BarRect`, `PART_ValueText` and `PART_ValueDetailText`. Those four —and only those— are declared on the class with `[TemplatePart]`: that attribute is the contract with a replacement template, and the rest of the names exist so that the triggers of the default template can point at them with `TargetName`; nobody looks them up from C#.
+
+`TemplateContractTests` reads those attributes by reflection and checks the default template provides each part with the declared type, so renaming one in the XAML —which compiles, and fails in silence— shows up as a failing test.
 
 Parts the template defines:
 - `PART_RootGrid` (the root of the template; it is named that way and not `PART_MainGrid` so as not to be confused with `PART_MainText`, which is something else), `PART_DetailRow`
@@ -87,6 +89,8 @@ The coercions are silent and mutually restrictive:
 | `ResetValue` | Bounded to `[Minimum, Maximum]` |
 | `SmallChange`, `LargeChange` | Between `1` and the width of the range |
 | `Focusable` | `false` when `InteractionMode=ReadOnly` (by coercion, not assignment) |
+
+The three enum properties (`ValueBoxDock`, `MouseBehavior`, `InteractionMode`) are the exception: they are not coerced but **validated** with a `ValidateValueCallback` (`IsDefinedEnumValue<TEnum>`). An undefined value is not a value to be adjusted, it is one that does not exist, so WPF throws an `ArgumentException` and the property keeps what it had.
 
 ### Culture and formatting
 
@@ -114,8 +118,9 @@ Keyboard: `←`/`↓`/`-` and `→`/`↑`/`+` subtract or add `SmallChange`; `Pa
 
 ### Kinds of tests
 
-1. **Pure logic** (`BoundedNumericSelectorLogicTests.cs`, `ValueBorderResolverTests.cs`): they need no window; they validate defaults, coercions, steps, layout, ValueChanged and the seam matrix
+1. **Pure logic** (`BoundedNumericSelectorLogicTests.cs`, `ValueBorderResolverTests.cs`): they need no window; they validate defaults, coercions, steps, layout, enum validation, ValueChanged and the seam matrix
 2. **Interaction** (`InteractionModeTests.cs`): they need a real window (STA + Dispatcher) because gestures arrive through routed events and focus does not exist outside the visual tree
+3. **Template contract** (`TemplateContractTests.cs`): it needs a window too, because the parts only exist once the template is applied
 
 ### The `StaTest` helper
 
@@ -130,6 +135,8 @@ Tests that create WPF controls use `StaTest.Run()` to execute on an isolated STA
 - MouseBehavior (ChangeOnClick, MustFocusFirst)
 - InteractionMode (focusable, focus release, input blocking)
 - IsEnabled (focus release, keyboard blocking)
+- Validation of the public enums (an undefined value is rejected and the property keeps what it had)
+- Template contract ([TemplatePart] against the default template)
 
 ### Pending
 
@@ -152,12 +159,9 @@ Tests that create WPF controls use `StaTest.Run()` to execute on an isolated STA
 
 ## Pending work
 
-The text inconsistencies and the five code cleanups that used to be listed here are done.
-
-### Functionality
-
-- `[TemplatePart]` on the class, to document the template contract.
-- Validation of invalid values in the public enums: today `(ValueBoxDock)99` is assigned without complaint.
+The text inconsistencies, the five code cleanups, the English migration, the `[TemplatePart]`
+contract and the validation of the public enums that used to be listed here are all done. What
+is left is the publication.
 
 ### Publication
 

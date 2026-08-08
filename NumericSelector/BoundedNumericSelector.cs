@@ -22,6 +22,19 @@ namespace NumericSelector
 	/// control grows and how it fits into a narrow container.
 	/// The default template lives in Themes/Generic.xaml.
 	/// </remarks>
+	// The template contract, declared for whoever writes a replacement template: these are the
+	// four parts OnApplyTemplate looks up by name, and the type each one is used as.
+	// Only these four are declared, and that is the point of the attribute: the rest of the
+	// PART_* names in Themes/Generic.xaml exist so that the template triggers can aim at them
+	// with TargetName, which is internal business of that template and binds nobody. A
+	// replacement template is free to drop them.
+	// The parts are optional in practice —the code-behind checks for null and a control with
+	// none of them still builds and coerces— but without them there is no bar to click on and
+	// no number to read, so a template that omits one is almost certainly a mistake.
+	[TemplatePart(Name = "PART_BarGrid", Type = typeof(Grid))]
+	[TemplatePart(Name = "PART_BarRect", Type = typeof(Border))]
+	[TemplatePart(Name = "PART_ValueText", Type = typeof(TextBlock))]
+	[TemplatePart(Name = "PART_ValueDetailText", Type = typeof(UIElement))]
 	// 'partial' marks that this class is spread over more than one file: interaction,
 	// measurement and cursors live here; the dependency properties and their coercions live
 	// in BoundedNumericSelector.Dependencies.cs.

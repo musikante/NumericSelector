@@ -39,6 +39,24 @@ namespace NumericSelector
 		private static object CoerceFocusable(DependencyObject d, object baseValue) =>
 			((BoundedNumericSelector)d).InteractionMode == UserInteractionMode.ReadOnly ? false : baseValue;
 
+		/// <summary>
+		/// Validation shared by the three enum properties: a value that is not one of the
+		/// declared members is rejected instead of being stored.
+		/// </summary>
+		/// <remarks>
+		/// A cast silences the compiler —<c>(ValueBoxDock)99</c> compiles— and without this the
+		/// undefined value went in, no comparison in the template or the code-behind matched it,
+		/// and the control drew as if the default had been asked for. Failing at the assignment
+		/// points at the line that is wrong; drawing something plausible does not.
+		/// It goes in a ValidateValueCallback and not in a coercion because these are not values
+		/// to be adjusted to a range, they are values that do not exist: WPF throws an
+		/// ArgumentException and the property keeps whatever it had. Being static and unaware of
+		/// the instance is fine here — whether a member exists does not depend on the control's
+		/// state.
+		/// </remarks>
+		private static bool IsDefinedEnumValue<TEnum>(object value) where TEnum : struct, Enum
+			=> value is TEnum candidate && Enum.IsDefined(candidate);
+
 		// --- ValueChanged routed event ---
 		public static readonly RoutedEvent ValueChangedEvent =
 			EventManager.RegisterRoutedEvent(
@@ -374,7 +392,8 @@ namespace NumericSelector
 				nameof(ValueBoxDock),
 				typeof(ValueBoxDock),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata(ValueBoxDock.Right, OnLayoutPropertyChanged)); // classic: value on the right
+				new PropertyMetadata(ValueBoxDock.Right, OnLayoutPropertyChanged), // classic: value on the right
+				IsDefinedEnumValue<ValueBoxDock>);
 
 		/// <summary>
 		/// Gets or sets the side (dock) of the value box relative to its row partner: on the
@@ -393,7 +412,8 @@ namespace NumericSelector
 				typeof(MouseInteractionBehavior),
 				typeof(BoundedNumericSelector),
 				// Default ChangeOnClick: it is the behavior the control already had.
-				new PropertyMetadata(MouseInteractionBehavior.ChangeOnClick));
+				new PropertyMetadata(MouseInteractionBehavior.ChangeOnClick),
+				IsDefinedEnumValue<MouseInteractionBehavior>);
 
 		/// <summary>
 		/// Gets or sets whether mouse gestures always act (ChangeOnClick) or demand that the
@@ -412,7 +432,8 @@ namespace NumericSelector
 				nameof(InteractionMode),
 				typeof(UserInteractionMode),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata(UserInteractionMode.Interactive, OnInteractionModeChanged));
+				new PropertyMetadata(UserInteractionMode.Interactive, OnInteractionModeChanged),
+				IsDefinedEnumValue<UserInteractionMode>);
 
 		/// <summary>
 		/// Gets or sets the interaction mode of the control. With
