@@ -17,9 +17,10 @@
         <test:InteractionModeTextConverter x:Key="InteractionModeText"/>
         <test:ValueBoxDockIndexConverter x:Key="ValueBoxDockIndex"/>
         <test:ValueBoxDockTextConverter x:Key="ValueBoxDockText"/>
-        <test:ValueFollowsDetailIndexConverter x:Key="ValueFollowsDetailIndex"/>
+        <!-- Un solo BoolIndex para las dos propiedades booleanas: la conversión es la misma.
+             Lo que cambia entre ellas es el texto, y ése sí tiene un converter por propiedad. -->
+        <test:BoolIndexConverter x:Key="BoolIndex"/>
         <test:ValueFollowsDetailTextConverter x:Key="ValueFollowsDetailText"/>
-        <test:ShowDetailIndexConverter x:Key="ShowDetailIndex"/>
         <test:ShowDetailTextConverter x:Key="ShowDetailText"/>
         <test:FontIndexConverter x:Key="FontIndex"/>
         <test:FontStyleIndexConverter x:Key="FontStyleIndex"/>
@@ -140,7 +141,7 @@
                                                   CaptionText="ShowDetail"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ShowDetailText}, Mode=OneWay}"
                                                   Minimum="0" Maximum="1"
-                                                  Value="{Binding ShowDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ShowDetailIndex}}"/>
+                                                  Value="{Binding ShowDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BoolIndex}}"/>
 
                     <!-- El ValueFollowsDetail con un selector numérico (0 = false: mantener
                          el valor junto al Caption, 1 = true: el valor sigue al detalle),
@@ -150,7 +151,7 @@
                                                   CaptionText="ValueFollowsDetail"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueFollowsDetailText}, Mode=OneWay}"
                                                   Minimum="0" Maximum="1"
-                                                  Value="{Binding ValueFollowsDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ValueFollowsDetailIndex}}"/>
+                                                  Value="{Binding ValueFollowsDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BoolIndex}}"/>
 
                     <!-- El ValueBoxDock con un selector numérico (0 = Left, 1 = Right),
                          dos vías con el Master; el default del control es Right. -->

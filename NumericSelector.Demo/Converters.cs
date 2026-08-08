@@ -301,11 +301,13 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Mapea <see cref="ValueFollowsDetail"/> del Master (bool) a un índice entero y de
-	/// vuelta (0 = false, 1 = true), para poder manejar esta propiedad con un selector
-	/// numérico.
+	/// Mapea un bool del Master a un índice entero y de vuelta (0 = false, 1 = true), para
+	/// poder manejar una propiedad booleana con un selector numérico. Es genérico a
+	/// propósito: lo comparten <c>ShowDetail</c> y <c>ValueFollowsDetail</c>, porque la
+	/// conversión no tiene nada de propio de ninguna de las dos. Lo que sí es propio —el
+	/// texto que describe cada estado— vive en el TextConverter de cada una.
 	/// </summary>
-	public class ValueFollowsDetailIndexConverter : IValueConverter
+	public class BoolIndexConverter : IValueConverter
 	{
 		public static readonly bool[] Valores = { false, true };
 
@@ -340,26 +342,6 @@ namespace NumericSelector.Demo
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			=> throw new NotSupportedException();
-	}
-
-	/// <summary>
-	/// Mapea <see cref="ShowDetail"/> del Master (bool) a un índice entero y de vuelta
-	/// (0 = false, 1 = true), para poder manejar esta propiedad con un selector numérico.
-	/// </summary>
-	public class ShowDetailIndexConverter : IValueConverter
-	{
-		public static readonly bool[] Valores = { false, true };
-
-		// Source (bool) -> Target (int).
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-			=> (value is bool b && b) ? 1 : 0;
-
-		// Target (int) -> Source (bool).
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < Valores.Length) ? Valores[i] : Valores[0];
-		}
 	}
 
 	/// <summary>
