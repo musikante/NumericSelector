@@ -75,9 +75,20 @@ namespace NumericSelector
 						left ? 0 : pixels.Right,
 						pixels.Bottom);
 
-				default: // DetailCell
+				case DetailCell:
 				// Marco fijo: nunca en la parte superior (la costura la dibuja la barra).
 					return new Thickness(pixels.Left, 0, pixels.Right, pixels.Bottom);
+
+				default:
+				// El parámetro es una cadena escrita a mano en la plantilla, así que un typo
+				// es el error probable. Antes caía en el caso del detalle y devolvía un
+				// Thickness plausible: la celda se dibujaba mal, sin que nada avisara. Vale
+				// más romper acá; para la plantilla propia no cambia nada, porque sus tres
+				// parámetros son estas constantes.
+					throw new ArgumentException(
+						$"Celda desconocida: \"{cell}\". Los valores válidos son " +
+						$"\"{BarCell}\", \"{ValueCell}\" y \"{DetailCell}\".",
+						nameof(cell));
 			}
 		}
 

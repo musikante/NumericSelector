@@ -113,4 +113,20 @@ public class ValueBorderResolverTests
 		Assert.AreEqual(new Thickness(0, 0, 3, 4), Resuelve(pixels, true, true, ValueBoxDock.Right, "Value"));
 		Assert.AreEqual(new Thickness(1, 0, 0, 4), Resuelve(pixels, true, true, ValueBoxDock.Left, "Value"));
 	}
+
+	// --- Una celda que no existe es un error, no un valor plausible ---
+
+	[TestMethod]
+	public void Una_celda_desconocida_no_pasa_por_valida()
+	{
+		// El nombre de la celda es una cadena escrita a mano en el ConverterParameter de la
+		// plantilla. Si un typo devolviera el Thickness de otra celda, el marco saldría mal
+		// dibujado sin ningún aviso; por eso protesta.
+		Assert.ThrowsExactly<ArgumentException>(
+			() => Resuelve(new Thickness(2), true, true, ValueBoxDock.Right, "Detai"));
+
+		// La cadena vacía tampoco: es lo que llega si falta el ConverterParameter.
+		Assert.ThrowsExactly<ArgumentException>(
+			() => Resuelve(new Thickness(2), false, false, ValueBoxDock.Right, ""));
+	}
 }
