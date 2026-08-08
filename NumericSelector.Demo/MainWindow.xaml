@@ -4,7 +4,7 @@
         xmlns:local="clr-namespace:NumericSelector;assembly=NumericSelector"
         xmlns:test="clr-namespace:NumericSelector.Demo"
         Title="BoundedNumericSelector - Demonstration &amp; Test Environment"
-        Height="720"
+        Height="770"
         Width="880"
         WindowStartupLocation="CenterScreen">
 
@@ -58,6 +58,22 @@
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
+
+        <!-- Double-spaced variants of the styles above, used by the left and middle columns
+             only. The right column keeps the tight spacing, so the difference is visible
+             side by side. Every vertical margin is exactly twice the base one.
+             "Label" has no spaced variant on purpose: it is the caption of the text box
+             right below it, and the two have to read as one unit. Widening that gap as much
+             as the gap BETWEEN pairs would leave each caption floating between both boxes. -->
+        <Style TargetType="TextBlock" x:Key="SectionSpaced" BasedOn="{StaticResource Section}">
+            <Setter Property="Margin" Value="0,24,0,12"/>
+        </Style>
+        <Style TargetType="{x:Type local:BoundedNumericSelector}" x:Key="AuxiliarySpaced" BasedOn="{StaticResource Auxiliary}">
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        <Style TargetType="TextBox" x:Key="BoxSpaced" BasedOn="{StaticResource Box}">
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="16">
@@ -102,12 +118,17 @@
         </Border>
 
         <!-- ============ CONTROLES DE PRUEBA ============ -->
-        <!-- Va en un ScrollViewer: además de acomodar todo, sirve para probar que la
-             rueda del mouse sobre un selector sin foco NO se come el scroll.
-             El alto de la ventana (720) sale de medir: el contenido de la columna más alta
-             pide 424 px y con 820 el viewport daba 551, o sea 127 px de aire al pie. Se
-             dejan unos 27 px de holgura y no cero, porque con el alto exacto cualquier
-             fuente de sistema más grande sacaría la barra de scroll de entrada. -->
+        <!-- It lives in a ScrollViewer: besides fitting everything in, it is what proves that
+             the mouse wheel over an unfocused selector does NOT swallow the scroll.
+             The window height (770) comes from measuring, not from taste. Two floors have to
+             be cleared, and the taller one wins:
+               • the left column, the tallest of the three since its spacing was doubled, needs
+                 761 px with the default font — below that the scrollbar shows up on startup;
+               • the FontFamily picker applies the chosen font to itself, so the tallest font
+                 on this machine stretches the right column; that case was what asked for the
+                 previous height.
+             The few px of slack are deliberate: at the exact floor, any larger system font
+             would bring the scrollbar back the moment the window opens. -->
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid>
@@ -120,39 +141,39 @@
                 <!-- === Columna A: valor, interacción y textos === -->
                 <StackPanel Grid.Column="0" Margin="0,0,20,0">
 
-                    <TextBlock Text="Value &amp; range" Style="{StaticResource Section}" Margin="0,6,0,6"/>
+                    <TextBlock Text="Value &amp; range" Style="{StaticResource SectionSpaced}" Margin="0,12,0,12"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}" MainText="Value"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}" MainText="Value"
                         Minimum="{Binding Minimum, ElementName=MasterNumericSelector}"
                         Maximum="{Binding Maximum, ElementName=MasterNumericSelector}"
                         Value="{Binding Value, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}" MainText="Minimum"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}" MainText="Minimum"
                         Minimum="-1000" Maximum="999"
                         Value="{Binding Minimum, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}" MainText="Maximum"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}" MainText="Maximum"
                         Minimum="-999" Maximum="1000"
                         Value="{Binding Maximum, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}" MainText="ResetValue"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}" MainText="ResetValue"
                         Minimum="{Binding Minimum, ElementName=MasterNumericSelector}"
                         Maximum="{Binding Maximum, ElementName=MasterNumericSelector}"
                         Value="{Binding ResetValue, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}" MainText="SmallChange"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}" MainText="SmallChange"
                         Minimum="1" Maximum="50"
                         Value="{Binding SmallChange, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}" MainText="LargeChange"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}" MainText="LargeChange"
                         Minimum="1" Maximum="100"
                         Value="{Binding LargeChange, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <TextBlock Text="Interaction properties" Style="{StaticResource Section}"/>
+                    <TextBlock Text="Interaction properties" Style="{StaticResource SectionSpaced}"/>
 
                     <!-- El MouseBehavior con un selector numérico (0 = ChangeOnClick,
                          1 = MustFocusFirst), dos vías con el Master. -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="MouseBehavior"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource MouseBehaviorText}, Mode=OneWay}"
@@ -162,7 +183,7 @@
                     <!-- El InteractionMode con un selector numérico (0 = Interactive,
                          1 = ReadOnly), dos vías con el Master. En ReadOnly el control
                          conserva el aspecto pero no responde a mouse ni teclado. -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="InteractionMode"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource InteractionModeText}, Mode=OneWay}"
@@ -175,14 +196,14 @@
                          ShowDetail, que vive en "Disposition", al pie de la columna del medio.
                          Puesto acá, los dos bloques quedan uno enfrente del otro y la remisión
                          se resuelve de un vistazo. Si se reordena la columna, se pierde. -->
-                    <TextBlock Text="Default texts" Style="{StaticResource Section}"/>
+                    <TextBlock Text="Default texts" Style="{StaticResource SectionSpaced}"/>
 
                     <TextBlock Text="MainText" Style="{StaticResource Label}"/>
-                    <TextBox Style="{StaticResource Box}" Padding="0,0,0,2"
+                    <TextBox Style="{StaticResource BoxSpaced}" Padding="0,0,0,2"
                              Text="{Binding MainText, ElementName=MasterNumericSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="DetailText  (Visible only if ShowDetail=true)" Style="{StaticResource Label}"/>
-                    <TextBox Style="{StaticResource Box}" Padding="0,0,0,2"
+                    <TextBox Style="{StaticResource BoxSpaced}" Padding="0,0,0,2"
                              Text="{Binding DetailText, ElementName=MasterNumericSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
 
@@ -190,7 +211,7 @@
                 <StackPanel Grid.Column="1" Margin="0,0,20,0">
 
                     <!-- === Evento ValueChanged === -->
-                    <Border Width="240" Margin="0,0,0,8"
+                    <Border Width="240" Margin="0,0,0,16"
                             HorizontalAlignment="Left"
                             Background="#FFF0F0F0" BorderBrush="LightGray" BorderThickness="1"
                             Padding="10">
@@ -200,16 +221,16 @@
                         </StackPanel>
                     </Border>
 
-                    <TextBlock Text="Border properties" Style="{StaticResource Section}" Margin="0,6,0,6"/>
+                    <TextBlock Text="Border properties" Style="{StaticResource SectionSpaced}" Margin="0,12,0,12"/>
 
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}" MainText="BorderThickness"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}" MainText="BorderThickness"
                         ShowDetail="True"
                         DetailText="Thickness of All Borders"
                         Minimum="0" Maximum="8"
                         Value="{Binding BorderThickness, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ThickToInt}}"/>
 
                     <local:BoundedNumericSelector x:Name="BorderBrushPicker"
-                                                  Style="{StaticResource Auxiliary}"
+                                                  Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="BorderBrush"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
@@ -217,7 +238,7 @@
                                                   ValueChanged="BorderBrush_ValueChanged"/>
 
                     <local:BoundedNumericSelector x:Name="FocusBorderBrushPicker"
-                                                  Style="{StaticResource Auxiliary}"
+                                                  Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="FocusBorderBrush"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
@@ -228,11 +249,11 @@
                          textos, por dos motivos: comparte naturaleza con "Border properties"
                          —las dos son geometría— y equilibra el alto de las tres columnas.
                          Queda enfrente de "Default texts", que es lo que necesita ShowDetail. -->
-                    <TextBlock Text="Disposition" Style="{StaticResource Section}"/>
+                    <TextBlock Text="Disposition" Style="{StaticResource SectionSpaced}"/>
 
                     <!-- El ShowDetail con un selector numérico (0 = false: oculta la fila de
                          detalle, 1 = true: la muestra), dos vías con el Master. -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="ShowDetail"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ShowDetailText}, Mode=OneWay}"
@@ -242,7 +263,7 @@
                     <!-- El ValueFollowsDetail con un selector numérico (0 = false: mantener
                          el valor junto al texto principal, 1 = true: el valor sigue al
                          detalle), dos vías con el Master. -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="ValueFollowsDetail"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueFollowsDetailText}, Mode=OneWay}"
@@ -251,7 +272,7 @@
 
                     <!-- El ValueBoxDock con un selector numérico (0 = Left, 1 = Right),
                          dos vías con el Master; el default del control es Right. -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}"
                                                   ShowDetail="True"
                                                   MainText="ValueBoxDock"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueBoxDockText}, Mode=OneWay}"
@@ -259,7 +280,7 @@
                                                   Value="{Binding ValueBoxDock, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ValueBoxDockIndex}}"/>
 
                     <!-- El BaseWidth, debajo de ValueBoxDock (misma sección Disposition). -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}" MainText="BaseWidth"
+                    <local:BoundedNumericSelector Style="{StaticResource AuxiliarySpaced}" MainText="BaseWidth"
                                                   ShowDetail="True"
                                                   DetailText="Base Width It Grows From"
                                                   Minimum="30" Maximum="800"
