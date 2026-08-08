@@ -8,7 +8,7 @@ Control WPF *lookless* para seleccionar un valor entero acotado a un rango. El c
 NumericSelector/          → Librería del control (proyecto principal)
 NumericSelector.Demo/     → Aplicación WPF de demostración (banco de pruebas manual)
 NumericSelector.Tests/    → Pruebas automatizadas (MSTest)
-docs/notas-historicas/    → Documentación histórica (NO describe el control actual)
+docs/images/              → Capturas que ilustran el README
 ```
 
 ## Comandos esenciales
@@ -138,7 +138,6 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 
 ## Advertencias
 
-- `docs/notas-historicas/` describe un diseño **anterior** (RangeSlider/UserControl) y no debe leerse como referencia vigente
 - El control es **horizontal únicamente** (la orientación vertical se descartó en el rediseño)
 - El dominio es **intencionalmente entero** (sin soporte para decimales)
 - `FocusVisualStyle` se desactiva por defecto; el foco lo indica el borde (`FocusBorderColor`)

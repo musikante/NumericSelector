@@ -56,7 +56,6 @@ Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/
 - Documentación del estiramiento del ancho (`StretchMode.AutoGrow` por entonces) alineada con el comportamiento real de crecimiento del control.
 - El valor predeterminado efectivo de `ResetValue` pasa a ser `50`, coherente con la API documentada.
 - `README.md` documenta que `SmallChange` y `LargeChange` se coaccionan también por arriba, hasta el ancho del rango, y que esa coacción es silenciosa.
-- La nota `Anotaciones útiles.txt` sale de la carpeta de la librería y pasa a `docs/notas-historicas/`, con una cabecera que aclara que describe el diseño anterior (etapa RangeSlider) y no el control actual.
 
 ### Changed — renombrado de la API pública
 
