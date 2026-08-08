@@ -25,7 +25,7 @@
                          sumando grosor y corriendo los filos.
                          QUÉ lados dibuja cada celda lo resuelve ValueBorderResolver (la
                          "matriz de costuras"): un MultiBinding que devuelve el Thickness por
-                         celda según ShowDetail, ValueFollowsCaption y ValueBoxDock, para que
+                         celda según ShowDetail, ValueFollowsDetail y ValueBoxDock, para que
                          ningún filo se dibuje dos veces. -->
                     <Grid x:Name="PART_MainGrid">
                         <Grid.RowDefinitions>

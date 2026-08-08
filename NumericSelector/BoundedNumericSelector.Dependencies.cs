@@ -55,8 +55,8 @@ namespace NumericSelector
 		// Nota: no hay propiedad para el ancho de la columna del valor. Ese ancho se calcula
 		// siempre, a partir de los medidores ocultos de la plantilla (el número más largo del
 		// rango). Una propiedad que lo pisara sólo podría empeorarlo: si se quedaba corta,
-		// cortaba el número. El ocultamiento de la caja cuando el valor sube (VBUp) lo
-		// resuelven los triggers de Generic.xaml.
+		// cortaba el número. El ocultamiento de la caja cuando el valor desciende a la fila
+		// de detalle lo resuelven los triggers de Generic.xaml.
 
 		// Propiedad para el ANCHO BASE: el ancho desde el que el control crece para acomodar
 		// su contenido. NO es un constraint duro tipo WPF (Width/MinWidth): no fuerza el
@@ -262,8 +262,8 @@ namespace NumericSelector
 				new PropertyMetadata(Brushes.DodgerBlue));
 
 		/// <summary>
-		/// Obtiene o establece el color que toman los marcos de ambas secciones (título y
-		/// datos) cuando el control tiene el foco.
+		/// Obtiene o establece el color que toman los marcos de todas las celdas (barra,
+		/// casillero del valor y detalle) cuando el control tiene el foco.
 		/// </summary>
 		public Brush FocusBorderColor
 		{
@@ -369,7 +369,7 @@ namespace NumericSelector
 		}
 
 		// Propiedad para el lado (anclaje) de la caja del valor respecto de la caja con la
-		// que comparte fila (la barra abajo, o el título arriba).
+		// que comparte fila (la barra arriba, o el detalle abajo).
 		public static readonly DependencyProperty ValueBoxDockProperty =
 			DependencyProperty.Register(
 				nameof(ValueBoxDock),

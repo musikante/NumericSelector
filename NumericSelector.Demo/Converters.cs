@@ -40,7 +40,7 @@ namespace NumericSelector.Demo
 
 	/// <summary>
 	/// Mapea el Value de un BoundedNumericSelector (0..23) a un color de la paleta del demo.
-	/// Devuelve el color como "#FFRRGGBB" (para el título del selector) pero también expone
+	/// Devuelve el color como "#FFRRGGBB" (para el DetailText del selector) pero también expone
 	/// la lista, en el mismo orden, para que el code-behind la use al pintar el Master.
 	/// El orden coincide con el de x:Array "Paleta" de MainWindow.xaml.
 	/// </summary>
@@ -74,7 +74,7 @@ namespace NumericSelector.Demo
 			Colors.Transparent,
 		};
 
-		// Valor (int) -> "#FFRRGGBB" para mostrarlo en el título.
+		// Valor (int) -> "#FFRRGGBB" para mostrarlo en el DetailText.
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;

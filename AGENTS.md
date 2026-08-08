@@ -45,22 +45,24 @@ dotnet test .\NumericSelector.Tests\NumericSelector.Tests.csproj
 | `BoundedNumericSelector.Dependencies.cs` | Propiedades de dependencia, coerciones, evento ValueChanged |
 | `Themes/Generic.xaml` | Plantilla por defecto (estilo, triggers, partes) |
 | `Converters.cs` | `ValueBorderResolver` (matriz de costuras): función pura |
-| `ValueBoxDock.cs`, `MouseInteractionBehavior.cs` | Enums de la API pública |
+| `ValueBoxDock.cs`, `MouseInteractionBehavior.cs`, `UserInteractionMode.cs` | Enums de la API pública |
 
 ### Modelo de celdas
 
 El control son **cuatro celdas hermanas** con marco propio:
-- Etiqueta del título (arriba, izquierda)
-- Caja del valor (arriba junto al título, o al lado de la barra)
-- Barra (abajo, izquierda)
-- Caja del valor (abajo, derecha — o izquierda con `ValueBoxDock=Left`)
+- Barra, con su `CaptionText` dibujado encima (arriba, la fila siempre presente)
+- Caja del valor junto a la barra (arriba, a la derecha — o a la izquierda con `ValueBoxDock=Left`)
+- Etiqueta del detalle (abajo, sólo con `ShowDetail`)
+- Caja del valor en la fila de detalle (abajo, cuando `ValueFollowsDetail` la hace descender)
+
+La caja del valor está declarada en las dos filas, pero sólo una es visible a la vez: `ShowDetail && ValueFollowsDetail` colapsa la de arriba y muestra la de abajo.
 
 **Regla única**: la barra y el detalle son el marco fijo (la barra lleva sus cuatro lados, el detalle cede el superior) y la caja del valor cede el lado que mira a su compañero de fila. Ningún filo se dibuja dos veces. El reparto concreto lo calcula `ValueBorderResolver.Resolve`, una función pura con la matriz de costuras completa (ver su `Converters.cs`).
 
 ### Partes de la plantilla (PART_)
 
 La plantilla define estas partes que el code-behind referencia por nombre:
-- `PART_MainGrid`, `PART_BarRow`, `PART_DetailRow`
+- `PART_MainGrid`, `PART_DetailRow`
 - `PART_BarAndValueGrid`, `PART_BarCell`, `PART_BarGrid`, `PART_BarRect`, `PART_BarColumn`, `PART_BarRowDef`
 - `PART_CaptionText`, `PART_ValueCell`, `PART_ValueText`, `PART_ValueColumn`, `PART_ValueSizerMin/Max`
 - La fila de detalle, con su caja de valor propia: `PART_DetailCell`, `PART_DetailText`, `PART_ValueDetailCell`, `PART_ValueDetailText`, `PART_DetailColumn`, `PART_ValueDetailColumn`, `PART_DetailSizerMin/Max`

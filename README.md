@@ -13,7 +13,7 @@ El control se llama **`BoundedNumericSelector`** y vive en el ensamblado `Numeri
 - Entrada discreta de tipo `int`, con rango, pasos y valor de reinicio.
 - Valor visible sin saltos de ancho ni recortes, incluso con miles, signos y cambios de cultura.
 - Interacción con mouse, teclado y rueda, cuidando no interferir con un `ScrollViewer` contenedor.
-- Disposición configurable: el casillero del valor vive junto a la barra (a la izquierda o derecha) o sube junto al título, según tres propiedades simples.
+- Disposición configurable: el casillero del valor vive junto a la barra (a la izquierda o derecha) o baja junto al detalle, según tres propiedades simples.
 - Modo de sólo visualización que conserva la apariencia y sigue reflejando cambios hechos por código.
 - Plantilla y colores personalizables, sin heredar la semántica de `Slider`.
 

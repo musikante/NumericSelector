@@ -2,7 +2,7 @@ namespace NumericSelector
 {
 	/// <summary>
 	/// Lado (anclaje) de la caja del valor respecto de la caja con la que comparte fila:
-	/// la barra cuando vive abajo, o el título cuando sube a la fila superior.
+	/// la barra cuando se queda arriba, o el detalle cuando desciende a la fila inferior.
 	/// </summary>
 	public enum ValueBoxDock
 	{

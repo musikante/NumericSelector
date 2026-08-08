@@ -13,8 +13,8 @@ namespace NumericSelector
 		// --- Campos de Instancia ---
 		// Referencias a las partes de la plantilla que la interacción dibuja o escucha: la
 		// barra y los dos textos del valor. Las piezas que sólo arman el aspecto (el grid
-		// principal, el título y la leyenda) viven resolviéndose en el XAML, sin necesitar
-		// campo propio aquí.
+		// principal, la leyenda sobre la barra y el texto del detalle) viven resolviéndose
+		// en el XAML, sin necesitar campo propio aquí.
 		private Grid? _barGrid;
 		private Border? _barRect;
 		private TextBlock? _valueText;
