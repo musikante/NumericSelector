@@ -61,7 +61,9 @@ La caja del valor está declarada en las dos filas, pero sólo una es visible a 
 
 ### Partes de la plantilla (PART_)
 
-La plantilla define estas partes que el code-behind referencia por nombre:
+El code-behind resuelve **cuatro** por nombre, en `OnApplyTemplate`: `PART_BarGrid`, `PART_BarRect`, `PART_ValueText` y `PART_ValueDetailText`. El resto de los nombres existe para que los triggers de la plantilla los apunten con `TargetName`; nadie los busca desde C#.
+
+Partes que define la plantilla:
 - `PART_MainGrid`, `PART_DetailRow`
 - `PART_BarAndValueGrid`, `PART_BarCell`, `PART_BarGrid`, `PART_BarRect`, `PART_BarRowDef`
 - `PART_CaptionText`, `PART_ValueCell`, `PART_ValueText`, `PART_ValueSizerMin/Max`
@@ -148,18 +150,7 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 
 ## Trabajo pendiente
 
-### Incoherencias de texto detectadas y no corregidas
-
-- `ValueBoxDockTextConverter` (demo) documenta `int -> "Right"/"Left"`; el orden real de la lista es `Left`(0) / `Right`(1).
-- La sección "Partes de la plantilla" de este archivo dice que el code-behind las referencia **todas** por nombre; en realidad resuelve cuatro (`PART_BarGrid`, `PART_BarRect`, `PART_ValueText`, `PART_ValueDetailText`). El resto sólo existe para los triggers.
-
-### Limpieza de código
-
-- **Doble default de `CaptionText`/`DetailText`**: la metadata de la DP dice `"Default Caption"`/`"Default Detail Text"` y el `Style` de `Generic.xaml` dice `"DefaultCaption"`/`"DefaultDetail"`. Gana el Style; son dos fuentes de verdad para lo mismo.
-- **`ValueBorderResolver.Convert` degrada en silencio**: un `ConverterParameter` con un typo cae en el `default:` del switch y devuelve el `Thickness` de la celda de detalle. En una plantilla alternativa da un marco mal dibujado sin ningún aviso; un `throw` sería más honesto y no cambia nada para la plantilla propia.
-- **Nombres de columna posicionales**: con `ValueBoxDock=Left`, `PART_BarColumn` (índice 0) pasa a alojar el casillero del valor, y el trigger le pone `Auto`. El comportamiento es correcto —está verificado— pero se lee como el error que el comentario de al lado dice estar evitando. `PART_Column0`/`PART_Column1` lo aclararía.
-- **Demo**: `ValueFollowsDetailIndexConverter` y `ShowDetailIndexConverter` son idénticos carácter por carácter.
-- **`NumericSelector.csproj`**: tiene un `<Service Include="{508349b6-…}"/>` residual de Visual Studio.
+Las incoherencias de texto y las cinco limpiezas de código que figuraban acá están hechas.
 
 ### Funcionalidad
 

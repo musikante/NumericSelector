@@ -283,8 +283,10 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Nombre del lado seleccionado (int -> "Right"/"Left"), para mostrarlo en el
-	/// DetailText del selector de <see cref="ValueBoxDock"/>.
+	/// Nombre del lado seleccionado (int -> "Left"/"Right"), para mostrarlo en el
+	/// DetailText del selector de <see cref="ValueBoxDock"/>. El orden es el de
+	/// <see cref="ValueBoxDockIndexConverter.Modos"/>, que sigue el eje de la barra
+	/// (izquierda→0), no el del enum.
 	/// </summary>
 	public class ValueBoxDockTextConverter : IValueConverter
 	{
