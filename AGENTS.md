@@ -63,9 +63,10 @@ La caja del valor está declarada en las dos filas, pero sólo una es visible a 
 
 La plantilla define estas partes que el code-behind referencia por nombre:
 - `PART_MainGrid`, `PART_DetailRow`
-- `PART_BarAndValueGrid`, `PART_BarCell`, `PART_BarGrid`, `PART_BarRect`, `PART_BarColumn`, `PART_BarRowDef`
-- `PART_CaptionText`, `PART_ValueCell`, `PART_ValueText`, `PART_ValueColumn`, `PART_ValueSizerMin/Max`
-- La fila de detalle, con su caja de valor propia: `PART_DetailCell`, `PART_DetailText`, `PART_ValueDetailCell`, `PART_ValueDetailText`, `PART_DetailColumn`, `PART_ValueDetailColumn`, `PART_DetailSizerMin/Max`
+- `PART_BarAndValueGrid`, `PART_BarCell`, `PART_BarGrid`, `PART_BarRect`, `PART_BarRowDef`
+- `PART_CaptionText`, `PART_ValueCell`, `PART_ValueText`, `PART_ValueSizerMin/Max`
+- La fila de detalle, con su caja de valor propia: `PART_DetailCell`, `PART_DetailText`, `PART_ValueDetailCell`, `PART_ValueDetailText`, `PART_DetailSizerMin/Max`
+- Las columnas se nombran **por posición**, no por ocupante, porque con `ValueBoxDock=Left` las celdas se intercambian: `PART_Column0`/`PART_Column1` (fila de la barra) y `PART_DetailColumn0`/`PART_DetailColumn1` (fila de detalle)
 
 **No se deben renombrar**: los nombres `PART_*` son contrato público.
 

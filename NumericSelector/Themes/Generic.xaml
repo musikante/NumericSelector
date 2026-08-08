@@ -42,8 +42,13 @@
                              un lado. Es la fila siempre presente, el eje del control. -->
                         <Grid x:Name="PART_BarAndValueGrid" Grid.Row="0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition x:Name="PART_BarColumn" Width="*"/>
-                                <ColumnDefinition x:Name="PART_ValueColumn" Width="Auto"/>
+                                <!-- Los nombres son POSICIONALES a propósito: con
+                                     ValueBoxDock=Left las celdas intercambian de columna, así
+                                     que ninguna de las dos pertenece a la barra ni al valor.
+                                     Llamarlas por su ocupante habitual haría leer el trigger
+                                     de más abajo como el error que justamente evita. -->
+                                <ColumnDefinition x:Name="PART_Column0" Width="*"/>
+                                <ColumnDefinition x:Name="PART_Column1" Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Celda de la barra: marco base, lleva siempre los cuatro
@@ -158,8 +163,9 @@
                              un lado. Arranca colapsada; la muestra ShowDetail. -->
                         <Grid x:Name="PART_DetailRow" Grid.Row="1" Visibility="Collapsed">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition x:Name="PART_DetailColumn" Width="*"/>
-                                <ColumnDefinition x:Name="PART_ValueDetailColumn" Width="Auto"/>
+                                <!-- Posicionales, igual que las de la fila de arriba. -->
+                                <ColumnDefinition x:Name="PART_DetailColumn0" Width="*"/>
+                                <ColumnDefinition x:Name="PART_DetailColumn1" Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Celda de la fila del detalle. Marco fijo que cede el lado
@@ -277,10 +283,10 @@
                             <Setter TargetName="PART_ValueCell" Property="Grid.Column" Value="0"/>
                             <Setter TargetName="PART_DetailCell" Property="Grid.Column" Value="1"/>
                             <Setter TargetName="PART_ValueDetailCell" Property="Grid.Column" Value="0"/>
-                            <Setter TargetName="PART_BarColumn" Property="Width" Value="Auto"/>
-                            <Setter TargetName="PART_ValueColumn" Property="Width" Value="*"/>
-                            <Setter TargetName="PART_DetailColumn" Property="Width" Value="Auto"/>
-                            <Setter TargetName="PART_ValueDetailColumn" Property="Width" Value="*"/>
+                            <Setter TargetName="PART_Column0" Property="Width" Value="Auto"/>
+                            <Setter TargetName="PART_Column1" Property="Width" Value="*"/>
+                            <Setter TargetName="PART_DetailColumn0" Property="Width" Value="Auto"/>
+                            <Setter TargetName="PART_DetailColumn1" Property="Width" Value="*"/>
                         </Trigger>
 
                         <!-- Foco: el contorno completo se tiñe del color de foco. No hay caja

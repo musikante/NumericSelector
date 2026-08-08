@@ -442,10 +442,12 @@ public class InteractionModeTests
 
 				// La columna "*" tiene que acompañar a la barra: si sólo se movieran las
 				// celdas, la barra caería en una columna "Auto" y se encogería a su contenido.
+				// Las columnas se nombran por posición, no por ocupante, justamente porque
+				// acá el ocupante cambia: la barra pasa a la 1 y el casillero a la 0.
 				Assert.AreEqual(GridLength.Auto,
-					((ColumnDefinition)e.Selector.Template.FindName("PART_BarColumn", e.Selector)).Width);
+					((ColumnDefinition)e.Selector.Template.FindName("PART_Column0", e.Selector)).Width);
 				Assert.AreEqual(new GridLength(1, GridUnitType.Star),
-					((ColumnDefinition)e.Selector.Template.FindName("PART_ValueColumn", e.Selector)).Width);
+					((ColumnDefinition)e.Selector.Template.FindName("PART_Column1", e.Selector)).Width);
 			}
 			finally { e.Window.Close(); }
 		});
