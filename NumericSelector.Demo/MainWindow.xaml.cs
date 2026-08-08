@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using NumericSelector;
@@ -45,13 +46,52 @@ namespace NumericSelector.Demo
 		// Aplica la fuente elegida al Master (y se la da también al propio picker, para que
 		// el cambio se vea en el control que lo produce).
 		private void FontPicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
+			=> AplicarFuente();
+
+		private void AplicarFuente()
 		{
 			int i = FontPicker.Value;
+			// Con la lista vacía —filtro sin coincidencias— no hay nada que aplicar y se
+			// conserva la última fuente puesta.
 			if (i < 0 || i >= FontIndexConverter.Familias.Length) return;
 
 			var font = FontIndexConverter.Familias[i];
 			MasterNumericSelector.FontFamily = font;
 			FontPicker.FontFamily = font;
+		}
+
+		// Filtra la lista de fuentes que recorre FontPicker. Se aplica en cada tecla.
+		private void FontFilter_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			// Qué fuente estaba elegida, para reencontrarla si sobrevive al filtro. Se guarda
+			// el nombre y no la instancia porque FontFamily no tiene igualdad por valor.
+			int previo = FontPicker.Value;
+			string? elegida = (previo >= 0 && previo < FontIndexConverter.Familias.Length)
+				? FontIndexConverter.Familias[previo].Source
+				: null;
+
+			int cuantas = FontIndexConverter.Filtrar(FontFilterBox.Text);
+
+			// El rango del control tiene siempre al menos 1 de ancho: con 0 o 1 coincidencias
+			// esto pide 0 y la coerción lo sube a 1. Queda a la vista en el DetailText, que
+			// para ese índice sobrante avisa que no hay fuente. Es el límite real de la API.
+			FontPicker.Maximum = Math.Max(cuantas - 1, 0);
+
+			int i = elegida is null
+				? -1
+				: Array.FindIndex(FontIndexConverter.Familias, f => f.Source == elegida);
+			FontPicker.Value = i >= 0 ? i : 0;
+
+			// El DetailText se enlaza a Value, así que sólo se recalcula cuando Value cambia.
+			// Al filtrar puede cambiar la LISTA sin cambiar el índice, y entonces el nombre
+			// mostrado sería el de la fuente anterior: hay que pedir el refresco a mano.
+			BindingOperations
+				.GetBindingExpression(FontPicker, BoundedNumericSelector.DetailTextProperty)
+				?.UpdateTarget();
+
+			// Y por el mismo motivo hay que reaplicar: si el índice no cambió pero la lista sí,
+			// ValueChanged no se dispara y la fuente quedaría desfasada del nombre que se lee.
+			AplicarFuente();
 		}
 
 		private void FontStylePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)

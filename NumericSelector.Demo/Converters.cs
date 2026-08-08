@@ -74,22 +74,52 @@ namespace NumericSelector.Demo
 	}
 
 	/// <summary>
-	/// Mapea el Value de un BoundedNumericSelector (0..FontCount-1) a una fuente del sistema.
-	/// La lista sale de <see cref="Fonts.SystemFontFamilies"/> ordenada por nombre, y se
-	/// expone estáticamente para que XAML y code-behind usen exactamente la misma colección.
+	/// Mapea el Value de un BoundedNumericSelector (0..n-1) a una fuente del sistema.
 	/// </summary>
+	/// <remarks>
+	/// Hay DOS listas y la distinción importa: <see cref="Todas"/> es inmutable y es la
+	/// fuente de la verdad; <see cref="Familias"/> es la que dejó pasar el filtro y es la
+	/// única que indexan el picker y este converter. Si se desincronizaran, el selector
+	/// mostraría el nombre de una fuente y aplicaría otra. Por eso <see cref="Familias"/>
+	/// sólo se escribe desde <see cref="Filtrar"/>.
+	/// </remarks>
 	public class FontIndexConverter : IValueConverter
 	{
-		public static readonly FontFamily[] Familias =
+		/// <summary>Todas las fuentes del sistema, ordenadas por nombre. No cambia nunca.</summary>
+		public static readonly FontFamily[] Todas =
 			Fonts.SystemFontFamilies
 				.OrderBy(f => f.Source, StringComparer.CurrentCultureIgnoreCase)
 				.ToArray();
+
+		/// <summary>Las que sobrevivieron al filtro. Arranca siendo todas.</summary>
+		public static FontFamily[] Familias { get; private set; } = Todas;
+
+		/// <summary>
+		/// Deja en <see cref="Familias"/> las fuentes cuyo nombre contiene <paramref name="texto"/>
+		/// (sin distinguir mayúsculas) y devuelve cuántas quedaron. Un filtro vacío las devuelve
+		/// todas.
+		/// </summary>
+		public static int Filtrar(string? texto)
+		{
+			string patron = texto?.Trim() ?? "";
+			Familias = patron.Length == 0
+				? Todas
+				: Todas.Where(f => f.Source.Contains(patron, StringComparison.CurrentCultureIgnoreCase))
+					   .ToArray();
+			return Familias.Length;
+		}
 
 		// Valor (int) -> nombre de la fuente, para mostrarlo en el DetailText.
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			int i = (value is int n) ? n : -1;
-			return (i >= 0 && i < Familias.Length) ? Familias[i].Source : $"(#{i})";
+			if (Familias.Length == 0)
+				return "(no match)";
+
+			// El rango del control tiene siempre al menos 1 de ancho, así que con una sola
+			// coincidencia el índice 1 existe para el selector pero no en la lista. Se dice,
+			// no se disimula: el banco está para mostrar los límites reales de la API.
+			return (i >= 0 && i < Familias.Length) ? Familias[i].Source : $"(no font at #{i})";
 		}
 
 		// No se usa: el selector no recibe la fuente de vuelta (el índice habla por él).

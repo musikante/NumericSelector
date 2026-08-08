@@ -326,6 +326,21 @@
                                                   Minimum="0" Maximum="4"
                                                   ValueChanged="FontWeightPicker_ValueChanged"/>
 
+                    <!-- Filtro de la lista de fuentes. Es la tercera caja de texto del banco y,
+                         como las otras dos, está porque el dato es texto y el control es para
+                         números. La etiqueta va a la IZQUIERDA (las otras dos la llevan arriba)
+                         para distinguir a simple vista lo que es herramienta del banco de lo que
+                         es una propiedad del control.
+                         Lo interesante no es el filtro: es que al cambiarlo cambia el Maximum del
+                         selector de abajo EN CALIENTE, y ahí se ve la re-coerción de Value,
+                         ResetValue y los pasos, que ningún otro control de este banco ejercita. -->
+                    <DockPanel Width="240" HorizontalAlignment="Left" Margin="0,0,0,4">
+                        <TextBlock DockPanel.Dock="Left" Text="Font filter:"
+                                   VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox x:Name="FontFilterBox" Padding="0,0,0,2"
+                                 TextChanged="FontFilter_TextChanged"/>
+                    </DockPanel>
+
                     <!-- Al final porque la altura del selector cambia con la fuente y empuja
                          lo que hubiera debajo. -->
                     <local:BoundedNumericSelector x:Name="FontPicker"

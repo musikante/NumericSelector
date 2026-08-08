@@ -100,8 +100,25 @@
                     behave like this — the font picker walks every font installed on this machine.
                 </TextBlock>
                 <TextBlock Style="{StaticResource Parrafo}">
-                    The two text boxes are the exception, and a necessary one: MainText and
-                    DetailText hold strings, and this control is for numbers.
+                    The three text boxes are the exception, and a necessary one: MainText and
+                    DetailText hold strings, the font filter takes a string, and this control is
+                    for numbers.
+                </TextBlock>
+
+                <TextBlock Style="{StaticResource Seccion}" Text="The font filter"/>
+                <TextBlock Style="{StaticResource Parrafo}">
+                    Type in it and the FontFamily picker below only walks the fonts whose name
+                    contains what you typed. The filter is there for convenience, but it also puts
+                    on stage the one thing nothing else in this bench does:
+                    <Run FontWeight="SemiBold">a range that changes while the control is live.</Run>
+                    Every keystroke rewrites Maximum, and the control re-coerces Value, ResetValue,
+                    SmallChange and LargeChange and repaints the bar by itself.
+                </TextBlock>
+                <TextBlock Style="{StaticResource Parrafo}">
+                    Narrow it down to one font, or to none, and you hit a real limit of the API
+                    rather than a bug: the range is always at least one unit wide, so Maximum
+                    cannot go below Minimum + 1. The extra index has no font behind it and the
+                    detail row says so instead of hiding it.
                 </TextBlock>
 
                 <TextBlock Style="{StaticResource Seccion}" Text="How to read the labels"/>
