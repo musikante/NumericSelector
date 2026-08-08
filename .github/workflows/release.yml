@@ -64,9 +64,22 @@ jobs:
         with:
           user: musikante
 
+      # The path is resolved here and handed to dotnet already expanded. Passing
+      # "artifacts/*.nupkg" straight to it does NOT work on this runner: the shell is
+      # PowerShell, which does not expand wildcards when calling a native executable, and
+      # `dotnet nuget push` does not expand them either — it looks for a file by that literal
+      # name and fails with "file does not exist". On a Linux runner bash would have hidden
+      # this by expanding it first.
       # Pushing the .nupkg also pushes the .snupkg sitting next to it, with the symbols.
       - name: Push
-        run: dotnet nuget push artifacts/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        shell: pwsh
+        run: |
+          $packages = @(Get-ChildItem artifacts/*.nupkg)
+          if ($packages.Count -ne 1) {
+            throw "Expected exactly one .nupkg in artifacts, found $($packages.Count)."
+          }
+          Write-Host "Pushing $($packages[0].Name)"
+          dotnet nuget push $packages[0].FullName --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
       # Keeps a copy of exactly what was published, attached to the run.
       - name: Attach the package to the run
