@@ -68,7 +68,10 @@
                 Padding="5">
             <!-- El rótulo va acá, FUERA del selector, y no dentro de su CaptionText: los
                  textos que el Master muestra son los nombres de sus propias propiedades,
-                 tal cual se escriben en código, para que se aprendan de tanto verlos. -->
+                 tal cual se escriben en código, para que se aprendan de tanto verlos.
+                 CaptionText y DetailText NO se asignan a propósito: el control ya trae por
+                 defecto el nombre de cada una, y así lo que se ve arranca siendo el default
+                 de verdad —es lo que anuncia la sección "Default texts" de más abajo—. -->
             <Grid>
                 <TextBlock Text="Master — interact here"
                            VerticalAlignment="Top" HorizontalAlignment="Center"
@@ -76,8 +79,6 @@
                 <local:BoundedNumericSelector x:Name="MasterNumericSelector"
                                           ValueChanged="Master_ValueChanged"
                                           ShowDetail="True"
-                                          CaptionText="CaptionText"
-                                          DetailText="DetailText"
                                           Minimum="0"
                                           Maximum="100"
                                           Value="50"
@@ -130,7 +131,10 @@
                         Minimum="1" Maximum="100"
                         Value="{Binding LargeChange, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <TextBlock Text="Texts" Style="{StaticResource Seccion}"/>
+                    <!-- "Default texts": las dos cajas arrancan mostrando lo que el control
+                         trae de fábrica, que es el nombre de cada propiedad, porque el Master
+                         no las asigna. Escribir acá las reemplaza. -->
+                    <TextBlock Text="Default texts" Style="{StaticResource Seccion}"/>
 
                     <TextBlock Text="CaptionText" Style="{StaticResource Etiqueta}"/>
                     <TextBox Style="{StaticResource Caja}" Padding="0,0,0,2"

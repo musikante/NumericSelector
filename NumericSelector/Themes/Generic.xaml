@@ -314,9 +314,10 @@
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="UseLayoutRounding" Value="True" />
         <Setter Property="Background" Value="White"/>
-        <!-- CaptionText y DetailText NO se fijan acá: sus textos de relleno vienen de la
-             metadata de la DP, que es la única fuente. Un Setter le ganaría a la metadata
-             y el default se perdería con cualquier plantilla de reemplazo. -->
+        <!-- CaptionText y DetailText NO se fijan acá: su texto de relleno —que es el nombre
+             de cada propiedad— viene de la metadata de la DP, que es la única fuente. Un
+             Setter le ganaría a la metadata y el default se perdería con cualquier plantilla
+             de reemplazo. -->
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>

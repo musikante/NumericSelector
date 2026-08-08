@@ -100,12 +100,15 @@ namespace NumericSelector
 		// lo repite. Un Setter en el Style le ganaría a la metadata, y entonces el control
 		// perdería su default al reemplazarse la plantilla —que es justamente lo que un
 		// control lookless espera que su consumidor haga—.
+		// Y el relleno es el NOMBRE DE LA PROPIEDAD, no un "Default Caption" cualquiera:
+		// quien suelta el control en el diseñador sin asignarle nada lee ahí mismo cómo se
+		// llama lo que tiene que escribir en su XAML. Es la misma idea que sigue el demo.
 		public static readonly DependencyProperty CaptionTextProperty =
 			DependencyProperty.Register(
 				nameof(CaptionText),
 				typeof(string),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata("Default Caption"));
+				new PropertyMetadata(nameof(CaptionText)));
 
 		/// <summary>
 		/// Obtiene o establece el texto permanente que identifica al control. Se dibuja sobre
@@ -123,7 +126,7 @@ namespace NumericSelector
 				nameof(DetailText),
 				typeof(string),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata("Default Detail")); // Única fuente, igual que CaptionText.
+				new PropertyMetadata(nameof(DetailText))); // Igual que CaptionText: el nombre.
 
 		/// <summary>
 		/// Obtiene o establece el texto de la fila de detalle, que se despliega debajo de la
