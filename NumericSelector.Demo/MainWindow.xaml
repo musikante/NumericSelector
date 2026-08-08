@@ -71,9 +71,10 @@
                    teclea en código;
                  • "(Interact here)" invita a interactuar sobre esta zona, que es el sujeto de
                    prueba del demo;
-                 • "Ñ j |" son caracteres de control visual: la Ñ lleva diacrítico, la j baja
-                   del renglón y la barra marca el alto completo, así se ve enseguida si el
-                   texto se recorta al cambiar la fuente o el tamaño.
+                 • "(Vertical extremes: jÑ)" son caracteres de control visual: la j baja del
+                   renglón y la Ñ sube con su diacrítico, así que entre las dos ocupan todo el
+                   alto de la línea y se ve enseguida si el texto se recorta arriba o abajo al
+                   cambiar la fuente o el tamaño.
                  El rótulo de arriba sólo identifica la zona; la invitación no se duplica. -->
             <Grid>
                 <TextBlock Text="Master"
@@ -83,7 +84,7 @@
                                           ValueChanged="Master_ValueChanged"
                                           ShowDetail="True"
                                           CaptionText="CaptionText (Interact here)"
-                                          DetailText="DetailText Ñ j |"
+                                          DetailText="DetailText (Vertical extremes: jÑ)"
                                           Minimum="0"
                                           Maximum="100"
                                           Value="50"
