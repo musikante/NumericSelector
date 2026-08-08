@@ -1,10 +1,10 @@
 namespace NumericSelector
 {
 	/// <summary>
-	/// Lado de la caja del valor respecto de la caja con la que comparte fila:
+	/// Lado (anclaje) de la caja del valor respecto de la caja con la que comparte fila:
 	/// la barra cuando vive abajo, o el título cuando sube a la fila superior.
 	/// </summary>
-	public enum ValueBoxSide
+	public enum ValueBoxDock
 	{
 		/// <summary>
 		/// La caja del valor queda a la derecha de su compañero de fila (predeterminado).

@@ -3,17 +3,28 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:NumericSelector;assembly=NumericSelector"
         xmlns:test="clr-namespace:NumericSelector.Demo"
-        Title="BoundedNumericSelector - Banco de pruebas"
+        Title="BoundedNumericSelector - Demonstration &amp; Test Environment"
         Height="820"
-        Width="1280"
+        Width="880"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
         <test:ThicknessToIntConverter x:Key="ThickToInt"/>
         <test:BrushToColorConverter x:Key="BrushToColor"/>
-        <test:PropertyIndexToNameConverter x:Key="PropertyIndexToName"/>
         <test:ColorIndexConverter x:Key="ColorIndex"/>
+        <test:MouseBehaviorIndexConverter x:Key="MouseBehaviorIndex"/>
+        <test:MouseBehaviorTextConverter x:Key="MouseBehaviorText"/>
+        <test:InteractionModeIndexConverter x:Key="InteractionModeIndex"/>
+        <test:InteractionModeTextConverter x:Key="InteractionModeText"/>
+        <test:ValueBoxDockIndexConverter x:Key="ValueBoxDockIndex"/>
+        <test:ValueBoxDockTextConverter x:Key="ValueBoxDockText"/>
+        <test:ValueFollowsDetailIndexConverter x:Key="ValueFollowsDetailIndex"/>
+        <test:ValueFollowsDetailTextConverter x:Key="ValueFollowsDetailText"/>
+        <test:ShowDetailIndexConverter x:Key="ShowDetailIndex"/>
+        <test:ShowDetailTextConverter x:Key="ShowDetailText"/>
         <test:FontIndexConverter x:Key="FontIndex"/>
+        <test:FontStyleIndexConverter x:Key="FontStyleIndex"/>
+        <test:FontWeightIndexConverter x:Key="FontWeightIndex"/>
 
         <!-- Paleta para los selectores de color -->
         <x:Array x:Key="Paleta" Type="{x:Type SolidColorBrush}">
@@ -61,14 +72,11 @@
             <Setter Property="Margin" Value="0,12,0,6"/>
             <Setter Property="Foreground" Value="#FF20507A"/>
         </Style>
-        <!-- Los selectores auxiliares: de una sola línea y de ancho uniforme -->
+        <!-- Los selectores auxiliares: de una sola línea y de un ancho base uniforme.
+             BaseWidth es un piso desde el que crecen para acomodar su texto; si el
+             contenedor no les da ese hueco, la leyenda se trunca con elipsis. -->
         <Style TargetType="{x:Type local:BoundedNumericSelector}" x:Key="Auxiliar">
-            <Setter Property="Width" Value="240"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
-            <Setter Property="Margin" Value="0,0,0,4"/>
-        </Style>
-        <Style TargetType="ComboBox" x:Key="Combo">
-            <Setter Property="Width" Value="240"/>
+            <Setter Property="BaseWidth" Value="240"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
@@ -81,75 +89,45 @@
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="150"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ============ EL SUJETO DE PRUEBA ============ -->
-        <TextBlock Grid.Row="0"
-                   Text="MasterNumericSelector"
-                   FontSize="16" FontWeight="Bold"
-                   Margin="0,0,0,8"/>
-
-<!-- ============ GESTOS (40%) + MASTER (60%) ============ -->
-        <Grid Grid.Row="1" Margin="0,0,0,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="35*"/>
-                <ColumnDefinition Width="65*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- === Gestos a probar sobre el Master (izquierda) === -->
-            <Border Grid.Column="0" Margin="0,0,8,0"
-                    Background="#FFF0F0F0" BorderBrush="LightGray" BorderThickness="1" Padding="8">
-                <StackPanel>
-                    <TextBlock Text="Gestos a probar sobre el Master" FontWeight="Bold" Margin="0,0,0,4"
-                               Foreground="#FF20507A"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="#FF444444" FontSize="11">
-                        · Click y arrastre sobre la barra: fija el valor por posición.<LineBreak/>
-                        · Botón derecho: 30% izq = mínimo · 50% centro = ResetValue · 50% der = máximo.<LineBreak/>
-                        · Rueda del mouse: ±SmallChange, solo con el foco puesto (si no, scrollea el panel).<LineBreak/>
-                        · Doble-click en el número: reset. Arrastre vertical sobre el número: ±SmallChange.<LineBreak/>
-                        · Teclado: ←/↓/− y →/↑/+ suman y restan SmallChange; RePág/AvPág = ±LargeChange; Inicio = mínimo; Fin = máximo; Supr/Insert = ResetValue.
-                    </TextBlock>
-                </StackPanel>
-            </Border>
-
-            <!-- === El sujeto de prueba (derecha) === -->
-            <Border Grid.Column="1"
-                    BorderBrush="#FFBFD4E6" BorderThickness="1"
-                    Background="#FFF6FAFD"
-                    Padding="5">
-                <local:BoundedNumericSelector x:Name="MasterNumericSelector"
-                                       ValueChanged="Master_ValueChanged"
-                                       ShowDetail="True"
-                                       CaptionText="Caption Text Ñ j |"
-                                       DetailText="Detail Text Ñ j |"
-                                       Minimum="0"
-                                       Maximum="100"
-                                       Value="50"
-                                       ResetValue="50"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-            </Border>
-        </Grid>
+        <!-- ============ EL SUJETO DE PRUEBA (Master) ============ -->
+        <Border Grid.Row="0" Margin="0,0,0,12"
+                BorderBrush="#FFBFD4E6" BorderThickness="1"
+                Background="#FFF6FAFD"
+                Padding="5">
+            <local:BoundedNumericSelector x:Name="MasterNumericSelector"
+                                          ValueChanged="Master_ValueChanged"
+                                          ShowDetail="True"
+                                          CaptionText="CaptionText (Interact here)"
+                                          DetailText="Detail Text Ñ j |"
+                                          Minimum="0"
+                                          Maximum="100"
+                                          Value="50"
+                                          ResetValue="50"
+                                          BorderWidth="2"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+        </Border>
 
         <!-- ============ CONTROLES DE PRUEBA ============ -->
         <!-- Va en un ScrollViewer: además de acomodar todo, sirve para probar que la
              rueda del mouse sobre un selector sin foco NO se come el scroll. -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="280"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- === Columna A: Rango y valor + Textos === -->
                 <StackPanel Grid.Column="0" Margin="0,0,20,0">
 
-                    <TextBlock Text="Value &amp; range" Style="{StaticResource Seccion}"/>
+                    <TextBlock Text="Value &amp; range" Style="{StaticResource Seccion}" Margin="0,6,0,6"/>
 
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="Value"
                         Minimum="{Binding Minimum, ElementName=MasterNumericSelector}"
@@ -189,100 +167,167 @@
 
                     <TextBlock Text="Disposition" Style="{StaticResource Seccion}"/>
 
-                    <CheckBox Content="ShowDetail  (Displays an additional row)" Margin="0,0,0,6"
-                              IsChecked="{Binding ShowDetail, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
-                    <CheckBox Content="ValueFollowsDetail  (Uncheck to keep with Caption)" Margin="0,0,0,6"
-                              IsChecked="{Binding ValueFollowsDetail, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
-                    <TextBlock Text="ValueBoxSide  (Sets the Value position)" Style="{StaticResource Etiqueta}"/>
-                    <ComboBox Style="{StaticResource Combo}" SelectedValuePath="Content"
-                              SelectedValue="{Binding ValueBoxSide, ElementName=MasterNumericSelector, Mode=TwoWay}">
-                        <ComboBoxItem Content="{x:Static local:ValueBoxSide.Right}"/>
-                        <ComboBoxItem Content="{x:Static local:ValueBoxSide.Left}"/>
-                    </ComboBox>
+                    <!-- El ShowDetail con un selector numérico (0 = false: oculta la fila de
+                         detalle, 1 = true: la muestra), dos vías con el Master. -->
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  CaptionText="ShowDetail"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ShowDetailText}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="1"
+                                                  Value="{Binding ShowDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ShowDetailIndex}}"/>
+
+                    <!-- El ValueFollowsDetail con un selector numérico (0 = false: mantener
+                         el valor junto al Caption, 1 = true: el valor sigue al detalle),
+                         dos vías con el Master. -->
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  CaptionText="ValueFollowsDetail"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueFollowsDetailText}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="1"
+                                                  Value="{Binding ValueFollowsDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ValueFollowsDetailIndex}}"/>
+
+                    <!-- El ValueBoxDock con un selector numérico (0 = Left, 1 = Right),
+                         dos vías con el Master; el default del control es Right. -->
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  CaptionText="ValueBoxDock"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueBoxDockText}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="1"
+                                                  Value="{Binding ValueBoxDock, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ValueBoxDockIndex}}"/>
+
+                    <!-- El BaseWidth, debajo de ValueBoxDock (misma sección Disposition). -->
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="BaseWidth"
+                                                  ShowDetail="True"
+                                                  DetailText="Control Minimum Width"
+                                                  Minimum="30" Maximum="800"
+                                                  Value="{Binding BaseWidth, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
                 </StackPanel>
 
                 <!-- === Columna B: Interacción === -->
                 <StackPanel Grid.Column="1" Margin="0,0,20,0">
 
-                    <TextBlock Text="ControlBorderPixels" Style="{StaticResource Etiqueta}"/>
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="Borde (px)"
+                    <!-- === Evento ValueChanged === -->
+                    <Border Width="240" Margin="0,0,0,8"
+                            HorizontalAlignment="Left"
+                            Background="#FFF0F0F0" BorderBrush="LightGray" BorderThickness="1"
+                            Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="ValueChanged Events:" FontWeight="Bold" Margin="0,0,0,4"/>
+                            <TextBlock x:Name="EventLog" Text="(No changes yet)" FontFamily="Consolas" FontSize="11"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="Border properties" Style="{StaticResource Seccion}" Margin="0,6,0,6"/>
+
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="BorderWidth"
+                        ShowDetail="True"
+                        DetailText="Thickness of All Borders"
                         Minimum="0" Maximum="8"
-                        Value="{Binding ControlBorderPixels, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ThickToInt}}"/>
+                        Value="{Binding BorderWidth, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ThickToInt}}"/>
 
-                    <TextBlock Text="StretchMode  (AutoGrow: crece para que entre el texto y no vuelve a achicarse)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
-                    <ComboBox Style="{StaticResource Combo}" SelectedValuePath="Content"
-                              SelectedValue="{Binding StretchMode, ElementName=MasterNumericSelector, Mode=TwoWay}">
-                        <ComboBoxItem Content="{x:Static local:StretchMode.Fixed}"/>
-                        <ComboBoxItem Content="{x:Static local:StretchMode.AutoGrow}"/>
-                    </ComboBox>
+                    <local:BoundedNumericSelector x:Name="BorderColorPicker"
+                                                  Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  CaptionText="BorderColor"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="23" Value="0"
+                                                  ValueChanged="BorderColor_ValueChanged"/>
 
-                    <TextBlock Text="Width  (al tocarlo se fija un ancho local: eso anula AutoGrow)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="Width"
-                        Minimum="30" Maximum="800"
-                        Value="{Binding Width, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
+                    <local:BoundedNumericSelector x:Name="FocusBorderColorPicker"
+                                                  Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  CaptionText="FocusBorderColor"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="23" Value="20"
+                                                  ValueChanged="FocusBorderColor_ValueChanged"/>
 
-                    <TextBlock Text="Interacción" Style="{StaticResource Seccion}"/>
+                    <TextBlock Text="Interaction properties" Style="{StaticResource Seccion}"/>
 
-                    <TextBlock Text="ValueChangeMode  (MustFocusFirst: hay que darle el foco primero; el click que enfoca no cambia el valor)" Style="{StaticResource Etiqueta}" TextWrapping="Wrap"/>
-                    <ComboBox Style="{StaticResource Combo}" SelectedValuePath="Content"
-                              SelectedValue="{Binding ValueChangeMode, ElementName=MasterNumericSelector, Mode=TwoWay}">
-                        <ComboBoxItem Content="{x:Static local:ValueChangeMode.ChangeOnClick}"/>
-                        <ComboBoxItem Content="{x:Static local:ValueChangeMode.MustFocusFirst}"/>
-                    </ComboBox>
+                    <!-- El MouseBehavior con un selector numérico (0 = ChangeOnClick,
+                         1 = MustFocusFirst), dos vías con el Master. -->
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  CaptionText="MouseBehavior"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource MouseBehaviorText}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="1"
+                                                  Value="{Binding MouseBehavior, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource MouseBehaviorIndex}}"/>
 
-                    <CheckBox Content="IsReadOnly  (sólo visualización)" Margin="0,0,0,6"
-                              IsChecked="{Binding IsReadOnly, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
-                    <TextBlock Text="· Conserva el aspecto, pero no responde al mouse ni al teclado y no toma el foco.&#10;· Los cursores pasan a Arrow.&#10;· Seguí moviendo el Value de acá arriba: por código sí cambia."
-                               Style="{StaticResource Etiqueta}" TextWrapping="Wrap"
-                               Foreground="#FF444444" FontSize="11"/>
+                    <!-- El InteractionMode con un selector numérico (0 = Interactive,
+                         1 = ReadOnly), dos vías con el Master. En ReadOnly el control
+                         conserva el aspecto pero no responde a mouse ni teclado. -->
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  CaptionText="InteractionMode"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource InteractionModeText}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="1"
+                                                  Value="{Binding InteractionMode, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource InteractionModeIndex}}"/>
                 </StackPanel>
 
                 <!-- === Columna C: Colores + Fuente + Gestos === -->
                 <StackPanel Grid.Column="2">
 
-                    <TextBlock Text="Color properties" Style="{StaticResource Seccion}"/>
+                    <TextBlock Text="Bar properties" Style="{StaticResource Seccion}" Margin="0,6,0,6"/>
 
-                    <!-- Selector de la propiedad a colorear: elige un índice 0..5 que la
-                         próxima utilidad usará como llave para saber qué propiedad del Master
-                         pintar. La leyenda muestra el nombre mapeado (solo visual, por ahora). -->
-                    <local:BoundedNumericSelector x:Name="PropertyPicker"
+                    <!-- Seis selectores de color, uno por cada propiedad que el control
+                         maneja como brush. Cada uno engancha su Value (0..23) al color de la
+                         paleta y, al cambiar, aplica ese color a su propiedad sobre el Master
+                         y sobre sí mismo para que el cambio se aprecie en el control que lo
+                         produce. El CaptionText de cada uno dice a qué propiedad está ligado. -->
+                    <local:BoundedNumericSelector x:Name="BarFillColorPicker"
                                                   Style="{StaticResource Auxiliar}"
                                                   ShowDetail="True"
-                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource PropertyIndexToName}, Mode=OneWay}"
-                                                  CaptionText="Select a property to assign a color"
-                                                  Minimum="0" Maximum="5" Value="0"/>
-
-                    <local:BoundedNumericSelector x:Name="ColorPicker"
-                                                  Style="{StaticResource Auxiliar}"
-                                                  ShowDetail="True"
+                                                  CaptionText="BarFillColor"
                                                   DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
-                                                  CaptionText="Select a color for the selected property"
-Minimum="0" Maximum="23" Value="21"
-                                                   ValueChanged="ColorPicker_ValueChanged"/>
+                                                  Minimum="0" Maximum="23" Value="9"
+                                                  ValueChanged="BarFillColor_ValueChanged"/>
 
-                    <TextBlock Text="Fonts" Style="{StaticResource Seccion}"/>
+                    <local:BoundedNumericSelector x:Name="BarDividerColorPicker"
+                                                  Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  CaptionText="BarDividerColor"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="23" Value="0"
+                                                  ValueChanged="BarDividerColor_ValueChanged"/>
+
+                    <TextBlock Text="Color properties" Style="{StaticResource Seccion}" Margin="0,6,0,6"/>
+
+                    <local:BoundedNumericSelector x:Name="ForegroundPicker"
+                                                  Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  CaptionText="Foreground"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="23" Value="0"
+                                                  ValueChanged="Foreground_ValueChanged"/>
+
+                    <local:BoundedNumericSelector x:Name="BackgroundPicker"
+                                                  Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  CaptionText="Background"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ColorIndex}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="23" Value="23"
+                                                  ValueChanged="Background_ValueChanged"/>
+
+                    <TextBlock Text="Font properties" Style="{StaticResource Seccion}"/>
 
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="FontSize"
                         Minimum="8" Maximum="40"
                         Value="{Binding FontSize, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
-                    <TextBlock Text="FontStyle" Style="{StaticResource Etiqueta}"/>
-                    <ComboBox Style="{StaticResource Combo}" SelectedValuePath="Content"
-                              SelectedValue="{Binding FontStyle, ElementName=MasterNumericSelector, Mode=TwoWay}">
-                        <ComboBoxItem Content="{x:Static FontStyles.Normal}"/>
-                        <ComboBoxItem Content="{x:Static FontStyles.Italic}"/>
-                        <ComboBoxItem Content="{x:Static FontStyles.Oblique}"/>
-                    </ComboBox>
+                    <local:BoundedNumericSelector x:Name="FontStylePicker"
+                                                  Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource FontStyleIndex}, Mode=OneWay}"
+                                                  CaptionText="FontStyle"
+                                                  Minimum="0" Maximum="2"
+                                                  ValueChanged="FontStylePicker_ValueChanged"/>
 
-                    <TextBlock Text="FontWeight" Style="{StaticResource Etiqueta}"/>
-                    <ComboBox Style="{StaticResource Combo}" SelectedValuePath="Content"
-                              SelectedValue="{Binding FontWeight, ElementName=MasterNumericSelector, Mode=TwoWay}">
-                        <ComboBoxItem Content="{x:Static FontWeights.Light}"/>
-                        <ComboBoxItem Content="{x:Static FontWeights.Normal}"/>
-                        <ComboBoxItem Content="{x:Static FontWeights.SemiBold}"/>
-                        <ComboBoxItem Content="{x:Static FontWeights.Bold}"/>
-                        <ComboBoxItem Content="{x:Static FontWeights.Black}"/>
-                    </ComboBox>
+                    <local:BoundedNumericSelector x:Name="FontWeightPicker"
+                                                  Style="{StaticResource Auxiliar}"
+                                                  ShowDetail="True"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource FontWeightIndex}, Mode=OneWay}"
+                                                  CaptionText="FontWeight"
+                                                  Minimum="0" Maximum="4"
+                                                  ValueChanged="FontWeightPicker_ValueChanged"/>
 
                     <!-- Al final porque la altura del selector cambia con la fuente y empuja
                          lo que hubiera debajo. -->
@@ -297,15 +342,5 @@ Minimum="0" Maximum="23" Value="21"
                 </StackPanel>
             </Grid>
         </ScrollViewer>
-
-        <!-- ============ EVENTO ValueChanged ============ -->
-        <Border Grid.Row="3"
-                Background="#FFF0F0F0" BorderBrush="LightGray" BorderThickness="1"
-                Padding="10">
-            <StackPanel>
-                <TextBlock Text="Evento ValueChanged" FontWeight="Bold" Margin="0,0,0,4"/>
-                <TextBlock x:Name="EventLog" Text="(sin cambios todavía)" FontFamily="Consolas" FontSize="11"/>
-            </StackPanel>
-        </Border>
     </Grid>
 </Window>

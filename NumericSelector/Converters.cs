@@ -31,7 +31,7 @@ namespace NumericSelector
 	///   • La costura horizontal entre filas la dibuja SIEMPRE el borde inferior de la
 	///     barra, que además hace de borde inferior del control cuando no hay detalle.
 	///   • La caja del valor cede siempre el lado que mira a su compañero de fila (el
-	///     opuesto a ValueBoxSide); ese filo lo dibuja el vecino fijo.
+	///     opuesto a ValueBoxDock); ese filo lo dibuja el vecino fijo.
 	/// </remarks>
 	public sealed class ValueBorderResolver : IMultiValueConverter
 	{
@@ -44,7 +44,7 @@ namespace NumericSelector
 
 		/// <summary>
 		/// Función pura de la matriz: dado el grosor base por lado y la (ShowDetail,
-		/// ValueFollowsDetail, ValueBoxSide) devuelve el <see cref="Thickness"/> que toca a la
+		/// ValueFollowsDetail, ValueBoxDock) devuelve el <see cref="Thickness"/> que toca a la
 		/// celda indicada por <paramref name="cell"/>.
 		/// </summary>
 		/// <remarks>
@@ -52,7 +52,7 @@ namespace NumericSelector
 		/// del control. El conversor no hace más que despachar sus argumentos acá.
 		/// </remarks>
 		public static Thickness Resolve(
-			Thickness pixels, bool showDetail, bool followsDetail, ValueBoxSide side, string cell)
+			Thickness pixels, bool showDetail, bool followsDetail, ValueBoxDock side, string cell)
 		{
 			// "down": el valor desciende a la fila de detalle (que debe estar visible).
 			bool down = showDetail && followsDetail;
@@ -69,7 +69,7 @@ namespace NumericSelector
 				// (el de ValueBoxPosition) a su vecino fijo, y el superior cuando desciende
 				// al detalle, porque la costura horizontal la dibuja la barra que está
 				// arriba.
-					bool left = side == ValueBoxSide.Left;
+					bool left = side == ValueBoxDock.Left;
 					return new Thickness(
 						left ? pixels.Left : 0,
 						down ? 0 : pixels.Top,
@@ -87,7 +87,7 @@ namespace NumericSelector
 			var pixels = values.Length > 0 && values[0] is Thickness t ? t : new Thickness(0);
 			bool showDetail = values.Length > 1 && values[1] is bool sd && sd;
 			bool followsDetail = values.Length > 2 && values[2] is bool fd && fd;
-			var side = values.Length > 3 && values[3] is ValueBoxSide s ? s : ValueBoxSide.Right;
+			var side = values.Length > 3 && values[3] is ValueBoxDock s ? s : ValueBoxDock.Right;
 
 			return Resolve(pixels, showDetail, followsDetail, side, parameter as string ?? "");
 		}

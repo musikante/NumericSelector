@@ -3,7 +3,7 @@ namespace NumericSelector
 	/// <summary>
 	/// Qué hace falta para que los gestos de mouse cambien el valor.
 	/// </summary>
-	public enum ValueChangeMode
+	public enum MouseInteractionBehavior
 	{
 		/// <summary>
 		/// Los gestos de mouse actúan siempre, tenga el control el foco o no. Es el
@@ -20,6 +20,8 @@ namespace NumericSelector
 		/// click derecho por zonas, doble-click de reset y arrastre vertical sobre el número.
 		/// (La rueda ya exigía foco en los dos modos.)
 		/// </summary>
-		MustFocusFirst
+		MustFocusFirst,
+
+		// Futuros: ChangeOnHover, ChangeOnDoubleClick, etc.
 	}
 }

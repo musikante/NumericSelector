@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace NumericSelector.Tests;
 
 /// <summary>
-/// Pruebas de los dos modos de interacción: ValueChangeMode e IsReadOnly.
+/// Pruebas de los dos modos de interacción: MouseBehavior e InteractionMode.
 /// A diferencia de las de lógica pura, éstas necesitan una ventana real: los gestos
 /// llegan por eventos ruteados y el foco no existe fuera del árbol visual.
 /// </summary>
@@ -98,7 +98,7 @@ public class InteractionModeTests
 		return (esperado, distinto);
 	}
 
-	// --- ValueChangeMode ---
+	// --- MouseBehavior ---
 
 	[TestMethod]
 	public void Interaction_defaults_leave_the_control_fully_responsive()
@@ -107,8 +107,8 @@ public class InteractionModeTests
 		{
 			var selector = new BoundedNumericSelector();
 
-			Assert.AreEqual(ValueChangeMode.ChangeOnClick, selector.ValueChangeMode);
-			Assert.IsFalse(selector.IsReadOnly);
+			Assert.AreEqual(MouseInteractionBehavior.ChangeOnClick, selector.MouseBehavior);
+			Assert.AreEqual(UserInteractionMode.Interactive, selector.InteractionMode);
 		});
 	}
 
@@ -138,7 +138,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => s.ValueChangeMode = ValueChangeMode.MustFocusFirst);
+			var e = Host(s => s.MouseBehavior = MouseInteractionBehavior.MustFocusFirst);
 			try
 			{
 				var (esperado, distinto) = Sondear(e, ClickIzquierdo);
@@ -163,7 +163,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => s.ValueChangeMode = ValueChangeMode.MustFocusFirst);
+			var e = Host(s => s.MouseBehavior = MouseInteractionBehavior.MustFocusFirst);
 			try
 			{
 				var (esperado, distinto) = Sondear(e, ClickIzquierdo);
@@ -187,7 +187,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => s.ValueChangeMode = ValueChangeMode.MustFocusFirst);
+			var e = Host(s => s.MouseBehavior = MouseInteractionBehavior.MustFocusFirst);
 			try
 			{
 				var (esperado, distinto) = Sondear(e, ClickDerecho);
@@ -205,7 +205,7 @@ public class InteractionModeTests
 		});
 	}
 
-	// --- IsReadOnly ---
+	// --- InteractionMode ---
 
 	[TestMethod]
 	public void Read_only_takes_the_control_out_of_the_tab_order_and_gives_it_back()
@@ -215,10 +215,10 @@ public class InteractionModeTests
 			var selector = new BoundedNumericSelector();
 			Assert.IsTrue(selector.Focusable);
 
-			selector.IsReadOnly = true;
+			selector.InteractionMode = UserInteractionMode.ReadOnly;
 			Assert.IsFalse(selector.Focusable, "En sólo visualización el control no debe poder enfocarse.");
 
-			selector.IsReadOnly = false;
+			selector.InteractionMode = UserInteractionMode.Interactive;
 			Assert.IsTrue(selector.Focusable, "Al salir del modo, la focusabilidad tiene que volver sola.");
 		});
 	}
@@ -232,8 +232,8 @@ public class InteractionModeTests
 			// no pisar la decisión de quien usa el control.
 			var selector = new BoundedNumericSelector { Focusable = false };
 
-			selector.IsReadOnly = true;
-			selector.IsReadOnly = false;
+			selector.InteractionMode = UserInteractionMode.ReadOnly;
+			selector.InteractionMode = UserInteractionMode.Interactive;
 
 			Assert.IsFalse(selector.Focusable,
 				"Salir del modo no debe encender la focusabilidad que el consumidor había apagado.");
@@ -251,7 +251,7 @@ public class InteractionModeTests
 				e.Selector.Focus();
 				Assert.IsTrue(e.Selector.IsKeyboardFocused);
 
-				e.Selector.IsReadOnly = true;
+				e.Selector.InteractionMode = UserInteractionMode.ReadOnly;
 
 				// Quitar Focusable no suelta por sí solo un foco ya puesto: si esto se rompe,
 				// el control queda con el borde de foco encendido y la rueda viva.
@@ -274,7 +274,7 @@ public class InteractionModeTests
 				// un gesto que funciona, para poder afirmar que después no produce ninguno.
 				var (esperado, distinto) = Sondear(e, ClickIzquierdo);
 
-				e.Selector.IsReadOnly = true;
+				e.Selector.InteractionMode = UserInteractionMode.ReadOnly;
 				e.Selector.Value = distinto;
 
 				ClickIzquierdo(e.Bar);
@@ -336,12 +336,12 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => { s.ShowDetail = true; s.ControlBorderPixels = new Thickness(2); });
+			var e = Host(s => { s.ShowDetail = true; s.BorderWidth = new Thickness(2); });
 			try
 			{
 				Assert.AreEqual(Visibility.Visible,
 					((FrameworkElement)e.Selector.Template.FindName("PART_DetailRow", e.Selector)).Visibility);
-				Assert.AreEqual(e.Selector.ControlBorderColor, CeldaDetalle(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.BorderColor, CeldaDetalle(e.Selector).BorderBrush);
 
 				// Con el default de ValueFollowsDetail (true) el valor desciende: el detalle
 				// es marco fijo (Left,Right,Bottom) y sólo cede la parte superior a la costura
@@ -409,7 +409,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var e = Host(s => s.ControlBorderPixels = new Thickness(2));
+			var e = Host(s => s.BorderWidth = new Thickness(2));
 			try
 			{
 				Assert.AreEqual(new Thickness(0, 2, 2, 2), CajaDeAbajo(e.Selector).BorderThickness,
@@ -428,8 +428,8 @@ public class InteractionModeTests
 		{
 			var e = Host(s =>
 			{
-				s.ControlBorderPixels = new Thickness(2);
-				s.ValueBoxSide = ValueBoxSide.Left;
+				s.BorderWidth = new Thickness(2);
+				s.ValueBoxDock = ValueBoxDock.Left;
 			});
 			try
 			{
@@ -463,7 +463,7 @@ public class InteractionModeTests
 		{
 			var e = Host(s =>
 			{
-				s.ControlBorderPixels = new Thickness(2);
+				s.BorderWidth = new Thickness(2);
 				s.ShowDetail = true;
 				s.ValueFollowsDetail = true;
 			});
@@ -505,7 +505,7 @@ public class InteractionModeTests
 			var e = Host();
 			try
 			{
-				Assert.AreEqual(e.Selector.ControlBorderColor, CajaDeAbajo(e.Selector).BorderBrush);
+				Assert.AreEqual(e.Selector.BorderColor, CajaDeAbajo(e.Selector).BorderBrush);
 
 				e.Selector.Focus();
 
@@ -524,7 +524,7 @@ public class InteractionModeTests
 		{
 			var e = Host(s =>
 			{
-				s.ControlBorderPixels = new Thickness(2);
+				s.BorderWidth = new Thickness(2);
 				s.ShowDetail = true;
 				s.ValueFollowsDetail = false;
 			});
@@ -625,7 +625,7 @@ public class InteractionModeTests
 	{
 		StaTest.Run(() =>
 		{
-			var selector = new BoundedNumericSelector { IsReadOnly = true };
+			var selector = new BoundedNumericSelector { InteractionMode = UserInteractionMode.ReadOnly };
 			var cambios = new List<(int OldValue, int NewValue)>();
 			selector.ValueChanged += (_, args) => cambios.Add((args.OldValue, args.NewValue));
 

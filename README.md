@@ -54,11 +54,11 @@ private void Selector_ValueChanged(
 
 ## Galería de disposiciones
 
-La vista previa representa la aplicación de demostración incluida. La posición del casillero del valor se decide con tres propiedades independientes (`ShowDetail`, `ValueFollowsDetail` y `ValueBoxSide`):
+La vista previa representa la aplicación de demostración incluida. La posición del casillero del valor se decide con tres propiedades independientes (`ShowDetail`, `ValueFollowsDetail` y `ValueBoxDock`):
 
 - **Sin detalle** (`ShowDetail=false`, predeterminado): sólo la fila de la barra, con la leyenda sobre el relleno y el casillero del valor junto a la barra, a la derecha por defecto.
 - **Detalle con el número arriba** (`ShowDetail=true`, `ValueFollowsDetail=false`): la barra y el casillero arriba, la etiqueta del detalle ocupando todo el ancho en la fila inferior.
-- **Número junto al detalle** (`ShowDetail=true`, `ValueFollowsDetail=true`): el casillero baja a la línea del detalle y la barra queda sola; la caja va a la derecha o izquierda del detalle según `ValueBoxSide`.
+- **Número junto al detalle** (`ShowDetail=true`, `ValueFollowsDetail=true`): el casillero baja a la línea del detalle y la barra queda sola; la caja va a la derecha o izquierda del detalle según `ValueBoxDock`.
 
 ## Interacción
 
@@ -111,24 +111,31 @@ Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control iner
 | `DetailText` | `string` | `DefaultDetail` | Texto de la fila de detalle inferior. |
 | `ShowDetail` | `bool` | `false` | Muestra la fila de detalle enmarcada. |
 | `ValueFollowsDetail` | `bool` | `true` | Con `ShowDetail`, baja el casillero del valor junto al detalle; con `false`, queda junto a la barra. |
-| `ValueBoxSide` | `enum` | `Right` | Lado del casillero del valor (`Right` o `Left`) respecto de su compañero de fila. |
-| `StretchMode` | `enum` | `Fixed` | Estrategia de ancho. |
-| `ControlBorderPixels` | `Thickness` | `1` | Grosor de los marcos. El lado `Top` es además el grosor de la línea que separa la barra de la fila de detalle. |
+| `ValueBoxDock` | `enum` | `Right` | Lado del casillero del valor (`Right` o `Left`) respecto de su compañero de fila. |
+| `BorderWidth` | `Thickness` | `1` | Grosor de los marcos. El lado `Top` es además el grosor de la línea que separa la barra de la fila de detalle. |
+| `BaseWidth` | `double` | `NaN` | Ancho base desde el que el control crece para acomodar su contenido. `NaN` = automático. |
 
-`StretchMode.Fixed` mantiene el `Width` disponible y aplica elipsis a los textos que no entran. `StretchMode.AutoGrow` puede ampliar el control para acomodar el contenido y no vuelve a achicarlo automáticamente.
+### Crecimiento (BaseWidth) y encaje en contenedor angosto
+
+`BaseWidth` es el **ancho base** desde el que el control crece, y a la vez un **piso** que se conserva si hay espacio. No es un ancho fijo ni un constraint duro como el `Width`/`MinWidth` de WPF: el control pide `max(BaseWidth, contenido)` pero **nunca más ancho que el hueco que le da el contenedor**. De ese modo:
+
+- **Hay espacio** → el control crece para mostrar todo y mantiene al menos `BaseWidth` (el equivalente del viejo AutoGrow).
+- **El contenedor es angosto** → el control se queda dentro de lo disponible y sus bordes no se recortan; si el texto no cabe, la leyenda y el detalle se truncan con elipsis (`CharacterEllipsis`) en vez de desbordarse.
+
+El número del casillero del valor queda siempre reservado por el **medidor oculto** de la plantilla (ver "Garantía de legibilidad"): puede escalearse con el ancho, pero nunca se pide de más que el hueco disponible.
 
 ### Interacción y apariencia
 
 | Propiedad | Tipo | Predeterminado | Descripción |
 | --- | --- | --- | --- |
-| `ValueChangeMode` | `enum` | `ChangeOnClick` | Decide si el mouse actúa de inmediato o exige foco previo. |
-| `IsReadOnly` | `bool` | `false` | Bloquea mouse, teclado y tabulación sin cambiar la apariencia. |
-| `ControlBorderColor` | `Brush` | `Black` | Marcos sin foco. |
+| `MouseBehavior` | `MouseInteractionBehavior` | `ChangeOnClick` | Decide si el mouse actúa de inmediato o exige foco previo. |
+| `InteractionMode` | `UserInteractionMode` | `Interactive` | `ReadOnly` conserva el aspecto pero bloquea mouse, teclado y tabulación. |
+| `BorderColor` | `Brush` | `Black` | Marcos sin foco. |
 | `FocusBorderColor` | `Brush` | `DodgerBlue` | Marcos con foco. |
 | `BarFillColor` | `Brush` | `Orange` | Relleno proporcional de la barra. |
-| `BarBorderColor` | `Brush` | `Black` | Contorno del relleno. |
+| `BarDividerColor` | `Brush` | `Black` | Trazo que separa la porción rellena de la vacía. |
 
-`ValueChangeMode.MustFocusFirst` hace que el primer click que obtiene el foco no modifique el valor; los gestos posteriores sí. `IsReadOnly` bloquea al usuario, no al programa: asignar `Value` desde código sigue actualizando el control y disparando `ValueChanged`.
+`MouseInteractionBehavior.MustFocusFirst` hace que el primer click que obtiene el foco no modifique el valor; los gestos posteriores sí. `InteractionMode = UserInteractionMode.ReadOnly` bloquea al usuario, no al programa: asignar `Value` desde código sigue actualizando el control y disparando `ValueChanged`.
 
 El control se dibuja como **cuatro celdas independientes** —barra y caja del valor arriba, etiqueta del detalle y caja del detalle abajo—, cada una con su marco. **Cuáles** lados dibuja cada una lo resuelve una única matriz de costuras (`ValueBorderResolver`), con una regla única: *la barra y el detalle son el marco fijo, y la caja del valor cede el lado que mira a su compañero de fila*. Así ningún filo se dibuja dos veces. La costura horizontal entre filas la dibuja siempre el borde superior de la fila de detalle, que además hace de borde superior de la fila de la barra.
 
@@ -136,15 +143,15 @@ Cada una de las tres propiedades de disposición hace algo en todo momento, sin 
 
 - `ShowDetail` decide si existe la fila de detalle.
 - `ValueFollowsDetail` decide, sólo cuando hay detalle, si el casillero baja a esa fila (`true`) o se queda junto a la barra (`false`).
-- `ValueBoxSide` decide a qué lado del compañero de fila cae el casillero: del detalle si bajó, de la barra si no.
+- `ValueBoxDock` decide a qué lado del compañero de fila cae el casillero: del detalle si bajó, de la barra si no.
 
 No hay dependencias entre propiedades: cualquier combinación es válida y produce un dibujo cerrado.
 
-`IsEnabled = false` (heredado de `UIElement`) también deja el control fuera del alcance del usuario, y a diferencia de `IsReadOnly` altera la apariencia según el tema. Si el control tenía el foco al deshabilitarse, lo suelta.
+`IsEnabled = false` (heredado de `UIElement`) también deja el control fuera del alcance del usuario, y a diferencia de `InteractionMode = UserInteractionMode.ReadOnly` altera la apariencia según el tema. Si el control tenía el foco al deshabilitarse, lo suelta.
 
 ## Garantía de legibilidad
 
-El control calcula un `MinWidth` a partir del mayor número que el rango puede producir. La medición tiene en cuenta fuente, grosor del borde y `Language`, por lo que los formatos `1.000` (`es-AR`) y `1,000` (`en-US`) reservan el espacio correcto. La leyenda puede truncarse; el número no.
+El ancho del casillero del valor queda reservado por el **medidor oculto** de la plantilla (un `TextBlock` con el `Minimum` y otro con el `Maximum`, ocultos pero que ocupan sitio): WPF toma el máximo de los tres y la celda nunca se medirá más angosta que el número más largo que el rango puede producir. La medición respeta fuente, grosor del borde y `Language`, por lo que los formatos `1.000` (`es-AR`) y `1,000` (`en-US`) reservan el espacio correcto. La leyenda puede truncarse; el número no. Ya no se escribe ningún `Width`/`MinWidth` en runtime: el crecimiento sale de la medición natural y el encaje angosto, de la cota a lo disponible.
 
 ## Aplicación de demostración
 
@@ -163,10 +170,10 @@ dotnet build .\NumericSelector.slnx --configuration Release
 ## Roadmap
 
 - [x] Control horizontal con rango entero, teclado, mouse y rueda.
-- [x] Disposición configurable (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxSide`), `AutoGrow` y sólo visualización.
+- [x] Disposición configurable (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxDock`), crecimiento por `BaseWidth` (piso) y sólo visualización.
 - [x] Demo interactivo de las propiedades públicas.
 - [x] Pruebas automatizadas para defaults, coerciones de rango, pasos, disposición y eventos.
-- [ ] Ampliar las pruebas a cultura, foco, gestos de mouse y `AutoGrow`.
+- [ ] Ampliar las pruebas a cultura, foco, gestos de mouse y crecimiento.
 - [ ] Contrato de plantilla documentado con `TemplatePart` para facilitar estilos alternativos.
 - [ ] Validación explícita de valores inválidos en las enumeraciones públicas.
 - [ ] Orientación vertical.
@@ -177,7 +184,7 @@ dotnet build .\NumericSelector.slnx --configuration Release
 
 - Sólo admite orientación horizontal.
 - El dominio es intencionalmente entero: no hay soporte para decimales.
-- El ancho predeterminado del estilo es `300`.
+- El `BaseWidth` predeterminado del estilo es `300` (ancho base/piso desde el que crece).
 - El `FocusVisualStyle` predeterminado se desactiva; el indicador de foco es el borde.
 
 ## Desarrollo y contribuciones

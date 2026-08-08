@@ -4,8 +4,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Threading;
 
 namespace NumericSelector
 {
@@ -22,13 +20,6 @@ namespace NumericSelector
 		private TextBlock? _valueText;
 		private UIElement? _valueDetail;
 		private Point _valueDragStart;
-		// Width que tenía antes de entrar en AutoGrow, para restituirlo al volver a Fixed.
-		// No hace falta marca de agua aparte: en AutoGrow el propio Width la cumple, porque
-		// sólo se le asignan valores mayores (igual que en el LNSlider de VB6).
-		private double _widthBeforeGrow = double.NaN;
-		// Ancho pedido por MeasureOverride y todavía no aplicado (ver RequestGrowTo).
-		private double _pendingGrow = double.NaN;
-
 		// Fraccion del ancho de la barra que ocupa cada zona lateral del click derecho
 		// (izquierda -> Minimum, derecha -> Maximum). El centro restante -> ResetValue.
 		private const double RightClickEdgeZone = 0.3;
@@ -38,11 +29,6 @@ namespace NumericSelector
 		// partes (fase burbuja) el Focus() de esa misma pulsacion YA se aplico y consultar
 		// IsKeyboardFocused ahi daria siempre true: verificado, la guarda no filtraria nada.
 		private bool _hadFocusOnPress;
-
-		// Contexto de medición de texto: la tipografía "global" del control (parte),
-		// armada una sola vez por cambio de fuente/idioma y reutilizada en todas las
-		// mediciones. El DPI no se guarda acá: se obtiene por tanda, en vivo.
-		private TextMeasureContext? _measureContext;
 
 		// --- Constructor de Instancia ---
 		public BoundedNumericSelector()
@@ -56,10 +42,6 @@ namespace NumericSelector
 			// quien lo use puede pisarlo asignando Language en la instancia.
 			SetCurrentValue(LanguageProperty,
 				XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag));
-
-			// Contexto de medición y piso inicial, acordes a la fuente y el rango por defecto.
-			RebuildMeasureContext();
-			UpdateMinimumRequiredWidth();
 		}
 
 		// --- Ciclo de Vida y Manejo de Plantilla ---
@@ -144,97 +126,15 @@ namespace NumericSelector
 			}
 		}
 
-		// --- Ancho mínimo: el que necesita el valor ---
-
-		// Padding horizontal del casillero del valor en la plantilla (4 + 4).
-		private const double ValueBoxPadding = 8;
-
-		// El valor es lo único irrenunciable del control: la leyenda puede recortarse con
-		// elipsis y la barra puede achicarse, pero un número cortado es un dato ilegible.
-		// Por eso el piso del ancho sale del número más largo del rango.
-		// Se calcula acá y NO en MeasureOverride: mutar propiedades de layout durante la
-		// medición es la trampa que ya nos costó varias rondas.
-		// La cultura de formato es la de Language, no la del sistema operativo: son
-		// independientes (Language puede pisarse por instancia) y lo que mide el piso tiene
-		// que coincidir con lo que el binding con StringFormat termina mostrando.
-		private CultureInfo FormatCulture => ((XmlLanguage)GetValue(LanguageProperty)).GetSpecificCulture();
-
-		private void UpdateMinimumRequiredWidth()
-		{
-			string min = Minimum.ToString("N0", FormatCulture);
-			string max = Maximum.ToString("N0", FormatCulture);
-
-			// El DPI se lee una sola vez por tanda de recálculo y se comparte entre todas
-			// las mediciones de la tanda: cada monitor puede tener el suyo y no conviene
-			// guardarlo, pero medir dos textos seguidos en la misma pasada con escalas
-			// distintas no tiene sentido.
-			double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-
-			// Alcanza con los dos extremos: entre los negativos el más ancho es el más
-			// negativo (Minimum) y entre los positivos el más grande (Maximum), porque la
-			// cantidad de dígitos crece con el valor absoluto y el signo es constante.
-			// Verificado además de forma empírica sobre rangos con cambio de signo y cruces
-			// de separador de miles.
-			double texto = Math.Max(
-				TextMeasure.Measure(_measureContext!, dpi, min).Width,
-				TextMeasure.Measure(_measureContext!, dpi, max).Width);
-
-			// +1 de tolerancia, en el espíritu del LNSlider: que sobre no molesta, que falte
-			// corta el número. FormattedText y TextBlock pueden diferir por fracciones.
-			// El último sumando es el trazo que separa la barra del casillero. Sólo se dibuja
-			// cuando el casillero está junto a la barra, pero el piso se calcula igual para
-			// todas las disposiciones: reservar de más no molesta —la barra absorbe la
-			// diferencia— y así el piso no depende de la disposición ni hay que recalcularlo
-			// al cambiarla.
-			double piso = Math.Ceiling(texto) + 1 + ValueBoxPadding
-						+ ControlBorderPixels.Left + ControlBorderPixels.Right
-						+ ControlBorderPixels.Left;
-
-			SetCurrentValue(MinWidthProperty, piso);
-		}
-
-		// Arma el contexto de medición con la tipografía "global" del control y la cultura
-		// de formato. Se reconstruye sólo cuando cambia alguno de esos insumos (ver
-		// OnPropertyChanged): el Typeface es la parte cara de la medición y por eso se
-		// amortiza, mientras que el DPI se pasa por tanda sin cachear.
-		private void RebuildMeasureContext()
-		{
-			_measureContext = new TextMeasureContext(
-				new Typeface(FontFamily, FontStyle, FontWeight, FontStretch),
-				FontSize,
-				FormatCulture,
-				FlowDirection);
-		}
-
-		// Recalcula el piso ante todo lo que cambie el ancho del número: el rango y la fuente.
+		// Reacciona a los cambios de estado que exigen redibujar cursores o soltar el foco.
+		// El ancho del control NO se recalcula acá: el piso y el crecimiento los resuelve
+		// la medición natural del contenido en MeasureOverride (el sizer oculto del casillero
+		// ya reserva el ancho del número más largo, y BaseWidth define el ancho base).
 		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
 
-			// La tipografía y la cultura que miden los textos viven en el contexto: se
-			// reconstruye sólo cuando cambian esos insumos. El DPI no: se obtiene por tanda.
-			if (e.Property == FontSizeProperty || e.Property == FontFamilyProperty ||
-				e.Property == FontStyleProperty || e.Property == FontWeightProperty ||
-				e.Property == FontStretchProperty ||
-				// La cultura (de Language) y la dirección entran en la medición del texto.
-				e.Property == LanguageProperty || e.Property == FlowDirectionProperty)
-			{
-				RebuildMeasureContext();
-			}
-
-			if (e.Property == MinimumProperty || e.Property == MaximumProperty ||
-				e.Property == ControlBorderPixelsProperty ||
-				e.Property == FontSizeProperty || e.Property == FontFamilyProperty ||
-				e.Property == FontStyleProperty || e.Property == FontWeightProperty ||
-				e.Property == FontStretchProperty ||
-				// La cultura cambia el separador de miles y el signo negativo, y la
-				// dirección de escritura entra en la medición del texto.
-				e.Property == LanguageProperty || e.Property == FlowDirectionProperty)
-			{
-				UpdateMinimumRequiredWidth();
-			}
-
-			if (e.Property == IsReadOnlyProperty || e.Property == ValueChangeModeProperty)
+			if (e.Property == InteractionModeProperty || e.Property == MouseBehaviorProperty)
 			{
 				UpdateCursors();
 			}
@@ -248,57 +148,60 @@ namespace NumericSelector
 			}
 		}
 
-		// --- Medición ---
+// --- Medición ---
 
-		// AutoGrow, calcado del LNSlider (VB6): en vez de negociar con el sistema de layout,
-		// se calcula el ancho que el contenido necesita y se asigna Width directamente, sólo
-		// si hace falta más que el actual ('Only Width stretching is allowed').
-		//   CalcWidth = TitleWidth + ValueWidth
-		//   If CalcWidth > UserControl.Width Then UserControl.Width = CalcWidth
-		// El propio Width hace de marca de agua, porque nunca se le asigna un valor menor.
+// margen de seguridad ("yapa") sobre el ancho medido de los textos. El redondeo de
+		// WPF sobre los glifos (UseLayoutRounding + las mediciones fraccionarias de
+		// FormattedText) hace que el ancho "natural" que reporta la plantilla no alcance por
+		// un pelín al ancho que el render pide en unos pocos píxeles: el resultado es el
+		// Caption/Detail con CharacterEllipsis a un tamaño de fuente y sin ella un peldaño
+		// más arriba, aunque el control tenga hueco de sobra. Si el control crece desde
+		// BaseWidth o del contenido, pedirle algunos píxeles extra al layout (que sólo se
+		// conceden cuando el contenedor tiene espacio) aleja el texto del límite de la
+		// elipsis. Cuando el hueco es escaso el clamp de abajo sigue recortando igual.
+		private const double MeasureSlack = 3.0;
+
+		// El control crece desde BaseWidth (o desde el ancho natural del contenido si es NaN)
+		// para acomodar su texto, pero NUNCA pide más ancho que el hueco que le da el panel:
+		// así su marco (los bordes) no se sale del contenedor y no se recorta. Si el texto no
+		// cabe en ese hueco, la CharacterEllipsis de la leyenda entra a tallar. BaseWidth no
+		// es un constraint duro de WPF (no fuerza el tamaño, sólo es un piso).
 		protected override Size MeasureOverride(Size constraint)
 		{
-			if (StretchMode != StretchMode.AutoGrow)
-				return base.MeasureOverride(constraint);
-
-			// Ancho que el contenido necesita. Se mide con ancho infinito a propósito: la
-			// barra vive en una columna '*', que ante un ancho finito se estira a todo lo
+			// Ancho natural del contenido. Se mide con ancho infinito a propósito: la barra
+			// vive en una columna '*', que ante un ancho finito se estiraría a todo lo
 			// disponible y daría como "necesario" el ancho del contenedor entero. Con ancho
 			// infinito las columnas '*' se comportan como Auto.
 			Size natural = base.MeasureOverride(new Size(double.PositiveInfinity, constraint.Height));
 
-			// La DECISIÓN de crecer se toma con el ancho natural pelado; la holgura se suma
-			// sólo al destino. Si la holgura entrara en la comparación, un contenido que ya
-			// mide casi lo mismo que el control pediría crecer indefinidamente, de a 2px por
-			// pasada (fue exactamente el lazo que hizo que el control tapara la pantalla).
-			double bare = Math.Ceiling(natural.Width);
+			// El ancho natural redondeado hacia arriba, más la yapa: así el largo que se
+			// reserva siempre alcanza para el texto medido por el render, y un cambio
+			// de un píxel en la medición no decide solo.
+			double reserved = Math.Ceiling(natural.Width) + MeasureSlack;
 
-			if (double.IsNaN(Width) || bare > Width)
-				RequestGrowTo(bare + 2);
+			// Piso = BaseWidth si el consumidor lo fijó; el crecimiento nunca reduce el
+			// contenido, así que también vale el ancho natural si es más grande.
+			double width = Math.Max(
+				double.IsNaN(BaseWidth) ? 0 : BaseWidth,
+				reserved);
 
-			return base.MeasureOverride(constraint);
-		}
-
-		// El ancho NO se puede asignar desde adentro de MeasureOverride: WPF descarta la
-		// invalidación que provoca (el elemento ya se está midiendo), así que el control
-		// quedaba medido con el ancho viejo — crecía un carácter y se congelaba, con Width
-		// diciendo un número y ActualWidth otro. Por eso se difiere a después del layout.
-		private void RequestGrowTo(double width)
-		{
-			// Si ya hay pedido en curso por un ancho igual o mayor, no encolamos otro.
-			if (!double.IsNaN(_pendingGrow) && width <= _pendingGrow) return;
-			_pendingGrow = width;
-
-			Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
+			// No crecer más de lo que el contenedor ofrece: si hay hueco crece (desde el
+			// piso BaseWidth); si no, el marco queda a lo disponible y la leyenda se trunca
+			// con elipsis. Vacío o infinito en la restricción de ancho se deja pasar tal cual.
+			if (!double.IsPositiveInfinity(constraint.Width) && !double.IsNaN(constraint.Width)
+				&& width > constraint.Width)
 			{
-				double w = _pendingGrow;
-				_pendingGrow = double.NaN;
+				width = constraint.Width;
+			}
 
-				// Siempre un número concreto: asignar NaN rompería la conversión de un
-				// binding que el consumidor tuviera sobre Width.
-				if (StretchMode == StretchMode.AutoGrow && (double.IsNaN(Width) || w > Width))
-					SetCurrentValue(WidthProperty, w);
-			}));
+			// Se vuelve a medir con el ancho definido por el piso para que la plantilla
+			// distribuya las columnas (la barra '*' llena y la leyenda trunca con elipsis si
+			// falta espacio), pero el DesiredSize devuelto es el MAYOR entre el piso pedido
+			// y lo que la plantilla midió: la columna '*' no reporta ancho en el DesiredSize
+			// del Grid, así que sin este máximo el piso de BaseWidth sería invisible para un
+			// StackPanel y el control se encogería a su contenido pese a tener hueco.
+			Size measured = base.MeasureOverride(new Size(width, constraint.Height));
+			return new Size(Math.Max(width, measured.Width), Math.Max(measured.Height, natural.Height));
 		}
 
 		// --- Manejo de Eventos de Interfaz de Usuario (de instancia) ---
@@ -313,7 +216,7 @@ namespace NumericSelector
 			// linea y cierra el caso de un foco que llegue por algun otro camino.
 			// El modo MustFocusFirst NO entra aca: es una regla de mouse. Si el control
 			// tiene el foco para recibir la tecla, el requisito ya esta cumplido.
-			if (IsReadOnly || !IsEnabled)
+			if (InteractionMode == UserInteractionMode.ReadOnly || !IsEnabled)
 				return;
 
 			switch (e.Key)
@@ -490,8 +393,8 @@ namespace NumericSelector
 			base.OnMouseWheel(e);
 
 			// La rueda ya exigia foco en los dos modos, asi que MustFocusFirst no le agrega
-			// nada. IsReadOnly si: sin el, un foco heredado la dejaria viva.
-			if (IsReadOnly || !IsKeyboardFocused)
+			// nada. InteractionMode=ReadOnly si: sin él, un foco heredado la dejaria viva.
+			if (InteractionMode == UserInteractionMode.ReadOnly || !IsKeyboardFocused)
 				return;
 
 			int before = Value;
@@ -509,7 +412,7 @@ namespace NumericSelector
 			// ya estaba puesto ANTES de esta pulsacion (ver _hadFocusOnPress).
 			_hadFocusOnPress = IsKeyboardFocused;
 
-			if (IsReadOnly)
+			if (InteractionMode == UserInteractionMode.ReadOnly)
 				return;
 
 			Focus();
@@ -530,8 +433,8 @@ namespace NumericSelector
 		}
 
 		// Soltar el foco de teclado si el control lo tiene puesto.
-		// Ni quitar Focusable (IsReadOnly) ni IsEnabled=false lo sueltan por su cuenta:
-		// verificado en los dos casos, IsKeyboardFocused seguía en true. Y mientras el
+		// Ni quitar Focusable (InteractionMode.ReadOnly) ni IsEnabled=false lo sueltan por
+		// su cuenta: verificado en los dos casos, IsKeyboardFocused seguía en true. Y mientras el
 		// control lo conserve el teclado le SIGUE llegando, porque las teclas se rutean al
 		// elemento enfocado y no al que está bajo el puntero: medido, una flecha movía el
 		// valor de un control deshabilitado. Además el marco de foco queda encendido, que
@@ -554,15 +457,15 @@ namespace NumericSelector
 		// --- Cursores ---
 
 		// El cursor dice la verdad sobre si el gesto va a hacer algo:
-		//   IsReadOnly                -> Arrow (gana sobre todo lo demas)
-		//   MustFocusFirst y sin foco    -> Arrow (el proximo click solo va a enfocar)
-		//   resto                        -> el cursor del gesto
+		//   InteractionMode.ReadOnly        -> Arrow (gana sobre todo lo demas)
+		//   MustFocusFirst y sin foco      -> Arrow (el proximo click solo va a enfocar)
+		//   resto                           -> el cursor del gesto
 		// En ChangeOnClick NO depende del foco: ahi el gesto funciona igual sin el, y
 		// mostrar Arrow seria mentir.
 		private void UpdateCursors()
 		{
-			bool gestures = !IsReadOnly &&
-				(ValueChangeMode == ValueChangeMode.ChangeOnClick || IsKeyboardFocused);
+			bool gestures = InteractionMode != UserInteractionMode.ReadOnly &&
+				(MouseBehavior == MouseInteractionBehavior.ChangeOnClick || IsKeyboardFocused);
 
 			// Arrastre horizontal sobre la barra.
 			if (_barGrid != null)
@@ -589,8 +492,8 @@ namespace NumericSelector
 		// Quitar Focusable NO alcanza para frenar el mouse: verificado, los handlers de las
 		// partes siguen corriendo igual y el valor cambiaba.
 		private bool MouseGesturesAllowed =>
-			!IsReadOnly &&
-			(ValueChangeMode == ValueChangeMode.ChangeOnClick || _hadFocusOnPress);
+			InteractionMode != UserInteractionMode.ReadOnly &&
+			(MouseBehavior == MouseInteractionBehavior.ChangeOnClick || _hadFocusOnPress);
 
 		// Actualiza el tamaño del rectangulo de relleno para que represente
 		// la proporcion del valor actual dentro del rango [Minimum, Maximum].

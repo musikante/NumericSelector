@@ -45,7 +45,7 @@ dotnet test .\NumericSelector.Tests\NumericSelector.Tests.csproj
 | `BoundedNumericSelector.Dependencies.cs` | Propiedades de dependencia, coerciones, evento ValueChanged |
 | `Themes/Generic.xaml` | Plantilla por defecto (estilo, triggers, partes) |
 | `Converters.cs` | `ValueBorderResolver` (matriz de costuras) y `TextMeasureContext`/`TextMeasure` (medición de texto): funciones puras |
-| `ValueBoxSide.cs`, `StretchMode.cs`, `ValueChangeMode.cs` | Enums de la API pública |
+| `ValueBoxDock.cs`, `MouseInteractionBehavior.cs` | Enums de la API pública |
 
 ### Modelo de celdas
 
@@ -53,7 +53,7 @@ El control son **cuatro celdas hermanas** con marco propio:
 - Etiqueta del título (arriba, izquierda)
 - Caja del valor (arriba junto al título, o al lado de la barra)
 - Barra (abajo, izquierda)
-- Caja del valor (abajo, derecha — o izquierda con `ValueBoxSide=Left`)
+- Caja del valor (abajo, derecha — o izquierda con `ValueBoxDock=Left`)
 
 **Regla única**: la barra y el detalle son el marco fijo (la barra lleva sus cuatro lados, el detalle cede el superior) y la caja del valor cede el lado que mira a su compañero de fila. Ningún filo se dibuja dos veces. El reparto concreto lo calcula `ValueBorderResolver.Resolve`, una función pura con la matriz de costuras completa (ver su `Converters.cs`).
 
@@ -78,27 +78,29 @@ Las coerciones son silenciosas y mutuamente restrictivas:
 | `Value` | Acotado a `[Minimum, Maximum]` |
 | `ResetValue` | Acotado a `[Minimum, Maximum]` |
 | `SmallChange`, `LargeChange` | Entre `1` y el ancho del rango |
-| `Focusable` | `false` cuando `IsReadOnly=true` (coerción, no asignación) |
+| `Focusable` | `false` cuando `InteractionMode=ReadOnly` (coerción, no asignación) |
 
 ### Cultura y formato
 
 - El control usa `Language` (no la cultura del sistema) para formatear números
 - Por defecto se asigna `CultureInfo.CurrentCulture.IetfLanguageTag`
-- El `MinWidth` se calcula a partir del número más largo del rango según la cultura
+- El ancho del casillero del valor se reserva con **medidores ocultos** en la plantilla (dos `TextBlock` con `Minimum` y `Maximum` en la misma celda que el valor); WPF toma el máximo y la celda nunca queda más angosta que el número más largo del rango, según la cultura
 
 ### Modos de interacción
 
-- `ValueChangeMode.ChangeOnClick` (default): el mouse actúa siempre
-- `ValueChangeMode.MustFocusFirst`: el mouse actúa solo con foco previo; el click que enfoca no cambia el valor
-- `IsReadOnly`: bloquea mouse, teclado y tabulación; conserva aspecto; cambios por código siguen funcionando
+- `MouseInteractionBehavior.ChangeOnClick` (default): el mouse actúa siempre
+- `MouseInteractionBehavior.MustFocusFirst`: el mouse actúa solo con foco previo; el click que enfoca no cambia el valor
+- `InteractionMode = ReadOnly`: bloquea mouse, teclado y tabulación; conserva aspecto; cambios por código siguen funcionando
 
 Teclado: `←`/`↓`/`-` y `→`/`↑`/`+` cambian o restan `SmallChange`; `PageUp`/`PageDown` de a `LargeChange`; `Home`/`End` a los extremos; `Delete`/`Insert` a `ResetValue`. Se manejan las teclas de la fila principal (`Key.OemPlus`/`OemMinus`) y las del teclado numérico (`Key.Add`/`Subtract`).
 
-### AutoGrow
+### Ancho: `BaseWidth` (piso) y encaje al contenedor
 
-- `StretchMode.AutoGrow` asigna `Width` directamente (no negocia con el layout)
-- El crecimiento se difiere con `Dispatcher.BeginInvoke(Render)` para evitar mutar el layout durante la medición
-- `Width` nunca se asigna en `NaN` (rompería bindings)
+- `BaseWidth` (`double`, default `NaN` = automático) es el ancho base desde el que el control crece; **no** es un constraint duro: se lee como piso en `MeasureOverride`, que pide `max(BaseWidth, contenido)` pero **nunca más ancho que el hueco disponible** (la CharacterEllipsis de la leyenda y el detalle trunca lo que no quepa)
+- El control **no escribe** `FrameworkElement.Width`/`MinWidth` en runtime: hacerlo obligaba al elemento a ese tamaño y desbordaba/recortaba los bordes en un contenedor angosto (era la causa del recorte del marco). El piso del número lo dan los medidores ocultos de la plantilla
+- El ancho natural sale de `base.MeasureOverride(new Size(infinito, alto))`; la barra vive en una columna `*`, que con ancho infinito se comporta como `Auto` (no se estira a todo el contenedor)
+- No hay `Viewbox` en la plantilla: escalaría la tipografía en vez de truncar con elipsis, que es el comportamiento pedido
+- El consumidor que quiera forzar un ancho mínimo usa `BaseWidth`, no `Width`/`MinWidth` (esos son duros y vuelven a recortar)
 
 ## Pruebas
 
@@ -116,14 +118,15 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 - Defaults, coerciones de rango, pasos, disposición, ValueChanged
 - Valor de la matriz de costuras (`ValueBorderResolver.Resolve`) en todas las configuraciones
 - Invariantes de medición de texto (`TextMeasure.Measure`): vacío, monotonía, tamaño de fuente, independencia del DPI, efecto de la cultura y pureza
-- Disposición (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxSide`) y trazo separador del valor
-- ValueChangeMode (ChangeOnClick, MustFocusFirst)
-- IsReadOnly (focusable, liberación de foco, bloqueo de input)
+- Disposición (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxDock`) y trazo separador del valor
+- Medición y `BaseWidth` (`MeasureAndBaseWidthTests.cs`): el ancho pedido nunca excede un hueco fijo y `BaseWidth` actúa como piso con espacio infinito
+- MouseBehavior (ChangeOnClick, MustFocusFirst)
+- InteractionMode (focusable, liberación de foco, bloqueo de input)
 - IsEnabled (liberación de foco, bloqueo de teclado)
 
 ### Pendiente (según roadmap)
 
-- Pruebas de cultura, foco, gestos de mouse y AutoGrow
+- Pruebas de cultura, foco, gestos de mouse y crecimiento
 
 ## Convenciones del proyecto
 

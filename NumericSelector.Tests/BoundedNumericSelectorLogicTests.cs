@@ -22,7 +22,7 @@ public class BoundedNumericSelectorLogicTests
 			// API de disposición tras el rediseño.
 			Assert.IsFalse(selector.ShowDetail);
 			Assert.IsTrue(selector.ValueFollowsDetail);
-			Assert.AreEqual(ValueBoxSide.Right, selector.ValueBoxSide);
+			Assert.AreEqual(ValueBoxDock.Right, selector.ValueBoxDock);
 		});
 	}
 

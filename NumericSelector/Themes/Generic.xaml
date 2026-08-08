@@ -25,7 +25,7 @@
                          sumando grosor y corriendo los filos.
                          QUÉ lados dibuja cada celda lo resuelve ValueBorderResolver (la
                          "matriz de costuras"): un MultiBinding que devuelve el Thickness por
-                         celda según ShowDetail, ValueFollowsCaption y ValueBoxSide, para que
+                         celda según ShowDetail, ValueFollowsCaption y ValueBoxDock, para que
                          ningún filo se dibuje dos veces. -->
                     <Grid x:Name="PART_MainGrid">
                         <Grid.RowDefinitions>
@@ -52,13 +52,13 @@
                                  Caption (el texto identificador permanente). -->
                             <Border x:Name="PART_BarCell" Grid.Column="0"
                                     Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding ControlBorderColor}">
+                                    BorderBrush="{TemplateBinding BorderColor}">
                                 <Border.BorderThickness>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Bar">
-                                        <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="BorderWidth" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueBoxDock" RelativeSource="{RelativeSource TemplatedParent}"/>
                                     </MultiBinding>
                                 </Border.BorderThickness>
                                 <Grid x:Name="PART_BarGrid"
@@ -73,7 +73,7 @@
                                     <Canvas ClipToBounds="True">
                                         <Border x:Name="PART_BarRect"
                                                 Background="{TemplateBinding BarFillColor}"
-                                                BorderBrush="{TemplateBinding BarBorderColor}"
+                                                BorderBrush="{TemplateBinding BarDividerColor}"
                                                 BorderThickness="0,0,1,0"
                                                 Width="0"/>
                                     </Canvas>
@@ -103,13 +103,13 @@
                                  fila de detalle. -->
                             <Border x:Name="PART_ValueCell" Grid.Column="1"
                                     Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding ControlBorderColor}">
+                                    BorderBrush="{TemplateBinding BorderColor}">
                                 <Border.BorderThickness>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Value">
-                                        <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="BorderWidth" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueBoxDock" RelativeSource="{RelativeSource TemplatedParent}"/>
                                     </MultiBinding>
                                 </Border.BorderThickness>
                                 <Grid>
@@ -157,13 +157,13 @@
                                  de la barra). -->
                             <Border x:Name="PART_DetailCell" Grid.Column="0"
                                     Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding ControlBorderColor}">
+                                    BorderBrush="{TemplateBinding BorderColor}">
                                 <Border.BorderThickness>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Detail">
-                                        <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="BorderWidth" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueBoxDock" RelativeSource="{RelativeSource TemplatedParent}"/>
                                     </MultiBinding>
                                 </Border.BorderThickness>
                                 <TextBlock x:Name="PART_DetailText"
@@ -187,7 +187,7 @@
                                  suelto ni un hueco vacío. -->
                             <Border x:Name="PART_ValueDetailCell" Grid.Column="1"
                                     Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding ControlBorderColor}"
+                                    BorderBrush="{TemplateBinding BorderColor}"
                                     BorderThickness="0"
                                     Visibility="Collapsed">
                                 <Grid>
@@ -244,23 +244,23 @@
                             <Setter TargetName="PART_ValueDetailCell" Property="BorderThickness">
                                 <Setter.Value>
                                     <MultiBinding Converter="{StaticResource ValueBorder}" ConverterParameter="Value">
-                                        <Binding Path="ControlBorderPixels" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="BorderWidth" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ShowDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
                                         <Binding Path="ValueFollowsDetail" RelativeSource="{RelativeSource TemplatedParent}"/>
-                                        <Binding Path="ValueBoxSide" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ValueBoxDock" RelativeSource="{RelativeSource TemplatedParent}"/>
                                     </MultiBinding>
                                 </Setter.Value>
                             </Setter>
                             <Setter TargetName="PART_ValueCell" Property="BorderThickness" Value="0"/>
                         </MultiTrigger>
 
-                        <!-- ValueBoxSide=Left: la caja del valor va a la izquierda de su
+                        <!-- ValueBoxDock=Left: la caja del valor va a la izquierda de su
                              compañero de fila, tanto arriba (junto a la barra) como abajo
                              (junto al detalle). Se reordenan las celdas Y los anchos de
                              columna, porque la columna "*" tiene que seguir a la barra:
                              si sólo se movieran las celdas, la barra caería en la columna
                              "Auto" y se encogería a su contenido, despegándose del borde. -->
-                        <Trigger Property="ValueBoxSide" Value="Left">
+                        <Trigger Property="ValueBoxDock" Value="Left">
                             <Setter TargetName="PART_BarCell" Property="Grid.Column" Value="1"/>
                             <Setter TargetName="PART_ValueCell" Property="Grid.Column" Value="0"/>
                             <Setter TargetName="PART_DetailCell" Property="Grid.Column" Value="1"/>
@@ -280,20 +280,16 @@
                             <Setter TargetName="PART_ValueDetailCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                             <Setter TargetName="PART_DetailCell" Property="BorderBrush" Value="{Binding FocusBorderColor, RelativeSource={RelativeSource TemplatedParent}}"/>
                         </Trigger>
-
-                        <!-- En AutoGrow el control se ensancha para que el texto entre, así
-                             que recortarlo no tiene sentido. -->
-                        <Trigger Property="StretchMode" Value="AutoGrow">
-                            <Setter TargetName="PART_CaptionText" Property="TextTrimming" Value="None"/>
-                            <Setter TargetName="PART_DetailText" Property="TextTrimming" Value="None"/>
-                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
 
-        <Setter Property="Width" Value="300" />
+        <Setter Property="BaseWidth" Value="300" />
         <!-- Sin Height fijo: el control se auto-dimensiona a su contenido (compacto). -->
+        <!-- BaseWidth (no Width): es un piso desde el que crece, no un ancho duro. Si el
+             contenedor da menos, el control se queda dentro (bordes sin recorte) y la
+             leyenda trunca con elipsis. Width/MinWidth de WPF desbordarían en ese caso. -->
         <Setter Property="Focusable" Value="True" />
         <!-- Sin el recuadro punteado por defecto de WPF: el foco lo indica el borde. -->
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />

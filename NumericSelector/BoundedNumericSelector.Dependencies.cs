@@ -15,9 +15,9 @@ namespace NumericSelector
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(BoundedNumericSelector),
 				new FrameworkPropertyMetadata(typeof(BoundedNumericSelector)));
 
-			// En IsReadOnly el control no debe poder recibir el foco. Se hace por
-			// COERCIÓN y no asignando Focusable: así el valor de abajo (el del estilo, o el
-			// que haya puesto el consumidor) queda intacto y vuelve solo al salir del modo.
+			// En InteractionMode=ReadOnly el control no debe poder recibir el foco. Se hace
+			// por COERCIÓN y no asignando Focusable: así el valor de abajo (el del estilo, o
+			// el que haya puesto el consumidor) queda intacto y vuelve solo al salir del modo.
 			// Asignarlo obligaría a recordar a qué valor volver, y pisaría a quien tuviera
 			// sus propias razones para dejarlo en false.
 			FocusableProperty.OverrideMetadata(typeof(BoundedNumericSelector),
@@ -25,7 +25,7 @@ namespace NumericSelector
 		}
 
 		private static object CoerceFocusable(DependencyObject d, object baseValue) =>
-			((BoundedNumericSelector)d).IsReadOnly ? false : baseValue;
+			((BoundedNumericSelector)d).InteractionMode == UserInteractionMode.ReadOnly ? false : baseValue;
 
 		// --- Evento Ruteado ValueChanged ---
 		// Equivalente moderno del evento Change del control original en VB6.
@@ -57,6 +57,33 @@ namespace NumericSelector
 		// rango). Una propiedad que lo pisara sólo podría empeorarlo: si se quedaba corta,
 		// cortaba el número. El ocultamiento de la caja cuando el valor sube (VBUp) lo
 		// resuelven los triggers de Generic.xaml.
+
+		// Propiedad para el ANCHO BASE: el ancho desde el que el control crece para acomodar
+		// su contenido. NO es un constraint duro tipo WPF (Width/MinWidth): no fuerza el
+		// tamaño del elemento ni puede hacerlo desbordar. Se lee como piso en MeasureOverride:
+		// el control pide max(BaseWidth, contenido) pero nunca más ancho que el hueco que le
+		// da el panel, por lo que el marco (los bordes) jamás se recorta y la CharacterEllipsis
+		// de la leyenda hace el resto en el caso estrecho. NaN significa "automático": el piso
+		// es el ancho natural del contenido.
+		public static readonly DependencyProperty BaseWidthProperty =
+			DependencyProperty.Register(
+				nameof(BaseWidth),
+				typeof(double),
+				typeof(BoundedNumericSelector),
+				new FrameworkPropertyMetadata(double.NaN,
+					FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+		/// <summary>
+		/// Obtiene o establece el ancho base desde el que el control crece para acomodar su
+		/// contenido. No es un ancho fijo: el control crece hacia arriba cuanto le haga
+		/// falta y, si el contenedor no le da ese hueco, la leyenda se recorta con elipsis en
+		/// lugar de desbordar los bordes. NaN (por defecto) equivale a "automático".
+		/// </summary>
+		public double BaseWidth
+		{
+			get => (double)GetValue(BaseWidthProperty);
+			set => SetValue(BaseWidthProperty, value);
+		}
 
 		// Propiedad para la CAPTION: el texto identificador del control, que se dibuja sobre
 		// la barra y es el rótulo permanente (como la etiqueta de un ComboBox).
@@ -210,20 +237,20 @@ namespace NumericSelector
 		}
 
 		// Propiedad para el color del borde del control.
-		public static readonly DependencyProperty ControlBorderColorProperty =
+		public static readonly DependencyProperty BorderColorProperty =
 			DependencyProperty.Register(
-				nameof(ControlBorderColor),
+				nameof(BorderColor),
 				typeof(Brush),
 				typeof(BoundedNumericSelector),
 				new PropertyMetadata(Brushes.Black));
 
 		/// <summary>
-		/// Obtiene o establece el color del borde del control.
+		/// Obtiene o establece el color del borde del control (estado sin foco).
 		/// </summary>
-		public Brush ControlBorderColor
+		public Brush BorderColor
 		{
-			get => (Brush)GetValue(ControlBorderColorProperty);
-			set => SetValue(ControlBorderColorProperty, value);
+			get => (Brush)GetValue(BorderColorProperty);
+			set => SetValue(BorderColorProperty, value);
 		}
 
 		// Propiedad para el color del borde cuando el control tiene el foco.
@@ -244,21 +271,23 @@ namespace NumericSelector
 			set => SetValue(FocusBorderColorProperty, value);
 		}
 
-		// Propiedad para el grosor del borde del control en píxeles.
-		public static readonly DependencyProperty ControlBorderPixelsProperty =
+		// Propiedad para el grosor de los bordes del control (Thickness en DIPs).
+		// No se llama BorderThickness por `Control.BorderThickness` (WPF); "BorderWidth"
+		// evita la colisión y describe el ancho de los marcos.
+		public static readonly DependencyProperty BorderWidthProperty =
 			DependencyProperty.Register(
-				nameof(ControlBorderPixels),
+				nameof(BorderWidth),
 				typeof(Thickness), // Usar Thickness para el grosor del borde
 				typeof(BoundedNumericSelector),
 				new PropertyMetadata(new Thickness(1), OnLayoutPropertyChanged)); // Asociar callback para redibujar si cambia.
 
 		/// <summary>
-		/// Obtiene o establece el grosor del borde del control.
+		/// Obtiene o establece el grosor de los bordes del control.
 		/// </summary>
-		public Thickness ControlBorderPixels
+		public Thickness BorderWidth
 		{
-			get => (Thickness)GetValue(ControlBorderPixelsProperty);
-			set => SetValue(ControlBorderPixelsProperty, value);
+			get => (Thickness)GetValue(BorderWidthProperty);
+			set => SetValue(BorderWidthProperty, value);
 		}
 
 		// Propiedad para el color de relleno de la barra.
@@ -278,21 +307,23 @@ namespace NumericSelector
 			set => SetValue(BarFillColorProperty, value);
 		}
 
-		// Propiedad para el color del contorno de la barra.
-		public static readonly DependencyProperty BarBorderColorProperty =
+		// Propiedad para el color del divisor de la barra: el trazo vertical de 1px en el
+		// borde derecho del relleno, que separa visualmente la porción llena de la vacía.
+		public static readonly DependencyProperty BarDividerColorProperty =
 			DependencyProperty.Register(
-				nameof(BarBorderColor),
+				nameof(BarDividerColor),
 				typeof(Brush),
 				typeof(BoundedNumericSelector),
 				new PropertyMetadata(Brushes.Black));
 
 		/// <summary>
-		/// Obtiene o establece el color del contorno de la barra.
+		/// Obtiene o establece el color del divisor de la barra (el trazo que separa la
+		/// porción rellena de la vacía).
 		/// </summary>
-		public Brush BarBorderColor
+		public Brush BarDividerColor
 		{
-			get => (Brush)GetValue(BarBorderColorProperty);
-			set => SetValue(BarBorderColorProperty, value);
+			get => (Brush)GetValue(BarDividerColorProperty);
+			set => SetValue(BarDividerColorProperty, value);
 		}
 
 // Propiedad para decidir si existe la fila de detalle debajo de la barra.
@@ -337,88 +368,72 @@ namespace NumericSelector
 			set => SetValue(ValueFollowsDetailProperty, value);
 		}
 
-		// Propiedad para el lado de la caja del valor respecto de la caja con la que
-		// comparte fila (la barra abajo, o el título arriba).
-		public static readonly DependencyProperty ValueBoxSideProperty =
+		// Propiedad para el lado (anclaje) de la caja del valor respecto de la caja con la
+		// que comparte fila (la barra abajo, o el título arriba).
+		public static readonly DependencyProperty ValueBoxDockProperty =
 			DependencyProperty.Register(
-				nameof(ValueBoxSide),
-				typeof(ValueBoxSide),
+				nameof(ValueBoxDock),
+				typeof(ValueBoxDock),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata(ValueBoxSide.Right, OnLayoutPropertyChanged)); // clásico: valor a la derecha
+				new PropertyMetadata(ValueBoxDock.Right, OnLayoutPropertyChanged)); // clásico: valor a la derecha
 
 		/// <summary>
-		/// Obtiene o establece el lado de la caja del valor respecto de su compañero de fila:
-		/// a la derecha (predeterminado) o a la izquierda.
+		/// Obtiene o establece el lado (anclaje) de la caja del valor respecto de su
+		/// compañero de fila: a la derecha (predeterminado) o a la izquierda.
 		/// </summary>
-		public ValueBoxSide ValueBoxSide
+		public ValueBoxDock ValueBoxDock
 		{
-			get => (ValueBoxSide)GetValue(ValueBoxSideProperty);
-			set => SetValue(ValueBoxSideProperty, value);
-		}
-
-		// Propiedad para el comportamiento del ancho frente al contenido.
-		public static readonly DependencyProperty StretchModeProperty =
-			DependencyProperty.Register(
-				nameof(StretchMode),
-				typeof(StretchMode),
-				typeof(BoundedNumericSelector),
-				new PropertyMetadata(StretchMode.Fixed, OnStretchModeChanged));
-
-		/// <summary>
-		/// Obtiene o establece si el control mantiene un ancho fijo (y recorta el texto que
-		/// no entra) o si se ensancha para acomodar el contenido sin volver a achicarse.
-		/// </summary>
-		public StretchMode StretchMode
-		{
-			get => (StretchMode)GetValue(StretchModeProperty);
-			set => SetValue(StretchModeProperty, value);
+			get => (ValueBoxDock)GetValue(ValueBoxDockProperty);
+			set => SetValue(ValueBoxDockProperty, value);
 		}
 
 		// Propiedad para exigir (o no) el foco antes de que el mouse cambie el valor.
-		public static readonly DependencyProperty ValueChangeModeProperty =
+		public static readonly DependencyProperty MouseBehaviorProperty =
 			DependencyProperty.Register(
-				nameof(ValueChangeMode),
-				typeof(ValueChangeMode),
+				nameof(MouseBehavior),
+				typeof(MouseInteractionBehavior),
 				typeof(BoundedNumericSelector),
 				// Default ChangeOnClick: es el comportamiento que el control ya tenía.
-				new PropertyMetadata(ValueChangeMode.ChangeOnClick));
+				new PropertyMetadata(MouseInteractionBehavior.ChangeOnClick));
 
 		/// <summary>
 		/// Obtiene o establece si los gestos de mouse actúan siempre (ChangeOnClick) o si
 		/// exigen que el control tenga el foco (MustFocusFirst), en cuyo caso el click que
 		/// le da el foco sólo enfoca.
 		/// </summary>
-		public ValueChangeMode ValueChangeMode
+		public MouseInteractionBehavior MouseBehavior
 		{
-			get => (ValueChangeMode)GetValue(ValueChangeModeProperty);
-			set => SetValue(ValueChangeModeProperty, value);
+			get => (MouseInteractionBehavior)GetValue(MouseBehaviorProperty);
+			set => SetValue(MouseBehaviorProperty, value);
 		}
 
-		// Propiedad para el modo "sólo visualización".
-		public static readonly DependencyProperty IsReadOnlyProperty =
+		// Propiedad para el modo de interacción (interactivo o sólo visualización).
+		public static readonly DependencyProperty InteractionModeProperty =
 			DependencyProperty.Register(
-				nameof(IsReadOnly),
-				typeof(bool),
+				nameof(InteractionMode),
+				typeof(UserInteractionMode),
 				typeof(BoundedNumericSelector),
-				new PropertyMetadata(false, OnIsReadOnlyChanged));
+				new PropertyMetadata(UserInteractionMode.Interactive, OnInteractionModeChanged));
 
 		/// <summary>
-		/// Obtiene o establece el modo de sólo visualización: el control conserva todo su
-		/// aspecto y sigue reflejando los cambios que reciba por sus propiedades, pero no
-		/// responde al mouse ni al teclado y no puede recibir el foco.
+		/// Obtiene o establece el modo de interacción del control. Con
+		/// <see cref="UserInteractionMode.Interactive"/> (predeterminado) responde al mouse
+		/// y al teclado como siempre; con <see cref="UserInteractionMode.ReadOnly"/> conserva
+		/// todo su aspecto y sigue reflejando los cambios que reciba por sus propiedades,
+		/// pero no responde al mouse ni al teclado y no puede recibir el foco.
 		/// Se distingue de IsEnabled=false en que no altera la apariencia. Y de
 		/// TextBox.IsReadOnly (que sí deja enfocar) en que acá el control queda fuera del
 		/// recorrido de tabulación.
 		/// Bloquea al usuario, no al programa: asignar Value por código sigue funcionando
 		/// y sigue disparando ValueChanged.
 		/// </summary>
-		public bool IsReadOnly
+		public UserInteractionMode InteractionMode
 		{
-			get => (bool)GetValue(IsReadOnlyProperty);
-			set => SetValue(IsReadOnlyProperty, value);
+			get => (UserInteractionMode)GetValue(InteractionModeProperty);
+			set => SetValue(InteractionModeProperty, value);
 		}
 
-		private static void OnIsReadOnlyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		private static void OnInteractionModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			var selector = (BoundedNumericSelector)d;
 
@@ -428,7 +443,7 @@ namespace NumericSelector
 			// Focusable=false NO suelta el foco que ya estuviera puesto: verificado, el
 			// control quedaba con IsKeyboardFocused=true (borde de foco encendido y, peor,
 			// la rueda habilitada, porque la rueda mira justamente esa propiedad).
-			if (selector.IsReadOnly)
+			if (selector.InteractionMode == UserInteractionMode.ReadOnly)
 				selector.ReleaseKeyboardFocusIfHeld();
 		}
 
@@ -509,25 +524,6 @@ namespace NumericSelector
 			return step;
 		}
 
-		// El crecimiento lo hace MeasureOverride asignando Width. Acá sólo se recuerda el
-		// ancho previo para restituirlo al volver a Fixed (nunca se restituye NaN: escribir
-		// NaN rompería la conversión de un binding sobre Width).
-		private static void OnStretchModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (d is not BoundedNumericSelector selector) return;
-
-			if ((StretchMode)e.NewValue == StretchMode.AutoGrow)
-			{
-				selector._widthBeforeGrow = selector.Width;
-			}
-			else if (!double.IsNaN(selector._widthBeforeGrow))
-			{
-				selector.SetCurrentValue(WidthProperty, selector._widthBeforeGrow);
-			}
-
-			selector.InvalidateMeasure();
-		}
-
 		// Al cambiar Minimum hay que re-evaluar Maximum (que se apoya en él) y luego Value.
 		private static void OnMinimumChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
@@ -567,8 +563,8 @@ namespace NumericSelector
 			OnValueChangedHandler(Value);
 		}
 
-		// Los colores NO necesitan callback de redibujo: los tres (ControlBorderColor,
-		// BarFillColor y BarBorderColor) llegan a la plantilla por TemplateBinding, y cada
+		// Los colores NO necesitan callback de redibujo: los tres (BorderColor,
+		// BarFillColor y BarDividerColor) llegan a la plantilla por TemplateBinding, y cada
 		// elemento se repinta solo cuando su brocha cambia. El InvalidateVisual() que había
 		// acá forzaba el redibujo del control, que al ser lookless no dibuja nada propio
 		// (no sobrescribe OnRender): era trabajo sin destinatario.
