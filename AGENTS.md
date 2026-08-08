@@ -136,7 +136,8 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 
 ## Convenciones del proyecto
 
-- **Identificadores de código en inglés** (tipos, miembros, parámetros, variables locales y nombres de método de prueba), **comentarios y documentación en español**. Los dos idiomas conviven a propósito: el código lo lee cualquiera, la prosa la escribe el autor
+- **Todo en inglés**: identificadores, claves de recurso de XAML, comentarios, documentación y textos de la interfaz. Nada de código nuevo se escribe en español
+- Los identificadores, las claves de XAML y los textos que se ven en el demo **ya están migrados**. Los comentarios del código y los documentos `.md` todavía están en español y quedan por traducir: es deuda de una etapa anterior, no la convención
 - Nombres claros, comentarios solo donde expliquen una decisión no obvia
 - Formato consistente con el código existente
 - Una corrección/mejora por PR

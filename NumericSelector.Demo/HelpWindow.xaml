@@ -12,39 +12,39 @@
     <!-- Ventana de ayuda del demo (F1). Es texto plano a propósito: acá NO se usa el
          control, porque lo que se explica es justamente cómo y por qué se lo usa afuera. -->
     <Window.Resources>
-        <Style TargetType="TextBlock" x:Key="Titulo">
+        <Style TargetType="TextBlock" x:Key="Title">
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="#FF20507A"/>
             <Setter Property="Margin" Value="0,0,0,2"/>
         </Style>
-        <Style TargetType="TextBlock" x:Key="Bajada">
+        <Style TargetType="TextBlock" x:Key="Subtitle">
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="Foreground" Value="#FF5A6B7A"/>
             <Setter Property="Margin" Value="0,0,0,16"/>
         </Style>
-        <Style TargetType="TextBlock" x:Key="Seccion">
+        <Style TargetType="TextBlock" x:Key="Section">
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="#FF20507A"/>
             <Setter Property="Margin" Value="0,16,0,6"/>
         </Style>
-        <Style TargetType="TextBlock" x:Key="Parrafo">
+        <Style TargetType="TextBlock" x:Key="Paragraph">
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="Margin" Value="0,0,0,8"/>
             <Setter Property="LineHeight" Value="19"/>
         </Style>
         <!-- Celda izquierda de las tablas de gestos: el gesto. -->
-        <Style TargetType="TextBlock" x:Key="Gesto">
+        <Style TargetType="TextBlock" x:Key="Gesture">
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,0,14,5"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
         <!-- Celda derecha: qué hace. -->
-        <Style TargetType="TextBlock" x:Key="Efecto">
+        <Style TargetType="TextBlock" x:Key="Effect">
             <Setter Property="Margin" Value="0,0,0,5"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
-        <Style TargetType="Grid" x:Key="Tabla">
+        <Style TargetType="Grid" x:Key="Table">
             <Setter Property="Margin" Value="12,2,0,6"/>
         </Style>
     </Window.Resources>
@@ -65,30 +65,30 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,20,24,20">
             <StackPanel MaxWidth="640" HorizontalAlignment="Left">
 
-                <TextBlock Style="{StaticResource Titulo}"
+                <TextBlock Style="{StaticResource Title}"
                            Text="Dogfooding: a test bench built out of the control itself"/>
-                <TextBlock Style="{StaticResource Bajada}"
+                <TextBlock Style="{StaticResource Subtitle}"
                            Text="Every knob in this window is a BoundedNumericSelector driving another BoundedNumericSelector."/>
 
-                <TextBlock Style="{StaticResource Seccion}" Text="The Master"/>
-                <TextBlock Style="{StaticResource Parrafo}">
+                <TextBlock Style="{StaticResource Section}" Text="The Master"/>
+                <TextBlock Style="{StaticResource Paragraph}">
                     The control at the top is the subject under test. Everything below it changes one
                     of its properties, so you can watch the control react while you take it apart.
                 </TextBlock>
-                <TextBlock Style="{StaticResource Parrafo}">
+                <TextBlock Style="{StaticResource Paragraph}">
                     The colour and font pickers apply their change twice: to the Master and to
                     themselves. That way the effect shows up on the very control that produced it —
                     you can judge FocusBorderBrush, for instance, without having to move the focus to
                     the Master.
                 </TextBlock>
 
-                <TextBlock Style="{StaticResource Seccion}" Text="Why the control is used for everything"/>
-                <TextBlock Style="{StaticResource Parrafo}">
+                <TextBlock Style="{StaticResource Section}" Text="Why the control is used for everything"/>
+                <TextBlock Style="{StaticResource Paragraph}">
                     A CheckBox would do for the booleans and a ComboBox for the enumerations. Using
                     the selector instead is deliberate — the point is to show that a bounded integer
                     selector covers those jobs too:
                 </TextBlock>
-                <TextBlock Style="{StaticResource Parrafo}" Margin="12,0,0,8">
+                <TextBlock Style="{StaticResource Paragraph}" Margin="12,0,0,8">
                     <Run FontWeight="SemiBold">Two-state switch.</Run>
                     With Minimum = 0 and Maximum = 1 the bar is a toggle. ShowDetail and
                     ValueFollowsDetail work that way.
@@ -99,14 +99,14 @@
                     MouseBehavior, InteractionMode, the colour pickers and the font pickers all
                     behave like this — the font picker walks every font installed on this machine.
                 </TextBlock>
-                <TextBlock Style="{StaticResource Parrafo}">
+                <TextBlock Style="{StaticResource Paragraph}">
                     The three text boxes are the exception, and a necessary one: MainText and
                     DetailText hold strings, the font filter takes a string, and this control is
                     for numbers.
                 </TextBlock>
 
-                <TextBlock Style="{StaticResource Seccion}" Text="The font filter"/>
-                <TextBlock Style="{StaticResource Parrafo}">
+                <TextBlock Style="{StaticResource Section}" Text="The font filter"/>
+                <TextBlock Style="{StaticResource Paragraph}">
                     Type in it and the FontFamily picker below only walks the fonts whose name
                     contains what you typed. The filter is there for convenience, but it also puts
                     on stage the one thing nothing else in this bench does:
@@ -114,35 +114,35 @@
                     Every keystroke rewrites Maximum, and the control re-coerces Value, ResetValue,
                     SmallChange and LargeChange and repaints the bar by itself.
                 </TextBlock>
-                <TextBlock Style="{StaticResource Parrafo}">
+                <TextBlock Style="{StaticResource Paragraph}">
                     Narrow it down to one font, or to none, and you hit a real limit of the API
                     rather than a bug: the range is always at least one unit wide, so Maximum
                     cannot go below Minimum + 1. The extra index has no font behind it and the
                     detail row says so instead of hiding it.
                 </TextBlock>
 
-                <TextBlock Style="{StaticResource Seccion}" Text="How to read the labels"/>
-                <TextBlock Style="{StaticResource Parrafo}">
+                <TextBlock Style="{StaticResource Section}" Text="How to read the labels"/>
+                <TextBlock Style="{StaticResource Paragraph}">
                     Each selector carries in its MainText the exact name of the property it
                     drives, spelled the way you will type it in XAML or C#. Nothing is paraphrased,
                     so the names become familiar just by using the bench. Where a name needs a
                     gloss, the explanation goes in the detail row underneath, which is what
                     DetailText is for.
                 </TextBlock>
-                <TextBlock Style="{StaticResource Parrafo}">
+                <TextBlock Style="{StaticResource Paragraph}">
                     The <Run FontWeight="SemiBold">Value &amp; range</Run> group runs with
                     ShowDetail = false on purpose. Those names explain themselves, and it puts the
                     compact one-row form of the control next to the two-row form used everywhere
                     else, side by side in the same window.
                 </TextBlock>
-                <TextBlock Style="{StaticResource Parrafo}">
+                <TextBlock Style="{StaticResource Paragraph}">
                     The panel scrolls on purpose too: the wheel over a selector that does not have
                     the focus has to scroll this panel, not change that value. It is a test, not a
                     layout accident.
                 </TextBlock>
 
-                <TextBlock Style="{StaticResource Seccion}" Text="Mouse — on the bar"/>
-                <Grid Style="{StaticResource Tabla}">
+                <TextBlock Style="{StaticResource Section}" Text="Mouse — on the bar"/>
+                <Grid Style="{StaticResource Table}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -153,21 +153,21 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource Gesto}" Text="Click or drag"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource Efecto}"
+                    <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource Gesture}" Text="Click or drag"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource Effect}"
                                Text="Takes the value to the pointer position."/>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource Gesto}" Text="Right-click"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Efecto}"
+                    <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource Gesture}" Text="Right-click"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Effect}"
                                Text="By zones: left 30% → Minimum · centre 40% → ResetValue · right 30% → Maximum."/>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource Gesto}" Text="Wheel"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource Efecto}"
+                    <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource Gesture}" Text="Wheel"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource Effect}"
                                Text="± SmallChange, and only while the control has the focus. Without focus it scrolls the container."/>
                 </Grid>
 
-                <TextBlock Style="{StaticResource Seccion}" Text="Mouse — on the value box"/>
-                <Grid Style="{StaticResource Tabla}">
+                <TextBlock Style="{StaticResource Section}" Text="Mouse — on the value box"/>
+                <Grid Style="{StaticResource Table}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -177,17 +177,17 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource Gesto}" Text="Double-click"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource Efecto}"
+                    <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource Gesture}" Text="Double-click"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource Effect}"
                                Text="Back to ResetValue."/>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource Gesto}" Text="Vertical drag"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Efecto}"
+                    <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource Gesture}" Text="Vertical drag"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Effect}"
                                Text="± SmallChange; upwards increases."/>
                 </Grid>
 
-                <TextBlock Style="{StaticResource Seccion}" Text="Keyboard — the control must have the focus"/>
-                <Grid Style="{StaticResource Tabla}">
+                <TextBlock Style="{StaticResource Section}" Text="Keyboard — the control must have the focus"/>
+                <Grid Style="{StaticResource Table}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -200,27 +200,27 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource Gesto}" Text="← ↓ −"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource Efecto}" Text="− SmallChange"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource Gesture}" Text="← ↓ −"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource Effect}" Text="− SmallChange"/>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource Gesto}" Text="→ ↑ +"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Efecto}" Text="+ SmallChange"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource Gesture}" Text="→ ↑ +"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Effect}" Text="+ SmallChange"/>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource Gesto}" Text="Page Down / Page Up"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource Efecto}" Text="∓ LargeChange"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource Gesture}" Text="Page Down / Page Up"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource Effect}" Text="∓ LargeChange"/>
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource Gesto}" Text="Home / End"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource Efecto}" Text="Minimum / Maximum"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource Gesture}" Text="Home / End"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource Effect}" Text="Minimum / Maximum"/>
 
-                    <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource Gesto}" Text="Delete / Insert"/>
-                    <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource Efecto}" Text="ResetValue"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource Gesture}" Text="Delete / Insert"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource Effect}" Text="ResetValue"/>
                 </Grid>
-                <TextBlock Style="{StaticResource Parrafo}" Margin="12,4,0,8">
+                <TextBlock Style="{StaticResource Paragraph}" Margin="12,4,0,8">
                     The plus and minus keys work both on the main row and on the numeric keypad.
                 </TextBlock>
 
-                <TextBlock Style="{StaticResource Seccion}" Text="Two switches that change all of the above"/>
-                <TextBlock Style="{StaticResource Parrafo}">
+                <TextBlock Style="{StaticResource Section}" Text="Two switches that change all of the above"/>
+                <TextBlock Style="{StaticResource Paragraph}">
                     <Run FontWeight="SemiBold">MouseBehavior = MustFocusFirst</Run> makes every mouse
                     gesture wait for the focus: the click that focuses the control no longer changes
                     the value. <Run FontWeight="SemiBold">InteractionMode = ReadOnly</Run> blocks
