@@ -1,47 +1,47 @@
-# Contribuir a NumericSelector
+# Contributing to NumericSelector
 
-Gracias por querer mejorar NumericSelector. El proyecto está en desarrollo activo y las contribuciones que mantengan el control predecible, accesible y fácil de personalizar son bienvenidas.
+Thanks for wanting to improve NumericSelector. The project is under active development, and contributions that keep the control predictable, accessible and easy to customize are welcome.
 
-## Antes de empezar
+## Before you start
 
-- Revisá los issues abiertos y evitá duplicar trabajo.
-- Para cambios grandes de API, comportamiento o plantilla, abrí primero un issue de propuesta.
-- Mantené los cambios acotados: una corrección, una mejora o una decisión de diseño por pull request.
+- Check the open issues and avoid duplicating work.
+- For large changes to the API, the behavior or the template, open a proposal issue first.
+- Keep changes narrow: one fix, one improvement or one design decision per pull request.
 
-## Entorno de desarrollo
+## Development environment
 
-Se necesita Windows, el SDK indicado en `global.json` y soporte WPF.
+You need Windows, the SDK stated in `global.json` and WPF support.
 
 ```powershell
 dotnet build .\NumericSelector.slnx --configuration Release
 dotnet run --project .\NumericSelector.Demo\NumericSelector.Demo.csproj
 ```
 
-La aplicación `NumericSelector.Demo` es el banco de pruebas manual de la experiencia del control.
+The `NumericSelector.Demo` application is the manual test bench for the control's experience.
 
-## Criterios para un pull request
+## Criteria for a pull request
 
-- La solución debe compilar en `Release` sin advertencias nuevas.
-- Agregá o actualizá pruebas automatizadas cuando el cambio altere comportamiento verificable.
-- Probá manualmente los gestos afectados en el demo: mouse, rueda, teclado, foco y modo `InteractionMode = ReadOnly`.
-- Conservá la compatibilidad de binding y de las propiedades de dependencia salvo que el issue acuerde una ruptura de API.
-- Actualizá `README.md` y `CHANGELOG.md` si cambia la API pública, un gesto o un límite conocido.
-- Usá nombres claros, comentarios sólo donde expliquen una decisión no obvia y formato consistente con el código existente.
+- The solution must build in `Release` with no new warnings.
+- Add or update automated tests whenever the change alters verifiable behavior.
+- Manually try the affected gestures in the demo: mouse, wheel, keyboard, focus and `InteractionMode = ReadOnly`.
+- Preserve binding and dependency-property compatibility unless the issue agrees on an API break.
+- Update `README.md` and `CHANGELOG.md` if the public API, a gesture or a known limit changes.
+- Use clear names, comments only where they explain a non-obvious decision, and formatting consistent with the existing code.
 
-## Áreas especialmente sensibles
+## Especially sensitive areas
 
-- Coerciones de `Minimum`, `Maximum`, `Value`, pasos y `ResetValue`.
-- Medición de texto, cultura, fuentes y el compromiso de no recortar el valor.
-- Reaplicación de plantillas y personalización mediante estilos WPF.
-- Captura de mouse, foco y convivencia con `ScrollViewer`.
+- Coercions of `Minimum`, `Maximum`, `Value`, the steps and `ResetValue`.
+- Text measurement, culture, fonts and the commitment never to clip the value.
+- Template reapplication and customization through WPF styles.
+- Mouse capture, focus and coexistence with a `ScrollViewer`.
 
-## Reportar errores
+## Reporting bugs
 
-Incluí, en lo posible:
+Include, as far as possible:
 
-- versión de .NET y Windows;
-- fragmento mínimo de XAML/C# que reproduzca el problema;
-- valores de las propiedades relevantes;
-- comportamiento esperado, comportamiento observado y una captura si aporta contexto.
+- .NET and Windows versions;
+- a minimal XAML/C# snippet that reproduces the problem;
+- the values of the relevant properties;
+- expected behavior, observed behavior and a screenshot if it adds context.
 
-Al contribuir aceptás que tus aportes se distribuyan bajo la licencia MIT del proyecto.
+By contributing you accept that your contributions are distributed under the project's MIT license.

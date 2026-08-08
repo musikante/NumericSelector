@@ -1,50 +1,48 @@
 # Changelog
 
-Este proyecto sigue el formato de [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y, cuando se publiquen versiones, aplicará [versionado semántico](https://semver.org/lang/es/).
+This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format and, once versions are published, will apply [semantic versioning](https://semver.org/).
 
-## [Unreleased] — primera versión
+## [Unreleased] — first version
 
-Todavía sin publicar; al hacerlo pasa a ser `0.1.0`. Como nada de esto llegó nunca a un consumidor, el desarrollo previo no se registra: la API cambió de nombre varias veces antes de asentarse y ese recorrido no le sirve a nadie que empiece a usar el control ahora. **La historia completa está en los commits.**
+Not published yet; when it is, this becomes `0.1.0`. Since none of this ever reached a consumer, the earlier development is not recorded here: the API was renamed several times before it settled, and that road is of no use to anyone picking up the control now. **The full history is in the commits.**
 
 ### Added
 
-**El control.** `BoundedNumericSelector`, un control WPF *lookless* de entrada numérica discreta y **acotada**: no hay forma de que entregue un valor fuera de `[Minimum, Maximum]`, así que el consumidor no necesita validar la entrada. Vive en el ensamblado `NumericSelector`, para .NET 10 sobre Windows.
+**The control.** `BoundedNumericSelector`, a *lookless* WPF control for discrete, **bounded** numeric input: there is no way for it to hand out a value outside `[Minimum, Maximum]`, so the consumer never has to validate the input. It lives in the `NumericSelector` assembly, for .NET 10 on Windows.
 
-**Valores y rango.** `Value`, `Minimum`, `Maximum`, `SmallChange`, `LargeChange` y `ResetValue`, todos `int` y todos con coerción silenciosa:
+**Values and range.** `Value`, `Minimum`, `Maximum`, `SmallChange`, `LargeChange` and `ResetValue`, all `int` and all silently coerced:
 
-- El rango conserva siempre al menos una unidad de ancho. Al empujar un extremo contra el otro, ese extremo se frena en vez de arrastrar a su par; si después se separan, recupera el valor que se le había pedido.
-- `Value` y `ResetValue` se acotan al rango; los pasos, entre `1` y el ancho del rango.
-- `Value` usa binding bidireccional por defecto. El evento **`ValueChanged`** informa el valor viejo y el nuevo.
+- The range always keeps at least one unit of width. When one end is pushed against the other, that end stops instead of dragging its counterpart along; if they are separated again, it recovers the value that had been asked for.
+- `Value` and `ResetValue` are bounded to the range; the steps, to between `1` and the width of the range.
+- `Value` binds two-way by default. The **`ValueChanged`** event reports the old and the new value.
 
-**Textos y disposición.** `MainText` se dibuja sobre la barra; `DetailText` ocupa una fila inferior opcional. Tres propiedades independientes deciden dónde va el casillero del valor, sin combinaciones inválidas ni degradaciones: `ShowDetail`, `ValueFollowsDetail` y `ValueBoxDock` (`Right` | `Left`).
+**Text and layout.** `MainText` is drawn over the bar; `DetailText` takes an optional bottom row. Three independent properties decide where the value box goes, with no invalid combinations and no degradations: `ShowDetail`, `ValueFollowsDetail` and `ValueBoxDock` (`Right` | `Left`).
 
-**Marco de cuatro celdas.** La plantilla no anida secciones: son cuatro celdas hermanas con marco propio, así ningún borde se apila con otro sumando grosor. Qué lados dibuja cada una lo resuelve una única función pura (`ValueBorderResolver.Resolve`), de modo que ningún filo se dibuja dos veces. La costura horizontal la aporta siempre el borde inferior de la barra, que además cierra el control por abajo cuando no hay detalle.
+**Four-cell frame.** The template does not nest sections: they are four sibling cells with their own frame, so no border stacks on another and doubles its thickness. Which sides each one draws is resolved by a single pure function (`ValueBorderResolver.Resolve`), so that no edge is drawn twice. The horizontal seam is always contributed by the bottom border of the bar, which also closes the control at the bottom when there is no detail.
 
-**Legibilidad garantizada del número.** El ancho del casillero lo reservan **medidores ocultos** de la plantilla (un `TextBlock` con el `Minimum` y otro con el `Maximum`, ocultos pero que ocupan sitio): la celda nunca se mide más angosta que el número más largo que el rango puede producir, sin depender del valor actual ni temblar al pasar de 99 a 100. `MainText` puede truncarse con elipsis; el número no.
+**Guaranteed readability of the number.** The width of the value box is reserved by the template's **hidden sizers** (one `TextBlock` with the `Minimum` and another with the `Maximum`, hidden but still taking up room): the cell is never measured narrower than the longest number the range can produce, without depending on the current value and without flinching when going from 99 to 100. `MainText` may be truncated with an ellipsis; the number may not.
 
-**Ancho: `BaseWidth`.** Es el ancho base desde el que el control crece y a la vez un piso, no un constraint duro: pide `max(BaseWidth, contenido)` pero nunca más que el hueco que le da el contenedor, así que los bordes no se recortan ni desbordan. El control no escribe `Width`/`MinWidth` en runtime.
+**Width: `BaseWidth`.** It is the base width the control grows from and at the same time a floor, not a hard constraint: it asks for `max(BaseWidth, content)` but never more than the slot its container gives it, so the borders are neither clipped nor overflowed. The control does not write `Width`/`MinWidth` at runtime.
 
-**Cultura.** El formato de los números sale de `FrameworkElement.Language`, no de la cultura del hilo. El control adopta por sí solo la del sistema donde corre, y el consumidor puede pisarla asignando `Language` en la instancia.
+**Culture.** Number formatting comes from `FrameworkElement.Language`, not from the thread culture. The control picks up the one of the system it runs on by itself, and the consumer can override it by assigning `Language` on the instance.
 
-**Interacción.**
+**Interaction.**
 
-- *Mouse:* click y arrastre sobre la barra llevan el valor a la posición del puntero; click derecho por zonas (30 % izquierdo → `Minimum`, 40 % central → `ResetValue`, 30 % derecho → `Maximum`); doble click sobre el número lo restablece; arrastre vertical sobre el número lo mueve de a `SmallChange`.
-- *Rueda:* de a `SmallChange`, **sólo con el foco puesto** y sin marcar el evento como manejado en los topes. Los dos recaudos evitan que un selector dentro de un `ScrollViewer` se coma el desplazamiento de la lista o cambie valores al pasar el mouse por encima.
-- *Teclado:* flechas y `+`/`-` (fila principal y numérico) de a `SmallChange`; `PageUp`/`PageDown` de a `LargeChange`; `Home`/`End` a los extremos; `Delete`/`Insert` a `ResetValue`.
-- El cursor dice la verdad sobre si el gesto va a hacer algo.
+- *Mouse:* click and drag on the bar take the value to the pointer position; right click by zones (left 30 % → `Minimum`, middle 40 % → `ResetValue`, right 30 % → `Maximum`); double click on the number restores it; vertical drag on the number moves it by `SmallChange`.
+- *Wheel:* by `SmallChange`, **only with the focus taken** and without marking the event as handled at the ends. Both precautions keep a selector inside a `ScrollViewer` from swallowing the list's scrolling or changing values as the mouse passes over it.
+- *Keyboard:* arrows and `+`/`-` (main row and numeric pad) by `SmallChange`; `PageUp`/`PageDown` by `LargeChange`; `Home`/`End` to the ends; `Delete`/`Insert` to `ResetValue`.
+- The cursor tells the truth about whether the gesture is going to do anything.
 
-**Modos.** `MouseBehavior` (`ChangeOnClick` | `MustFocusFirst`) decide si el mouse actúa de inmediato o exige foco previo, en cuyo caso el click que da el foco no toca el valor. `InteractionMode` (`Interactive` | `ReadOnly`) bloquea al usuario sin alterar la apariencia y sin sacar el control del árbol visual; asignar `Value` por código sigue funcionando. `IsEnabled = false` también suelta el foco si el control lo tenía.
+**Modes.** `MouseBehavior` (`ChangeOnClick` | `MustFocusFirst`) decides whether the mouse acts right away or demands focus first, in which case the click that takes the focus leaves the value alone. `InteractionMode` (`Interactive` | `ReadOnly`) blocks the user without altering the appearance and without taking the control out of the visual tree; assigning `Value` from code keeps working. `IsEnabled = false` also releases the focus if the control had it.
 
-**Apariencia.** `BorderBrush` y `BorderThickness` son las heredadas de `Control`, con el valor por defecto cambiado a negro y `1`; a ellas se suman `FocusBorderBrush`, `BarFill` y `BarDividerBrush`. Todas son `Brush`, así que aceptan degradados, imágenes o cualquier otra brocha, no sólo un color liso. El foco se indica tiñendo los marcos, no con el rectángulo punteado de WPF.
+**Demonstration application.** `NumericSelector.Demo` is where the whole API —range, texts, layout, brushes, fonts and gestures— can be tried by hand, using the control itself as the selector for its own options. **F1** opens a help window explaining that criterion and listing the mouse and keyboard gestures.
 
-**Aplicación de demostración.** `NumericSelector.Demo` permite probar a mano toda la API —rango, textos, disposición, brochas, fuentes y gestos— con el propio control como selector de sus opciones. **F1** abre una ayuda que explica ese criterio y lista los gestos de mouse y teclado.
+**Tests.** 39 MSTest tests covering defaults, coercions, layout, the seam matrix, measurement and `BaseWidth`, and the interaction modes. The ones that need a window run on an isolated STA thread.
 
-**Pruebas.** 38 pruebas MSTest sobre defaults, coerciones, disposición, la matriz de costuras, la medición y `BaseWidth`, y los modos de interacción. Las que necesitan ventana corren en un hilo STA aislado.
+**Documentation and infrastructure.** `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `AGENTS.md`, an MIT license and Git exclusion rules. `.gitattributes` normalizes line endings (LF in the repository, each platform's own on the working disk) so that a contributor on another system does not produce whole-file differences.
 
-**Documentación e infraestructura.** `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `AGENTS.md`, licencia MIT y reglas de exclusión para Git. `.gitattributes` normaliza los finales de línea (LF en el repositorio, los propios de cada plataforma en el disco de trabajo) para que un colaborador en otro sistema no genere diferencias de archivo entero.
+### Known limits
 
-### Límites conocidos
-
-- El dominio es **intencionalmente entero**: no hay soporte para decimales.
-- Los valores inválidos de las enumeraciones públicas todavía no se validan.
-- Falta el contrato de plantilla declarado con `TemplatePart`.
+- The domain is **deliberately integer**: there is no decimal support.
+- Invalid values of the public enumerations are not validated yet.
+- The template contract declared with `TemplatePart` is still missing.

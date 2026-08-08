@@ -1,169 +1,170 @@
-# NumericSelector — Guía para agentes
+# NumericSelector — Agent guide
 
-Control WPF *lookless* para seleccionar un valor entero acotado a un rango. El control se llama `BoundedNumericSelector` y vive en el ensamblado `NumericSelector`.
+*Lookless* WPF control for picking an integer value bounded to a range. The control is called `BoundedNumericSelector` and lives in the `NumericSelector` assembly.
 
-## Estructura del repositorio
+## Repository structure
 
 ```
-NumericSelector/          → Librería del control (proyecto principal)
-NumericSelector.Demo/     → Aplicación WPF de demostración (banco de pruebas manual)
-                            MainWindow: el Master arriba y los selectores que lo manejan
-                            HelpWindow: la ayuda (F1), texto plano, sin usar el control
-NumericSelector.Tests/    → Pruebas automatizadas (MSTest)
-docs/images/              → Capturas que ilustran el README
+NumericSelector/          → Control library (main project)
+NumericSelector.Demo/     → WPF demonstration application (manual test bench)
+                            MainWindow: the Master on top and the selectors that drive it
+                            HelpWindow: the help (F1), plain text, does not use the control
+NumericSelector.Tests/    → Automated tests (MSTest)
+docs/images/              → Screenshots illustrating the README
 ```
 
-## Comandos esenciales
+## Essential commands
 
 ```powershell
-# Compilar toda la solución (Release sin advertencias es el estándar para PRs)
+# Build the whole solution. Release is THE verification build: it is run AFTER EVERY CHANGE,
+# not just before a PR, and the standard is 0 errors and 0 warnings.
 dotnet build .\NumericSelector.slnx --configuration Release
 
-# Ejecutar la aplicación de demostración
+# Run the demonstration application
 dotnet run --project .\NumericSelector.Demo\NumericSelector.Demo.csproj
 
-# Ejecutar todas las pruebas
+# Run every test
 dotnet test .\NumericSelector.slnx
 
-# Ejecutar solo las pruebas de un proyecto
+# Run only one project's tests
 dotnet test .\NumericSelector.Tests\NumericSelector.Tests.csproj
 ```
 
-## Stack y configuración
+## Stack and configuration
 
 - **SDK**: .NET 10.0.302 (`global.json`, rollForward: latestFeature)
-- **Target**: `net10.0-windows` con `UseWPF=true`
-- **Plataforma**: Windows únicamente (WPF no es multiplataforma)
+- **Target**: `net10.0-windows` with `UseWPF=true`
+- **Platform**: Windows only (WPF is not cross-platform)
 - **Tests**: MSTest 4.3.2 + Microsoft.NET.Test.Sdk 18.8.1
-- **Solución**: `NumericSelector.slnx` (formato SDK-style nuevo)
+- **Solution**: `NumericSelector.slnx` (new SDK-style format)
 
-## Arquitectura del control
+## Control architecture
 
-### Archivos fuente principales
+### Main source files
 
-| Archivo | Contenido |
+| File | Contents |
 |---------|-----------|
-| `BoundedNumericSelector.cs` | Lógica de interacción, medición, cursores, manejo de eventos |
-| `BoundedNumericSelector.Dependencies.cs` | Propiedades de dependencia, coerciones, evento ValueChanged |
-| `Themes/Generic.xaml` | Plantilla por defecto (estilo, triggers, partes) |
-| `Converters.cs` | `ValueBorderResolver` (matriz de costuras): función pura |
-| `ValueBoxDock.cs`, `MouseInteractionBehavior.cs`, `UserInteractionMode.cs` | Enums de la API pública |
+| `BoundedNumericSelector.cs` | Interaction logic, measurement, cursors, event handling |
+| `BoundedNumericSelector.Dependencies.cs` | Dependency properties, coercions, ValueChanged event |
+| `Themes/Generic.xaml` | Default template (style, triggers, parts) |
+| `Converters.cs` | `ValueBorderResolver` (the seam matrix): a pure function |
+| `ValueBoxDock.cs`, `MouseInteractionBehavior.cs`, `UserInteractionMode.cs` | Public API enums |
 
-### Modelo de celdas
+### Cell model
 
-El control son **cuatro celdas hermanas** con marco propio:
-- Barra, con su `MainText` dibujado encima (arriba, la fila siempre presente)
-- Caja del valor junto a la barra (arriba, a la derecha — o a la izquierda con `ValueBoxDock=Left`)
-- Etiqueta del detalle (abajo, sólo con `ShowDetail`)
-- Caja del valor en la fila de detalle (abajo, cuando `ValueFollowsDetail` la hace descender)
+The control is **four sibling cells**, each with its own frame:
+- The bar, with its `MainText` drawn on top (upper row, always present)
+- The value box next to the bar (upper row, on the right — or on the left with `ValueBoxDock=Left`)
+- The detail label (bottom row, only with `ShowDetail`)
+- The value box in the detail row (bottom row, when `ValueFollowsDetail` makes it drop)
 
-La caja del valor está declarada en las dos filas, pero sólo una es visible a la vez: `ShowDetail && ValueFollowsDetail` colapsa la de arriba y muestra la de abajo.
+The value box is declared in both rows, but only one is visible at a time: `ShowDetail && ValueFollowsDetail` collapses the upper one and shows the lower one.
 
-**Regla única**: la barra y el detalle son el marco fijo (la barra lleva sus cuatro lados, el detalle cede el superior) y la caja del valor cede el lado que mira a su compañero de fila. Ningún filo se dibuja dos veces. El reparto concreto lo calcula `ValueBorderResolver.Resolve`, una función pura con la matriz de costuras completa (ver su `Converters.cs`).
+**Single rule**: the bar and the detail are the fixed frame (the bar carries its four sides, the detail gives up the top one) and the value box gives up the side facing its row partner. No edge is drawn twice. The actual split is computed by `ValueBorderResolver.Resolve`, a pure function holding the complete seam matrix (see its `Converters.cs`).
 
-### Partes de la plantilla (PART_)
+### Template parts (PART_)
 
-El code-behind resuelve **cuatro** por nombre, en `OnApplyTemplate`: `PART_BarGrid`, `PART_BarRect`, `PART_ValueText` y `PART_ValueDetailText`. El resto de los nombres existe para que los triggers de la plantilla los apunten con `TargetName`; nadie los busca desde C#.
+The code-behind resolves **four** of them by name, in `OnApplyTemplate`: `PART_BarGrid`, `PART_BarRect`, `PART_ValueText` and `PART_ValueDetailText`. The rest of the names exist so that the template triggers can point at them with `TargetName`; nobody looks them up from C#.
 
-Partes que define la plantilla:
-- `PART_RootGrid` (la raíz de la plantilla; se llama así y no `PART_MainGrid` para no confundirse con `PART_MainText`, que es otra cosa), `PART_DetailRow`
+Parts the template defines:
+- `PART_RootGrid` (the root of the template; it is named that way and not `PART_MainGrid` so as not to be confused with `PART_MainText`, which is something else), `PART_DetailRow`
 - `PART_BarAndValueGrid`, `PART_BarCell`, `PART_BarGrid`, `PART_BarRect`, `PART_BarRowDef`
 - `PART_MainText`, `PART_ValueCell`, `PART_ValueText`, `PART_ValueSizerMin/Max`
-- La fila de detalle, con su caja de valor propia: `PART_DetailCell`, `PART_DetailText`, `PART_ValueDetailCell`, `PART_ValueDetailText`, `PART_DetailSizerMin/Max`
-- Las columnas se nombran **por posición**, no por ocupante, porque con `ValueBoxDock=Left` las celdas se intercambian: `PART_Column0`/`PART_Column1` (fila de la barra) y `PART_DetailColumn0`/`PART_DetailColumn1` (fila de detalle)
+- The detail row, with its own value box: `PART_DetailCell`, `PART_DetailText`, `PART_ValueDetailCell`, `PART_ValueDetailText`, `PART_DetailSizerMin/Max`
+- The columns are named **by position**, not by occupant, because with `ValueBoxDock=Left` the cells swap: `PART_Column0`/`PART_Column1` (bar row) and `PART_DetailColumn0`/`PART_DetailColumn1` (detail row)
 
-**No se deben renombrar**: los nombres `PART_*` son contrato público.
+**They must not be renamed**: the `PART_*` names are a public contract.
 
-### Propiedades de dependencia y coerciones
+### Dependency properties and coercions
 
-Las coerciones son silenciosas y mutuamente restrictivas:
+The coercions are silent and mutually restrictive:
 
-| Propiedad | Coerción |
+| Property | Coercion |
 |-----------|----------|
-| `Minimum` | ≤ `Maximum - 1` (el rango siempre tiene al menos 1 de ancho) |
+| `Minimum` | ≤ `Maximum - 1` (the range always has at least 1 of width) |
 | `Maximum` | ≥ `Minimum + 1` |
-| `Value` | Acotado a `[Minimum, Maximum]` |
-| `ResetValue` | Acotado a `[Minimum, Maximum]` |
-| `SmallChange`, `LargeChange` | Entre `1` y el ancho del rango |
-| `Focusable` | `false` cuando `InteractionMode=ReadOnly` (coerción, no asignación) |
+| `Value` | Bounded to `[Minimum, Maximum]` |
+| `ResetValue` | Bounded to `[Minimum, Maximum]` |
+| `SmallChange`, `LargeChange` | Between `1` and the width of the range |
+| `Focusable` | `false` when `InteractionMode=ReadOnly` (by coercion, not assignment) |
 
-### Cultura y formato
+### Culture and formatting
 
-- El control usa `Language` (no la cultura del sistema) para formatear números
-- Por defecto se asigna `CultureInfo.CurrentCulture.IetfLanguageTag`
-- El ancho del casillero del valor se reserva con **medidores ocultos** en la plantilla (dos `TextBlock` con `Minimum` y `Maximum` en la misma celda que el valor); WPF toma el máximo y la celda nunca queda más angosta que el número más largo del rango, según la cultura
+- The control uses `Language` (not the system culture) to format numbers
+- By default it assigns `CultureInfo.CurrentCulture.IetfLanguageTag`
+- The width of the value box is reserved with **hidden sizers** in the template (two `TextBlock`s with `Minimum` and `Maximum` in the same cell as the value); WPF takes the largest and the cell never ends up narrower than the longest number in the range, according to the culture
 
-### Modos de interacción
+### Interaction modes
 
-- `MouseInteractionBehavior.ChangeOnClick` (default): el mouse actúa siempre
-- `MouseInteractionBehavior.MustFocusFirst`: el mouse actúa solo con foco previo; el click que enfoca no cambia el valor
-- `InteractionMode = ReadOnly`: bloquea mouse, teclado y tabulación; conserva aspecto; cambios por código siguen funcionando
+- `MouseInteractionBehavior.ChangeOnClick` (default): the mouse always acts
+- `MouseInteractionBehavior.MustFocusFirst`: the mouse acts only with focus already taken; the click that focuses does not change the value
+- `InteractionMode = ReadOnly`: blocks mouse, keyboard and tabbing; keeps the appearance; changes from code keep working
 
-Teclado: `←`/`↓`/`-` y `→`/`↑`/`+` cambian o restan `SmallChange`; `PageUp`/`PageDown` de a `LargeChange`; `Home`/`End` a los extremos; `Delete`/`Insert` a `ResetValue`. Se manejan las teclas de la fila principal (`Key.OemPlus`/`OemMinus`) y las del teclado numérico (`Key.Add`/`Subtract`).
+Keyboard: `←`/`↓`/`-` and `→`/`↑`/`+` subtract or add `SmallChange`; `PageUp`/`PageDown` by `LargeChange`; `Home`/`End` to the ends; `Delete`/`Insert` to `ResetValue`. Both the main-row keys (`Key.OemPlus`/`OemMinus`) and the numeric-pad ones (`Key.Add`/`Subtract`) are handled.
 
-### Ancho: `BaseWidth` (piso) y encaje al contenedor
+### Width: `BaseWidth` (floor) and fitting the container
 
-- `BaseWidth` (`double`, default `NaN` = automático) es el ancho base desde el que el control crece; **no** es un constraint duro: se lee como piso en `MeasureOverride`, que pide `max(BaseWidth, contenido)` pero **nunca más ancho que el hueco disponible** (la CharacterEllipsis de `MainText` y `DetailText` trunca lo que no quepa)
-- El control **no escribe** `FrameworkElement.Width`/`MinWidth` en runtime: hacerlo obligaba al elemento a ese tamaño y desbordaba/recortaba los bordes en un contenedor angosto (era la causa del recorte del marco). El piso del número lo dan los medidores ocultos de la plantilla
-- El ancho natural sale de `base.MeasureOverride(new Size(infinito, alto))`; la barra vive en una columna `*`, que con ancho infinito se comporta como `Auto` (no se estira a todo el contenedor)
-- No hay `Viewbox` en la plantilla: escalaría la tipografía en vez de truncar con elipsis, que es el comportamiento pedido
-- El consumidor que quiera forzar un ancho mínimo usa `BaseWidth`, no `Width`/`MinWidth` (esos son duros y vuelven a recortar)
+- `BaseWidth` (`double`, default `NaN` = automatic) is the base width the control grows from; it is **not** a hard constraint: it is read as a floor in `MeasureOverride`, which asks for `max(BaseWidth, content)` but **never wider than the available slot** (the CharacterEllipsis on `MainText` and `DetailText` truncates whatever does not fit)
+- The control **does not write** `FrameworkElement.Width`/`MinWidth` at runtime: doing so forced the element to that size and overflowed/clipped the borders in a narrow container (it was the cause of the frame clipping). The floor for the number is given by the template's hidden sizers
+- The natural width comes from `base.MeasureOverride(new Size(infinity, height))`; the bar lives in a `*` column, which with infinite width behaves like `Auto` (it does not stretch to the whole container)
+- There is no `Viewbox` in the template: it would scale the typography instead of truncating with an ellipsis, which is the requested behavior
+- A consumer who wants to force a minimum width uses `BaseWidth`, not `Width`/`MinWidth` (those are hard and bring the clipping back)
 
-## Pruebas
+## Tests
 
-### Tipos de pruebas
+### Kinds of tests
 
-1. **Lógica pura** (`BoundedNumericSelectorLogicTests.cs`, `ValueBorderResolverTests.cs`): no necesitan ventana; validan defaults, coerciones, pasos, disposición, ValueChanged y la matriz de costuras
-2. **Interacción** (`InteractionModeTests.cs`): necesitan ventana real (STA + Dispatcher) porque los gestos llegan por eventos ruteados y el foco no existe fuera del visual tree
+1. **Pure logic** (`BoundedNumericSelectorLogicTests.cs`, `ValueBorderResolverTests.cs`): they need no window; they validate defaults, coercions, steps, layout, ValueChanged and the seam matrix
+2. **Interaction** (`InteractionModeTests.cs`): they need a real window (STA + Dispatcher) because gestures arrive through routed events and focus does not exist outside the visual tree
 
-### Helper `StaTest`
+### The `StaTest` helper
 
-Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un hilo STA aislado, independientemente del modelo de apartamento del runner.
+Tests that create WPF controls use `StaTest.Run()` to execute on an isolated STA thread, regardless of the runner's apartment model.
 
-### Cobertura actual
+### Current coverage
 
-- Defaults, coerciones de rango, pasos, disposición, ValueChanged
-- Valor de la matriz de costuras (`ValueBorderResolver.Resolve`) en todas las configuraciones
-- Disposición (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxDock`) y trazo separador del valor
-- Medición y `BaseWidth` (`MeasureAndBaseWidthTests.cs`): el ancho pedido nunca excede un hueco fijo y `BaseWidth` actúa como piso con espacio infinito
+- Defaults, range coercions, steps, layout, ValueChanged
+- The value of the seam matrix (`ValueBorderResolver.Resolve`) in every configuration
+- Layout (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxDock`) and the value's separating stroke
+- Measurement and `BaseWidth` (`MeasureAndBaseWidthTests.cs`): the requested width never exceeds a fixed slot, and `BaseWidth` acts as a floor with infinite space
 - MouseBehavior (ChangeOnClick, MustFocusFirst)
-- InteractionMode (focusable, liberación de foco, bloqueo de input)
-- IsEnabled (liberación de foco, bloqueo de teclado)
+- InteractionMode (focusable, focus release, input blocking)
+- IsEnabled (focus release, keyboard blocking)
 
-### Pendiente
+### Pending
 
-- Pruebas de cultura y formato de número (el resto —foco, gestos de mouse, crecimiento— ya está cubierto)
+- Culture and number-formatting tests (the rest —focus, mouse gestures, growth— is already covered)
 
-## Convenciones del proyecto
+## Project conventions
 
-- **Todo en inglés**: identificadores, claves de recurso de XAML, comentarios, documentación y textos de la interfaz. Nada de código nuevo se escribe en español
-- Los identificadores, las claves de XAML y los textos que se ven en el demo **ya están migrados**. Los comentarios del código y los documentos `.md` todavía están en español y quedan por traducir: es deuda de una etapa anterior, no la convención
-- Nombres claros, comentarios solo donde expliquen una decisión no obvia
-- Formato consistente con el código existente
-- Una corrección/mejora por PR
-- Actualizar `README.md` y `CHANGELOG.md` si cambia la API pública
-- No hay CI configurado aún (planeado: GitHub Actions)
+- **Everything in English**: identifiers, XAML resource keys, comments, documentation and interface texts. No new code is written in Spanish
+- Identifiers, XAML keys, the texts seen in the demo and the five `.md` documents **are already migrated**. The code comments are still in Spanish and remain to be translated: that is debt from an earlier stage, not the convention
+- Clear names, comments only where they explain a non-obvious decision
+- Formatting consistent with the existing code
+- One fix/improvement per PR
+- Update `README.md` and `CHANGELOG.md` if the public API changes
+- No CI configured yet (planned: GitHub Actions)
 
-## Advertencias
+## Warnings
 
-- El dominio es **intencionalmente entero** (sin soporte para decimales)
-- `FocusVisualStyle` se desactiva por defecto; el foco lo indica el borde (`FocusBorderBrush`)
-- **Un `TemplateBinding` mal escrito compila igual y falla en silencio.** Al tocar la plantilla o renombrar propiedades que ella consume, hay que instanciar el control y leer las partes con `Template.FindName` para comprobar que los valores llegan. Lo mismo vale para los `StaticResource` del demo: un recurso borrado revienta al **cargar** la ventana, no al compilar.
+- The domain is **deliberately integer** (no decimal support)
+- `FocusVisualStyle` is turned off by default; focus is signalled by the border (`FocusBorderBrush`)
+- **A misspelled `TemplateBinding` still compiles and fails silently.** When touching the template or renaming properties it consumes, the control has to be instantiated and its parts read with `Template.FindName` to check that the values arrive. The same goes for the demo's `StaticResource`s: a deleted resource blows up when **loading** the window, not when compiling.
 
-## Trabajo pendiente
+## Pending work
 
-Las incoherencias de texto y las cinco limpiezas de código que figuraban acá están hechas.
+The text inconsistencies and the five code cleanups that used to be listed here are done.
 
-### Funcionalidad
+### Functionality
 
-- `[TemplatePart]` sobre la clase, para documentar el contrato de la plantilla.
-- Validación de valores inválidos en los enums públicos: hoy `(ValueBoxDock)99` se asigna sin protestar.
+- `[TemplatePart]` on the class, to document the template contract.
+- Validation of invalid values in the public enums: today `(ValueBoxDock)99` is assigned without complaint.
 
-### Traducción pendiente
+### Pending translation
 
-- Los comentarios del código (~717 líneas en C#, 51 bloques en XAML) y los cinco `.md` del repo siguen en español. La convención es **todo en inglés**; esto es deuda de la etapa anterior. Se encara en una pasada dedicada, después de actualizar la captura del README.
+- The code comments (~717 lines in C#, 51 blocks in XAML) are still in Spanish. The convention is **everything in English**; this is debt from the earlier stage. The five `.md` documents are already translated.
 
-### Publicación
+### Publication
 
-- El repositorio **no tiene remoto todavía**: publicarlo en GitHub es decisión del usuario.
-- Empaquetado NuGet y versión `0.1.0`; CI en GitHub Actions para `build` y `test`.
+- The repository **has no remote yet**: publishing it on GitHub is the user's decision.
+- NuGet packaging and version `0.1.0`; CI on GitHub Actions for `build` and `test`.

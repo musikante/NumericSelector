@@ -1,27 +1,27 @@
-# Política de seguridad
+# Security policy
 
-## Versiones compatibles
+## Supported versions
 
-Mientras el proyecto no tenga versiones publicadas, la rama principal de desarrollo es la única versión considerada para correcciones de seguridad.
+While the project has no published versions, the main development branch is the only version considered for security fixes.
 
-| Versión | Recibe correcciones de seguridad |
+| Version | Receives security fixes |
 | --- | --- |
-| Desarrollo actual | Sí |
-| Versiones publicadas futuras | Se informará al publicar cada versión |
+| Current development | Yes |
+| Future published versions | Will be stated when each version is released |
 
-## Reportar una vulnerabilidad
+## Reporting a vulnerability
 
-No publiques vulnerabilidades potenciales en issues públicos. Enviá una descripción privada al mantenedor del repositorio mediante el canal de contacto que se configure al publicar el proyecto en GitHub.
+Do not publish potential vulnerabilities in public issues. Send a private description to the repository maintainer through the contact channel that gets set up when the project is published on GitHub.
 
-El informe debería incluir:
+The report should include:
 
-- una explicación del impacto;
-- pasos mínimos para reproducirlo;
-- versión, sistema operativo y runtime afectados;
-- una posible mitigación, si la conocés.
+- an explanation of the impact;
+- minimal steps to reproduce it;
+- the affected version, operating system and runtime;
+- a possible mitigation, if you know of one.
 
-Se confirmará la recepción, se evaluará el problema y se coordinará la divulgación una vez que exista una corrección o mitigación razonable.
+Receipt will be acknowledged, the problem assessed, and disclosure coordinated once a reasonable fix or mitigation exists.
 
-## Alcance actual
+## Current scope
 
-`BoundedNumericSelector`, el control que vive en el ensamblado `NumericSelector`, es un control de interfaz WPF sin servicios de red, persistencia ni manejo de credenciales propios. Aun así, se revisarán reportes relacionados con denegación de servicio en layout, uso inseguro desde XAML y dependencias de compilación o distribución.
+`BoundedNumericSelector`, the control that lives in the `NumericSelector` assembly, is a WPF interface control with no network services, persistence or credential handling of its own. Even so, reports about denial of service in layout, unsafe use from XAML, and build or distribution dependencies will be reviewed.

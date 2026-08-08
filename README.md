@@ -1,29 +1,29 @@
 # NumericSelector
 
-Control WPF *lookless* para seleccionar un valor entero **acotado a un rango**: no hay forma de que el control entregue un valor fuera de `[Minimum, Maximum]`, así que el consumidor no necesita validar la entrada. La barra permite elegir el valor; la leyenda se escribe sobre ella y el número permanece siempre legible.
+*Lookless* WPF control for picking an integer value **bounded to a range**: there is no way for the control to hand out a value outside `[Minimum, Maximum]`, so the consumer never has to validate the input. The bar is what picks the value; the main text is written over it and the number stays readable at all times.
 
-El control se llama **`BoundedNumericSelector`** y vive en el ensamblado `NumericSelector`.
+The control is called **`BoundedNumericSelector`** and lives in the `NumericSelector` assembly.
 
-> Estado: la API quedó definida y el control está listo para una primera versión estable. Pendiente: empaquetado NuGet y CI.
+> Status: the API is settled and the control is ready for a first stable version. Still pending: NuGet packaging and CI.
 
-![Vista previa del demo de NumericSelector](docs/images/numeric-selector-demo.png)
+![Preview of the NumericSelector demo](docs/images/numeric-selector-demo.png)
 
-## Qué aporta
+## What it gives you
 
-- Entrada discreta de tipo `int`, con rango, pasos y valor de reinicio.
-- Valor visible sin saltos de ancho ni recortes, incluso con miles, signos y cambios de cultura.
-- Interacción con mouse, teclado y rueda, cuidando no interferir con un `ScrollViewer` contenedor.
-- Disposición configurable: el casillero del valor vive junto a la barra (a la izquierda o derecha) o baja junto al detalle, según tres propiedades simples.
-- Modo de sólo visualización que conserva la apariencia y sigue reflejando cambios hechos por código.
-- Plantilla y colores personalizables, sin heredar la semántica de `Slider`.
+- Discrete `int` input, with range, steps and a reset value.
+- The value is always visible, with no width jumps and no clipping, even with thousands, signs and culture changes.
+- Mouse, keyboard and wheel interaction, careful not to interfere with a containing `ScrollViewer`.
+- Configurable layout: the value box sits next to the bar (left or right) or drops down next to the detail row, driven by three simple properties.
+- A display-only mode that keeps the appearance and still reflects changes made from code.
+- Customizable template and colors, without inheriting `Slider` semantics.
 
-| Plataforma | Ensamblado | Control | Valor |
+| Platform | Assembly | Control | Value |
 | --- | --- | --- | --- |
 | .NET 10 · WPF · Windows | `NumericSelector` | `BoundedNumericSelector` | `int` |
 
-## Instalación y uso rápido
+## Installing and getting started
 
-Por ahora, agregá una referencia al proyecto `NumericSelector` desde tu aplicación WPF. El paquete NuGet está planificado, pero todavía no se publica.
+For now, add a reference to the `NumericSelector` project from your WPF application. The NuGet package is planned, but not published yet.
 
 ```xml
 <Window
@@ -36,7 +36,7 @@ Por ahora, agregá una referencia al proyecto `NumericSelector` desde tu aplicac
         Maximum="100"
         Value="50"
         ResetValue="50"
-        MainText="Volumen"
+        MainText="Volume"
         ValueChanged="Selector_ValueChanged" />
 </Window>
 ```
@@ -46,37 +46,37 @@ private void Selector_ValueChanged(
     object sender,
     RoutedPropertyChangedEventArgs<int> e)
 {
-    // e.OldValue y e.NewValue
+    // e.OldValue and e.NewValue
 }
 ```
 
-`Value` usa binding bidireccional por defecto, por lo que alcanza con `Value="{Binding MiPropiedad}"`.
+`Value` binds two-way by default, so `Value="{Binding MyProperty}"` is all it takes.
 
-## Galería de disposiciones
+## Layout gallery
 
-La vista previa representa la aplicación de demostración incluida. La posición del casillero del valor se decide con tres propiedades independientes (`ShowDetail`, `ValueFollowsDetail` y `ValueBoxDock`):
+The preview shows the demonstration application that ships with the repository. Where the value box goes is decided by three independent properties (`ShowDetail`, `ValueFollowsDetail` and `ValueBoxDock`):
 
-- **Sin detalle** (`ShowDetail=false`, predeterminado): sólo la fila de la barra, con la leyenda sobre el relleno y el casillero del valor junto a la barra, a la derecha por defecto.
-- **Detalle con el número arriba** (`ShowDetail=true`, `ValueFollowsDetail=false`): la barra y el casillero arriba, la etiqueta del detalle ocupando todo el ancho en la fila inferior.
-- **Número junto al detalle** (`ShowDetail=true`, `ValueFollowsDetail=true`): el casillero baja a la línea del detalle y la barra queda sola; la caja va a la derecha o izquierda del detalle según `ValueBoxDock`.
+- **No detail** (`ShowDetail=false`, the default): only the bar row, with the main text over the fill and the value box next to the bar, on the right by default.
+- **Detail with the number on top** (`ShowDetail=true`, `ValueFollowsDetail=false`): bar and value box on top, the detail label taking the full width of the bottom row.
+- **Number next to the detail** (`ShowDetail=true`, `ValueFollowsDetail=true`): the value box drops to the detail line and the bar is left alone; the box goes to the right or left of the detail according to `ValueBoxDock`.
 
-## Interacción
+## Interaction
 
 ### Mouse
 
-| Gesto | Efecto |
+| Gesture | Effect |
 | --- | --- |
-| Click o arrastre sobre la barra | Lleva el valor a la posición del puntero. |
-| Click derecho sobre la barra | 30% izquierdo → `Minimum`; 40% central → `ResetValue`; 30% derecho → `Maximum`. |
-| Doble click sobre el número | Restablece `ResetValue`. |
-| Arrastre vertical sobre el número | Cambia de a `SmallChange`; hacia arriba aumenta. |
-| Rueda | Cambia de a `SmallChange`, sólo si el control tiene el foco. |
+| Click or drag on the bar | Takes the value to the pointer position. |
+| Right click on the bar | Left 30% → `Minimum`; middle 40% → `ResetValue`; right 30% → `Maximum`. |
+| Double click on the number | Restores `ResetValue`. |
+| Vertical drag on the number | Changes by `SmallChange`; upwards increases. |
+| Wheel | Changes by `SmallChange`, only if the control has the focus. |
 
-La restricción de foco de la rueda evita cambios accidentales cuando el selector está dentro de un `ScrollViewer`.
+The focus requirement on the wheel prevents accidental changes when the selector sits inside a `ScrollViewer`.
 
-### Teclado
+### Keyboard
 
-| Tecla | Efecto |
+| Key | Effect |
 | --- | --- |
 | `←`, `↓`, `-` | − `SmallChange` |
 | `→`, `↑`, `+` | + `SmallChange` |
@@ -84,90 +84,90 @@ La restricción de foco de la rueda evita cambios accidentales cuando el selecto
 | `Home`, `End` | `Minimum`, `Maximum` |
 | `Delete`, `Insert` | `ResetValue` |
 
-El foco se comunica con el color del borde (`FocusBorderBrush`) en lugar del rectángulo punteado predeterminado de WPF.
+Focus is signalled with the border color (`FocusBorderBrush`) instead of WPF's default dotted rectangle.
 
-## API principal
+## Main API
 
-### Rango y cambios
+### Range and changes
 
-| Propiedad | Tipo | Predeterminado | Descripción |
+| Property | Type | Default | Description |
 | --- | --- | --- | --- |
-| `Value` | `int` | `0` | Valor actual, coaccionado al rango y con binding `TwoWay` por defecto. |
-| `Minimum` | `int` | `0` | Límite inferior del rango. |
-| `Maximum` | `int` | `100` | Límite superior; nunca queda por debajo de `Minimum`. |
-| `SmallChange` | `int` | `1` | Paso de teclas, rueda y arrastre vertical. Entre `1` y el ancho del rango. |
-| `LargeChange` | `int` | `10` | Paso de PageUp/PageDown. Entre `1` y el ancho del rango. |
-| `ResetValue` | `int` | `50` | Valor usado por reset; también se coacciona al rango. |
+| `Value` | `int` | `0` | Current value, coerced to the range and bound `TwoWay` by default. |
+| `Minimum` | `int` | `0` | Lower bound of the range. |
+| `Maximum` | `int` | `100` | Upper bound; never ends up below `Minimum`. |
+| `SmallChange` | `int` | `1` | Step for keys, wheel and vertical drag. Between `1` and the width of the range. |
+| `LargeChange` | `int` | `10` | Step for PageUp/PageDown. Between `1` and the width of the range. |
+| `ResetValue` | `int` | `50` | Value used by reset; also coerced to the range. |
 
-El rango conserva siempre al menos una unidad de ancho. Al empujar un extremo contra el otro, el extremo se limita en vez de arrastrar su par.
+The range always keeps at least one unit of width. When one end is pushed against the other, that end is capped instead of dragging its counterpart along.
 
-Los pasos se coaccionan por ambos lados. Un paso de `0` dejaría el control inerte, y uno mayor que el rango completo no aportaría nada —salta de un extremo al otro igual que el ancho del rango— además de exhibir un número imposible. **La coacción es silenciosa:** con `Minimum="0" Maximum="5"`, asignar `LargeChange="10"` deja `LargeChange` en `5`. Si el rango cambia después, los pasos se re-evalúan contra el rango nuevo.
+The steps are coerced on both sides. A step of `0` would leave the control inert, and one larger than the whole range would add nothing —it jumps from end to end exactly like the range width does— besides displaying an impossible number. **Coercion is silent:** with `Minimum="0" Maximum="5"`, assigning `LargeChange="10"` leaves `LargeChange` at `5`. If the range changes afterwards, the steps are re-evaluated against the new range.
 
-### Texto, disposición y tamaño
+### Text, layout and size
 
-| Propiedad | Tipo | Predeterminado | Descripción |
+| Property | Type | Default | Description |
 | --- | --- | --- | --- |
-| `MainText` | `string` | `MainText` | Leyenda sobre el relleno de la barra. El texto de relleno es el nombre de la propiedad, para que se lea en el diseñador antes de asignarle nada. |
-| `DetailText` | `string` | `DetailText` | Texto de la fila de detalle inferior. Mismo criterio de relleno que `MainText`. |
-| `ShowDetail` | `bool` | `false` | Muestra la fila de detalle enmarcada. |
-| `ValueFollowsDetail` | `bool` | `true` | Con `ShowDetail`, baja el casillero del valor junto al detalle; con `false`, queda junto a la barra. |
-| `ValueBoxDock` | `enum` | `Right` | Lado del casillero del valor (`Right` o `Left`) respecto de su compañero de fila. |
-| `BorderThickness` | `Thickness` | `1` | Grosor de los marcos (heredada de `Control`, con el valor por defecto cambiado). El lado `Bottom` es además el grosor de la línea que separa la barra de la fila de detalle, porque esa costura la dibuja el borde inferior de la barra. |
-| `BaseWidth` | `double` | `NaN` | Ancho base desde el que el control crece para acomodar su contenido. `NaN` = automático. |
+| `MainText` | `string` | `MainText` | Caption over the bar fill. The placeholder text is the name of the property itself, so that it reads in the designer before anything is assigned to it. |
+| `DetailText` | `string` | `DetailText` | Text of the bottom detail row. Same placeholder criterion as `MainText`. |
+| `ShowDetail` | `bool` | `false` | Shows the framed detail row. |
+| `ValueFollowsDetail` | `bool` | `true` | With `ShowDetail`, drops the value box down next to the detail; with `false`, it stays next to the bar. |
+| `ValueBoxDock` | `enum` | `Right` | Side the value box takes (`Right` or `Left`) relative to its row partner. |
+| `BorderThickness` | `Thickness` | `1` | Thickness of the frames (inherited from `Control`, with a changed default). The `Bottom` side is also the thickness of the line separating the bar from the detail row, because that seam is drawn by the bottom border of the bar. |
+| `BaseWidth` | `double` | `NaN` | Base width the control grows from to fit its content. `NaN` = automatic. |
 
-### Crecimiento (BaseWidth) y encaje en contenedor angosto
+### Growth (BaseWidth) and fitting into a narrow container
 
-`BaseWidth` es el **ancho base** desde el que el control crece, y a la vez un **piso** que se conserva si hay espacio. No es un ancho fijo ni un constraint duro como el `Width`/`MinWidth` de WPF: el control pide `max(BaseWidth, contenido)` pero **nunca más ancho que el hueco que le da el contenedor**. De ese modo:
+`BaseWidth` is the **base width** the control grows from, and at the same time a **floor** that is kept whenever there is room. It is not a fixed width nor a hard constraint like WPF's `Width`/`MinWidth`: the control asks for `max(BaseWidth, content)` but **never wider than the slot its container gives it**. That way:
 
-- **Hay espacio** → el control crece para mostrar todo y mantiene al menos `BaseWidth`.
-- **El contenedor es angosto** → el control se queda dentro de lo disponible y sus bordes no se recortan; si el texto no cabe, la leyenda y el detalle se truncan con elipsis (`CharacterEllipsis`) en vez de desbordarse.
+- **There is room** → the control grows to show everything and keeps at least `BaseWidth`.
+- **The container is narrow** → the control stays within what is available and its borders are not clipped; if the text does not fit, main text and detail are truncated with an ellipsis (`CharacterEllipsis`) instead of overflowing.
 
-El número del casillero del valor queda siempre reservado por el **medidor oculto** de la plantilla (ver "Garantía de legibilidad"): puede escalearse con el ancho, pero nunca se pide de más que el hueco disponible.
+The number in the value box is always reserved by the template's **hidden sizers** (see "Readability guarantee"): it can scale with the width, but it is never asked for more than the available slot.
 
-### Interacción y apariencia
+### Interaction and appearance
 
-| Propiedad | Tipo | Predeterminado | Descripción |
+| Property | Type | Default | Description |
 | --- | --- | --- | --- |
-| `MouseBehavior` | `MouseInteractionBehavior` | `ChangeOnClick` | Decide si el mouse actúa de inmediato o exige foco previo. |
-| `InteractionMode` | `UserInteractionMode` | `Interactive` | `ReadOnly` conserva el aspecto pero bloquea mouse, teclado y tabulación. |
-| `BorderBrush` | `Brush` | `Black` | Marcos sin foco. Heredada de `Control`, con el valor por defecto cambiado (en WPF es `null`). |
-| `FocusBorderBrush` | `Brush` | `DodgerBlue` | Marcos con foco. |
-| `BarFill` | `Brush` | `Orange` | Relleno proporcional de la barra. |
-| `BarDividerBrush` | `Brush` | `Black` | Trazo que separa la porción rellena de la vacía. |
+| `MouseBehavior` | `MouseInteractionBehavior` | `ChangeOnClick` | Decides whether the mouse acts right away or demands focus first. |
+| `InteractionMode` | `UserInteractionMode` | `Interactive` | `ReadOnly` keeps the appearance but blocks mouse, keyboard and tabbing. |
+| `BorderBrush` | `Brush` | `Black` | Frames without focus. Inherited from `Control`, with a changed default (in WPF it is `null`). |
+| `FocusBorderBrush` | `Brush` | `DodgerBlue` | Frames with focus. |
+| `BarFill` | `Brush` | `Orange` | Proportional fill of the bar. |
+| `BarDividerBrush` | `Brush` | `Black` | Stroke separating the filled portion from the empty one. |
 
-Las cinco son `Brush` y no `Color`, así que **aceptan cualquier brocha**, no sólo un color liso: un degradado en `BarFill`, una imagen, un `VisualBrush`. Los nombres siguen la convención de WPF (`BorderBrush`, `Fill`), donde el sufijo `Brush` anuncia el tipo y se omite cuando la propiedad *es* el relleno.
+All five are `Brush` and not `Color`, so they **accept any brush**, not just a flat color: a gradient in `BarFill`, an image, a `VisualBrush`. The names follow the WPF convention (`BorderBrush`, `Fill`), where the `Brush` suffix announces the type and is dropped when the property *is* the fill.
 
 ```xml
-<ns:BoundedNumericSelector BarFill="{StaticResource MiDegradado}" />
+<ns:BoundedNumericSelector BarFill="{StaticResource MyGradient}" />
 ```
 
-`MouseInteractionBehavior.MustFocusFirst` hace que el primer click que obtiene el foco no modifique el valor; los gestos posteriores sí. `InteractionMode = UserInteractionMode.ReadOnly` bloquea al usuario, no al programa: asignar `Value` desde código sigue actualizando el control y disparando `ValueChanged`.
+`MouseInteractionBehavior.MustFocusFirst` makes the first click —the one that takes the focus— leave the value alone; later gestures do change it. `InteractionMode = UserInteractionMode.ReadOnly` blocks the user, not the program: assigning `Value` from code still updates the control and raises `ValueChanged`.
 
-El control se dibuja como **cuatro celdas independientes** —barra y caja del valor arriba, etiqueta del detalle y caja del detalle abajo—, cada una con su marco. **Cuáles** lados dibuja cada una lo resuelve una única matriz de costuras (`ValueBorderResolver`), con una regla única: *la barra y el detalle son el marco fijo, y la caja del valor cede el lado que mira a su compañero de fila*. Así ningún filo se dibuja dos veces. La costura horizontal entre filas la dibuja siempre el **borde inferior de la fila de la barra** —la fila de detalle cede su lado superior—, y ese mismo borde hace de borde inferior del control cuando no hay detalle.
+The control is drawn as **four independent cells** —bar and value box on top, detail label and detail value box at the bottom—, each with its own frame. **Which** sides each one draws is resolved by a single seam matrix (`ValueBorderResolver`), with a single rule: *the bar and the detail are the fixed frame, and the value box gives up the side facing its row partner*. That way no edge is ever drawn twice. The horizontal seam between rows is always drawn by the **bottom border of the bar row** —the detail row gives up its top side—, and that same border acts as the bottom border of the control when there is no detail.
 
-Cada una de las tres propiedades de disposición hace algo en todo momento, sin estados inválidos ni degradaciones que documentar:
+Each of the three layout properties does something at all times, with no invalid states and no degradations to document:
 
-- `ShowDetail` decide si existe la fila de detalle.
-- `ValueFollowsDetail` decide, sólo cuando hay detalle, si el casillero baja a esa fila (`true`) o se queda junto a la barra (`false`).
-- `ValueBoxDock` decide a qué lado del compañero de fila cae el casillero: del detalle si bajó, de la barra si no.
+- `ShowDetail` decides whether the detail row exists.
+- `ValueFollowsDetail` decides, only when there is a detail, whether the value box drops to that row (`true`) or stays next to the bar (`false`).
+- `ValueBoxDock` decides which side of its row partner the value box lands on: the detail's if it dropped, the bar's if it did not.
 
-No hay dependencias entre propiedades: cualquier combinación es válida y produce un dibujo cerrado.
+There are no dependencies between properties: every combination is valid and produces a closed drawing.
 
-`IsEnabled = false` (heredado de `UIElement`) también deja el control fuera del alcance del usuario, y a diferencia de `InteractionMode = UserInteractionMode.ReadOnly` altera la apariencia según el tema. Si el control tenía el foco al deshabilitarse, lo suelta.
+`IsEnabled = false` (inherited from `UIElement`) also puts the control out of the user's reach, and unlike `InteractionMode = UserInteractionMode.ReadOnly` it does alter the appearance according to the theme. If the control had the focus when it was disabled, it releases it.
 
-## Garantía de legibilidad
+## Readability guarantee
 
-El ancho del casillero del valor queda reservado por el **medidor oculto** de la plantilla (un `TextBlock` con el `Minimum` y otro con el `Maximum`, ocultos pero que ocupan sitio): WPF toma el máximo de los tres y la celda nunca se medirá más angosta que el número más largo que el rango puede producir. La medición respeta fuente, grosor del borde y `Language`, por lo que los formatos `1.000` (`es-AR`) y `1,000` (`en-US`) reservan el espacio correcto. La leyenda puede truncarse; el número no. Ya no se escribe ningún `Width`/`MinWidth` en runtime: el crecimiento sale de la medición natural y el encaje angosto, de la cota a lo disponible.
+The width of the value box is reserved by the template's **hidden sizers** (one `TextBlock` with the `Minimum` and another with the `Maximum`, hidden but still taking up room): WPF takes the largest of the three and the cell will never be measured narrower than the longest number the range can produce. The measurement respects font, border thickness and `Language`, so the formats `1.000` (`es-AR`) and `1,000` (`en-US`) both reserve the right amount of space. The main text may be truncated; the number never is. No `Width`/`MinWidth` is written at runtime any more: growth comes from the natural measurement, and the narrow fit from capping to what is available.
 
-## Aplicación de demostración
+## Demonstration application
 
-El proyecto `NumericSelector.Demo` permite probar visualmente todas las propiedades, fuentes, colores, rangos y gestos. El control en prueba ocupa una fila superior de alto fijo y las opciones se distribuyen en tres columnas.
+The `NumericSelector.Demo` project is where every property, font, color, range and gesture can be tried out visually. The control under test takes a fixed-height top row and the options are laid out in three columns.
 
 ```powershell
 dotnet run --project .\NumericSelector.Demo\NumericSelector.Demo.csproj
 ```
 
-Para compilar toda la solución:
+To build the whole solution:
 
 ```powershell
 dotnet build .\NumericSelector.slnx --configuration Release
@@ -175,24 +175,24 @@ dotnet build .\NumericSelector.slnx --configuration Release
 
 ## Roadmap
 
-- [x] Control horizontal con rango entero, teclado, mouse y rueda.
-- [x] Disposición configurable (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxDock`), crecimiento por `BaseWidth` (piso) y sólo visualización.
-- [x] Demo interactivo de las propiedades públicas.
-- [x] Pruebas automatizadas para defaults, coerciones de rango, pasos, disposición y eventos.
-- [x] Pruebas de foco, gestos de mouse y crecimiento (`BaseWidth`).
-- [ ] Ampliar las pruebas a cultura y formato de número.
-- [ ] Contrato de plantilla documentado con `TemplatePart` para facilitar estilos alternativos.
-- [ ] Validación explícita de valores inválidos en las enumeraciones públicas.
-- [x] Ayuda del demo con **F1**: por qué el banco está hecho con el propio control, y la lista de gestos.
-- [ ] Empaquetado NuGet, versionado semántico y publicación inicial `0.x`.
-- [ ] Automatización de CI en GitHub Actions y capturas/GIF reales del demo.
+- [x] Horizontal control with an integer range, keyboard, mouse and wheel.
+- [x] Configurable layout (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxDock`), growth from `BaseWidth` (floor) and display-only mode.
+- [x] Interactive demo of the public properties.
+- [x] Automated tests for defaults, range coercions, steps, layout and events.
+- [x] Tests for focus, mouse gestures and growth (`BaseWidth`).
+- [ ] Extend the tests to culture and number formatting.
+- [ ] Template contract documented with `TemplatePart`, to make alternative styles easier.
+- [ ] Explicit validation of invalid values in the public enumerations.
+- [x] Demo help on **F1**: why the test bench is built out of the control itself, plus the list of gestures.
+- [ ] NuGet packaging, semantic versioning and initial `0.x` release.
+- [ ] CI automation on GitHub Actions and an animated capture of the demo.
 
-## Límites actuales
+## Current limits
 
-- El dominio es intencionalmente entero: no hay soporte para decimales.
-- El `BaseWidth` predeterminado del estilo es `300` (ancho base/piso desde el que crece).
-- El `FocusVisualStyle` predeterminado se desactiva; el indicador de foco es el borde.
+- The domain is deliberately integer: there is no decimal support.
+- The style's default `BaseWidth` is `300` (the base width/floor it grows from).
+- The default `FocusVisualStyle` is turned off; the focus indicator is the border.
 
-## Desarrollo y contribuciones
+## Development and contributions
 
-El repositorio incluye una [guía de contribución](CONTRIBUTING.md), su [política de seguridad](SECURITY.md), el [changelog](CHANGELOG.md) y licencia [MIT](LICENSE). El siguiente paso recomendado antes de publicar es crear el repositorio Git remoto y sumar un workflow de GitHub Actions para `build` y `test`.
+The repository ships a [contribution guide](CONTRIBUTING.md), its [security policy](SECURITY.md), the [changelog](CHANGELOG.md) and an [MIT](LICENSE) license. The recommended next step before publishing is to create the remote Git repository and add a GitHub Actions workflow for `build` and `test`.
