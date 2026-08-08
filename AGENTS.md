@@ -125,9 +125,9 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 - InteractionMode (focusable, liberación de foco, bloqueo de input)
 - IsEnabled (liberación de foco, bloqueo de teclado)
 
-### Pendiente (según roadmap)
+### Pendiente
 
-- Pruebas de cultura, foco, gestos de mouse y crecimiento
+- Pruebas de cultura y formato de número (el resto —foco, gestos de mouse, crecimiento— ya está cubierto)
 
 ## Convenciones del proyecto
 
@@ -143,3 +143,36 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 - El control es **horizontal únicamente** (la orientación vertical se descartó en el rediseño)
 - El dominio es **intencionalmente entero** (sin soporte para decimales)
 - `FocusVisualStyle` se desactiva por defecto; el foco lo indica el borde (`FocusBorderBrush`)
+- **Un `TemplateBinding` mal escrito compila igual y falla en silencio.** Al tocar la plantilla o renombrar propiedades que ella consume, hay que instanciar el control y leer las partes con `Template.FindName` para comprobar que los valores llegan. Lo mismo vale para los `StaticResource` del demo: un recurso borrado revienta al **cargar** la ventana, no al compilar.
+
+## Trabajo pendiente
+
+### Decisión abierta
+
+- **CHANGELOG**: el archivo está entero en `[Unreleased]` y narra ~130 líneas de renombres de una API que nunca se publicó (`TitleMode`, `ValuePlacement`, `ShowValueFrame`, `IsDisplayOnly`, `ValueChangeMode`…). Dada la política de borrón y cuenta nueva, la opción es colapsarlo a una única entrada de versión inicial. **Falta que el usuario lo decida**; hasta entonces es el único lugar donde se aceptan nombres de API muerta.
+
+### Incoherencias de texto detectadas y no corregidas
+
+- El CHANGELOG dice que el padding de la caja del valor es `3,0,3,1`; la plantilla usa `3,0,4,1` en los seis `TextBlock` (consistentes entre sí, así que el equivocado es el CHANGELOG).
+- `ValueBoxDockTextConverter` (demo) documenta `int -> "Right"/"Left"`; el orden real de la lista es `Left`(0) / `Right`(1).
+- La sección "Partes de la plantilla" de este archivo dice que el code-behind las referencia **todas** por nombre; en realidad resuelve cuatro (`PART_BarGrid`, `PART_BarRect`, `PART_ValueText`, `PART_ValueDetailText`). El resto sólo existe para los triggers.
+
+### Limpieza de código
+
+- **Doble default de `CaptionText`/`DetailText`**: la metadata de la DP dice `"Default Caption"`/`"Default Detail Text"` y el `Style` de `Generic.xaml` dice `"DefaultCaption"`/`"DefaultDetail"`. Gana el Style; son dos fuentes de verdad para lo mismo.
+- **`ValueBorderResolver.Convert` degrada en silencio**: un `ConverterParameter` con un typo cae en el `default:` del switch y devuelve el `Thickness` de la celda de detalle. En una plantilla alternativa da un marco mal dibujado sin ningún aviso; un `throw` sería más honesto y no cambia nada para la plantilla propia.
+- **Nombres de columna posicionales**: con `ValueBoxDock=Left`, `PART_BarColumn` (índice 0) pasa a alojar el casillero del valor, y el trigger le pone `Auto`. El comportamiento es correcto —está verificado— pero se lee como el error que el comentario de al lado dice estar evitando. `PART_Column0`/`PART_Column1` lo aclararía.
+- **Demo**: `ValueFollowsDetailIndexConverter` y `ShowDetailIndexConverter` son idénticos carácter por carácter.
+- **`NumericSelector.csproj`**: tiene un `<Service Include="{508349b6-…}"/>` residual de Visual Studio.
+
+### Funcionalidad
+
+- `[TemplatePart]` sobre la clase, para documentar el contrato de la plantilla.
+- Validación de valores inválidos en los enums públicos: hoy `(ValueBoxDock)99` se asigna sin protestar.
+- `ShowBar` y el modo ultra-minimalista (sólo el casillero con arrastre vertical). El piso de ancho que necesita ya lo dan los medidores ocultos.
+- Ayuda de gestos en el demo. El material está en `TempText - Interaction help.txt`, en la raíz y **sin trackear** a propósito.
+
+### Publicación
+
+- El repositorio **no tiene remoto todavía**: publicarlo en GitHub es decisión del usuario.
+- Empaquetado NuGet y versión `0.1.0`; CI en GitHub Actions para `build` y `test`.

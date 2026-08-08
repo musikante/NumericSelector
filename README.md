@@ -179,12 +179,16 @@ dotnet build .\NumericSelector.slnx --configuration Release
 - [x] Disposición configurable (`ShowDetail`, `ValueFollowsDetail`, `ValueBoxDock`), crecimiento por `BaseWidth` (piso) y sólo visualización.
 - [x] Demo interactivo de las propiedades públicas.
 - [x] Pruebas automatizadas para defaults, coerciones de rango, pasos, disposición y eventos.
-- [ ] Ampliar las pruebas a cultura, foco, gestos de mouse y crecimiento.
+- [x] Pruebas de foco, gestos de mouse y crecimiento (`BaseWidth`).
+- [ ] Ampliar las pruebas a cultura y formato de número.
 - [ ] Contrato de plantilla documentado con `TemplatePart` para facilitar estilos alternativos.
 - [ ] Validación explícita de valores inválidos en las enumeraciones públicas.
-- [ ] Orientación vertical.
+- [ ] Modo ultra-minimalista: ocultar la barra (`ShowBar`) y dejar sólo el casillero con arrastre vertical.
+- [ ] Ayuda de gestos incorporada al demo.
 - [ ] Empaquetado NuGet, versionado semántico y publicación inicial `0.x`.
 - [ ] Automatización de CI en GitHub Actions y capturas/GIF reales del demo.
+
+La **orientación vertical está descartada**: el rediseño de la plantilla en cuatro celdas se hizo para el eje horizontal y el control no la contempla.
 
 ## Límites actuales
 
