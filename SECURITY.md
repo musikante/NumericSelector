@@ -2,12 +2,13 @@
 
 ## Supported versions
 
-While the project has no published versions, the main development branch is the only version considered for security fixes.
+Fixes are made on the `main` branch and reach the published package as a new version. While the numbering stays in `0.x`, only the latest version receives them: there are no maintenance branches for earlier ones.
 
 | Version | Receives security fixes |
 | --- | --- |
-| Current development | Yes |
-| Future published versions | Will be stated when each version is released |
+| `0.1.0` (latest published) | Yes |
+| `main` (development) | Yes |
+| Earlier `0.x` versions | No — upgrade to the latest one |
 
 ## Reporting a vulnerability
 

@@ -2,9 +2,9 @@
 
 This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format and, once versions are published, will apply [semantic versioning](https://semver.org/).
 
-## [Unreleased] — first version
+## 0.1.0 — 2026-08-08
 
-Not published yet; when it is, this becomes `0.1.0`. Since none of this ever reached a consumer, the earlier development is not recorded here: the API was renamed several times before it settled, and that road is of no use to anyone picking up the control now. **The full history is in the commits.**
+First published version. The development that came before it is not recorded here: none of it ever reached a consumer, the API was renamed several times before it settled, and that road is of no use to anyone picking up the control now. **The full history is in the commits.**
 
 ### Added
 

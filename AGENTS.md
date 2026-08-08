@@ -163,17 +163,24 @@ Tests that create WPF controls use `StaTest.Run()` to execute on an isolated STA
 
 ## Pending work
 
-The text inconsistencies, the five code cleanups, the English migration, the `[TemplatePart]`
-contract and the validation of the public enums that used to be listed here are all done. What
-is left is the publication.
+Everything that used to be listed here is done: the text inconsistencies, the five code
+cleanups, the English migration, the `[TemplatePart]` contract, the validation of the public
+enums and the publication itself.
 
-### Publication
+### Released
 
-- The repository is **already on GitHub** and CI is running there. Commits are made locally as
-  the work goes; **pushing is the author's call**, not something to do unprompted.
-- What is left is the **NuGet package** for version `0.1.0`, deliberately postponed by the
-  author. It needs packaging metadata the `.csproj` does not carry yet (`PackageId`,
-  `PackageLicenseExpression`, `PackageProjectUrl`, `RepositoryUrl`, `PackageTags`,
-  `PackageReadmeFile`), plus an account and an API key on nuget.org. Watch out for one detail:
-  the README references its screenshot with a relative path, and nuget.org does not resolve
-  relative images — the package README needs an absolute URL.
+- **GitHub:** <https://github.com/musikante/NumericSelector>, public, with CI. Commits are made
+  locally as the work goes; **pushing is the author's call**, not something to do unprompted.
+- **NuGet:** `NumericSelector` `0.1.0`, owner `musikante`. The first version was uploaded by
+  hand through *Upload Package* on the website.
+
+### What is left
+
+- **Publish the next versions from CI with trusted publishing**, instead of by hand: nuget.org
+  already flags API keys as "not recommended". It needs a policy on nuget.org (repository
+  owner, repository, and the workflow file name on its own) and a workflow with
+  `permissions: id-token: write` plus `NuGet/login@v1`, which trades a GitHub OIDC token for an
+  API key that lasts one hour.
+- A version that is published **can never be replaced or deleted**, and its number can never be
+  reused: a mistake in `0.1.0` is fixed by releasing `0.1.1`.
+- An animated capture of the demo for the README.

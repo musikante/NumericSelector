@@ -6,7 +6,7 @@
 
 The control is called **`BoundedNumericSelector`** and lives in the `NumericSelector` assembly.
 
-> Status: the API is settled and the control is ready for a first stable version. Still pending: NuGet packaging and CI.
+> Status: version `0.1.0` published on nuget.org. The API is settled; the `0.x` numbering says it has had no use in the field yet, not that it is unfinished.
 
 <!-- The image is referenced by absolute URL, not by relative path: this same README is what
      nuget.org renders as the package page, and there relative paths do not resolve — the
@@ -28,7 +28,13 @@ The control is called **`BoundedNumericSelector`** and lives in the `NumericSele
 
 ## Installing and getting started
 
-For now, add a reference to the `NumericSelector` project from your WPF application. The NuGet package is planned, but not published yet.
+The package is on [nuget.org](https://www.nuget.org/packages/NumericSelector):
+
+```powershell
+dotnet add package NumericSelector
+```
+
+It brings no dependencies of its own, and it ships the XML documentation —so the API shows up in IntelliSense— plus a symbol package for stepping into this source from your debugger.
 
 ```xml
 <Window
@@ -190,7 +196,8 @@ dotnet build .\NumericSelector.slnx --configuration Release
 - [x] Explicit validation of invalid values in the public enumerations.
 - [x] Demo help on **F1**: why the test bench is built out of the control itself, plus the list of gestures.
 - [x] CI on GitHub Actions: `build` and `test` on every push and pull request.
-- [ ] NuGet packaging, semantic versioning and initial `0.x` release.
+- [x] NuGet package with semantic versioning: `0.1.0`, with README, XML documentation and symbols.
+- [ ] Publish the next versions from CI with trusted publishing, instead of by hand.
 - [ ] An animated capture of the demo.
 
 ## Current limits
