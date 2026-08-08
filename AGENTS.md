@@ -147,13 +147,8 @@ Las pruebas que crean controles WPF usan `StaTest.Run()` para ejecutarse en un h
 
 ## Trabajo pendiente
 
-### Decisión abierta
-
-- **CHANGELOG**: el archivo está entero en `[Unreleased]` y narra ~130 líneas de renombres de una API que nunca se publicó (`TitleMode`, `ValuePlacement`, `ShowValueFrame`, `IsDisplayOnly`, `ValueChangeMode`…). Dada la política de borrón y cuenta nueva, la opción es colapsarlo a una única entrada de versión inicial. **Falta que el usuario lo decida**; hasta entonces es el único lugar donde se aceptan nombres de API muerta.
-
 ### Incoherencias de texto detectadas y no corregidas
 
-- El CHANGELOG dice que el padding de la caja del valor es `3,0,3,1`; la plantilla usa `3,0,4,1` en los seis `TextBlock` (consistentes entre sí, así que el equivocado es el CHANGELOG).
 - `ValueBoxDockTextConverter` (demo) documenta `int -> "Right"/"Left"`; el orden real de la lista es `Left`(0) / `Right`(1).
 - La sección "Partes de la plantilla" de este archivo dice que el code-behind las referencia **todas** por nombre; en realidad resuelve cuatro (`PART_BarGrid`, `PART_BarRect`, `PART_ValueText`, `PART_ValueDetailText`). El resto sólo existe para los triggers.
 
