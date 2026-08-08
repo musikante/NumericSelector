@@ -112,7 +112,7 @@
                     <ColumnDefinition Width="280"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- === Columna A: Rango y valor + Textos === -->
+                <!-- === Columna A: valor, interacción y textos === -->
                 <StackPanel Grid.Column="0" Margin="0,0,20,0">
 
                     <TextBlock Text="Value &amp; range" Style="{StaticResource Section}" Margin="0,6,0,6"/>
@@ -143,8 +143,33 @@
                         Minimum="1" Maximum="100"
                         Value="{Binding LargeChange, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
 
+                    <TextBlock Text="Interaction properties" Style="{StaticResource Section}"/>
+
+                    <!-- El MouseBehavior con un selector numérico (0 = ChangeOnClick,
+                         1 = MustFocusFirst), dos vías con el Master. -->
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
+                                                  ShowDetail="True"
+                                                  MainText="MouseBehavior"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource MouseBehaviorText}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="1"
+                                                  Value="{Binding MouseBehavior, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource MouseBehaviorIndex}}"/>
+
+                    <!-- El InteractionMode con un selector numérico (0 = Interactive,
+                         1 = ReadOnly), dos vías con el Master. En ReadOnly el control
+                         conserva el aspecto pero no responde a mouse ni teclado. -->
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
+                                                  ShowDetail="True"
+                                                  MainText="InteractionMode"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource InteractionModeText}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="1"
+                                                  Value="{Binding InteractionMode, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource InteractionModeIndex}}"/>
+
                     <!-- "Default texts": los textos con los que el Master arranca. Escribir en
-                         las cajas los reemplaza. -->
+                         las cajas los reemplaza.
+                         VA ÚLTIMO A PROPÓSITO: la etiqueta de la caja de DetailText remite a
+                         ShowDetail, que vive en "Disposition", al pie de la columna del medio.
+                         Puesto acá, los dos bloques quedan uno enfrente del otro y la remisión
+                         se resuelve de un vistazo. Si se reordena la columna, se pierde. -->
                     <TextBlock Text="Default texts" Style="{StaticResource Section}"/>
 
                     <TextBlock Text="MainText" Style="{StaticResource Label}"/>
@@ -154,46 +179,9 @@
                     <TextBlock Text="DetailText  (Visible only if ShowDetail=true)" Style="{StaticResource Label}"/>
                     <TextBox Style="{StaticResource Box}" Padding="0,0,0,2"
                              Text="{Binding DetailText, ElementName=MasterNumericSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-
-                    <TextBlock Text="Disposition" Style="{StaticResource Section}"/>
-
-                    <!-- El ShowDetail con un selector numérico (0 = false: oculta la fila de
-                         detalle, 1 = true: la muestra), dos vías con el Master. -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
-                                                  ShowDetail="True"
-                                                  MainText="ShowDetail"
-                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ShowDetailText}, Mode=OneWay}"
-                                                  Minimum="0" Maximum="1"
-                                                  Value="{Binding ShowDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BoolIndex}}"/>
-
-                    <!-- El ValueFollowsDetail con un selector numérico (0 = false: mantener
-                         el valor junto al Caption, 1 = true: el valor sigue al detalle),
-                         dos vías con el Master. -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
-                                                  ShowDetail="True"
-                                                  MainText="ValueFollowsDetail"
-                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueFollowsDetailText}, Mode=OneWay}"
-                                                  Minimum="0" Maximum="1"
-                                                  Value="{Binding ValueFollowsDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BoolIndex}}"/>
-
-                    <!-- El ValueBoxDock con un selector numérico (0 = Left, 1 = Right),
-                         dos vías con el Master; el default del control es Right. -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
-                                                  ShowDetail="True"
-                                                  MainText="ValueBoxDock"
-                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueBoxDockText}, Mode=OneWay}"
-                                                  Minimum="0" Maximum="1"
-                                                  Value="{Binding ValueBoxDock, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ValueBoxDockIndex}}"/>
-
-                    <!-- El BaseWidth, debajo de ValueBoxDock (misma sección Disposition). -->
-                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}" MainText="BaseWidth"
-                                                  ShowDetail="True"
-                                                  DetailText="Base Width It Grows From"
-                                                  Minimum="30" Maximum="800"
-                                                  Value="{Binding BaseWidth, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
                 </StackPanel>
 
-                <!-- === Columna B: Interacción === -->
+                <!-- === Columna B: el evento, el marco y la disposición === -->
                 <StackPanel Grid.Column="1" Margin="0,0,20,0">
 
                     <!-- === Evento ValueChanged === -->
@@ -231,29 +219,49 @@
                                                   Minimum="0" Maximum="23" Value="20"
                                                   ValueChanged="FocusBorderBrush_ValueChanged"/>
 
-                    <TextBlock Text="Interaction properties" Style="{StaticResource Section}"/>
+                    <!-- "Disposition" vive acá, y no en la columna de la izquierda con los
+                         textos, por dos motivos: comparte naturaleza con "Border properties"
+                         —las dos son geometría— y equilibra el alto de las tres columnas.
+                         Queda enfrente de "Default texts", que es lo que necesita ShowDetail. -->
+                    <TextBlock Text="Disposition" Style="{StaticResource Section}"/>
 
-                    <!-- El MouseBehavior con un selector numérico (0 = ChangeOnClick,
-                         1 = MustFocusFirst), dos vías con el Master. -->
+                    <!-- El ShowDetail con un selector numérico (0 = false: oculta la fila de
+                         detalle, 1 = true: la muestra), dos vías con el Master. -->
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
                                                   ShowDetail="True"
-                                                  MainText="MouseBehavior"
-                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource MouseBehaviorText}, Mode=OneWay}"
+                                                  MainText="ShowDetail"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ShowDetailText}, Mode=OneWay}"
                                                   Minimum="0" Maximum="1"
-                                                  Value="{Binding MouseBehavior, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource MouseBehaviorIndex}}"/>
+                                                  Value="{Binding ShowDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BoolIndex}}"/>
 
-                    <!-- El InteractionMode con un selector numérico (0 = Interactive,
-                         1 = ReadOnly), dos vías con el Master. En ReadOnly el control
-                         conserva el aspecto pero no responde a mouse ni teclado. -->
+                    <!-- El ValueFollowsDetail con un selector numérico (0 = false: mantener
+                         el valor junto al texto principal, 1 = true: el valor sigue al
+                         detalle), dos vías con el Master. -->
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
                                                   ShowDetail="True"
-                                                  MainText="InteractionMode"
-                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource InteractionModeText}, Mode=OneWay}"
+                                                  MainText="ValueFollowsDetail"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueFollowsDetailText}, Mode=OneWay}"
                                                   Minimum="0" Maximum="1"
-                                                  Value="{Binding InteractionMode, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource InteractionModeIndex}}"/>
+                                                  Value="{Binding ValueFollowsDetail, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource BoolIndex}}"/>
+
+                    <!-- El ValueBoxDock con un selector numérico (0 = Left, 1 = Right),
+                         dos vías con el Master; el default del control es Right. -->
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}"
+                                                  ShowDetail="True"
+                                                  MainText="ValueBoxDock"
+                                                  DetailText="{Binding Value, RelativeSource={RelativeSource Self}, Converter={StaticResource ValueBoxDockText}, Mode=OneWay}"
+                                                  Minimum="0" Maximum="1"
+                                                  Value="{Binding ValueBoxDock, ElementName=MasterNumericSelector, Mode=TwoWay, Converter={StaticResource ValueBoxDockIndex}}"/>
+
+                    <!-- El BaseWidth, debajo de ValueBoxDock (misma sección Disposition). -->
+                    <local:BoundedNumericSelector Style="{StaticResource Auxiliary}" MainText="BaseWidth"
+                                                  ShowDetail="True"
+                                                  DetailText="Base Width It Grows From"
+                                                  Minimum="30" Maximum="800"
+                                                  Value="{Binding BaseWidth, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
                 </StackPanel>
 
-                <!-- === Columna C: Colores + Fuente + Gestos === -->
+                <!-- === Columna C: colores y tipografía === -->
                 <StackPanel Grid.Column="2">
 
                     <TextBlock Text="Bar properties" Style="{StaticResource Section}" Margin="0,6,0,6"/>
