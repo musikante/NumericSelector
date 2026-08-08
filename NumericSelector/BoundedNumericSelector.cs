@@ -7,54 +7,73 @@ using System.Windows.Markup;
 
 namespace NumericSelector
 {
-	// Usamos 'partial' para indicar que esta clase se define en múltiples archivos.
+	/// <summary>
+	/// Lookless WPF control for picking an <see cref="int"/> value bounded to a range: there
+	/// is no way for it to hand out a value outside [<see cref="Minimum"/>,
+	/// <see cref="Maximum"/>], so the consumer never has to validate the input.
+	/// </summary>
+	/// <remarks>
+	/// It is drawn as four sibling cells, each with its own frame: the bar with
+	/// <see cref="MainText"/> over its fill, the value box, and —when <see cref="ShowDetail"/>
+	/// is on— the detail row with a value box of its own. Which sides each cell draws is
+	/// resolved by <see cref="ValueBorderResolver"/>, so that no edge is ever drawn twice.
+	/// The width of the value box is reserved by the hidden sizers in the template, which is
+	/// what guarantees the number is never clipped; see <see cref="BaseWidth"/> for how the
+	/// control grows and how it fits into a narrow container.
+	/// The default template lives in Themes/Generic.xaml.
+	/// </remarks>
+	// 'partial' marks that this class is spread over more than one file: interaction,
+	// measurement and cursors live here; the dependency properties and their coercions live
+	// in BoundedNumericSelector.Dependencies.cs.
 	public partial class BoundedNumericSelector : Control
 	{
-		// --- Campos de Instancia ---
-		// Referencias a las partes de la plantilla que la interacción dibuja o escucha: la
-		// barra y los dos textos del valor. Las piezas que sólo arman el aspecto (el grid
-		// principal, la leyenda sobre la barra y el texto del detalle) viven resolviéndose
-		// en el XAML, sin necesitar campo propio aquí.
+		// --- Instance fields ---
+		// References to the template parts that the interaction draws on or listens to: the
+		// bar and the two value texts. The pieces that only make up the appearance (the root
+		// grid, the main text over the bar and the detail text) resolve themselves in the
+		// XAML and need no field of their own here.
 		private Grid? _barGrid;
 		private Border? _barRect;
 		private TextBlock? _valueText;
 		private UIElement? _valueDetail;
 		private Point _valueDragStart;
-		// Fraccion del ancho de la barra que ocupa cada zona lateral del click derecho
-		// (izquierda -> Minimum, derecha -> Maximum). El centro restante -> ResetValue.
+		// Fraction of the bar width taken by each side zone of the right click
+		// (left -> Minimum, right -> Maximum). The remaining centre -> ResetValue.
 		private const double RightClickEdgeZone = 0.3;
 
-// Si el control ya tenia el foco cuando empezo la pulsacion actual. Se toma en
-// OnPreviewMouseDown (fase tunel) porque para cuando corren los handlers de las
-		// partes (fase burbuja) el Focus() de esa misma pulsacion YA se aplico y consultar
-		// IsKeyboardFocused ahi daria siempre true: verificado, la guarda no filtraria nada.
+		// Whether the control already had the focus when the current press started. It is
+		// taken in OnPreviewMouseDown (tunnel phase) because by the time the handlers of the
+		// parts run (bubble phase) the Focus() of that very press HAS already been applied,
+		// and asking IsKeyboardFocused there would always answer true: verified, the guard
+		// would filter nothing.
 		private bool _hadFocusOnPress;
 
-		// --- Constructor de Instancia ---
+		// --- Instance constructor ---
 		public BoundedNumericSelector()
 		{
-			// WPF formatea los bindings según FrameworkElement.Language, cuyo valor por
-			// defecto es "en-US" sin importar la configuración regional de Windows: por eso
-			// un StringFormat N0 mostraría "1,000" donde corresponde "1.000".
-			// Tiene que ser un valor ASIGNADO y no un default de metadata, porque quien
-			// formatea es cada TextBlock de la plantilla y la herencia no propaga defaults.
-			// Con SetCurrentValue el control adopta la cultura del sistema donde corra, y
-			// quien lo use puede pisarlo asignando Language en la instancia.
+			// WPF formats bindings according to FrameworkElement.Language, whose default value
+			// is "en-US" no matter what the Windows regional settings say: that is why a
+			// StringFormat N0 would show "1,000" where "1.000" belongs.
+			// It has to be an ASSIGNED value and not a metadata default, because what does the
+			// formatting is each TextBlock of the template, and inheritance does not propagate
+			// defaults. With SetCurrentValue the control adopts the culture of the system it
+			// runs on, and whoever uses it can override that by assigning Language on the
+			// instance.
 			SetCurrentValue(LanguageProperty,
 				XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag));
 		}
 
-		// --- Ciclo de Vida y Manejo de Plantilla ---
+		// --- Life cycle and template handling ---
 		public override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
 
-			// OnApplyTemplate puede ejecutarse más de una vez (por ejemplo si se reemplaza
-			// la plantilla): soltamos las suscripciones de las partes anteriores antes de
-			// tomar las nuevas, para no duplicar handlers.
+			// OnApplyTemplate can run more than once (for instance if the template is
+			// replaced): we drop the subscriptions of the previous parts before taking the
+			// new ones, so as not to end up with duplicated handlers.
 			DetachTemplateParts();
 
-			// Obtener referencias a los elementos visuales de la plantilla.
+			// Get the references to the visual elements of the template.
 			_barGrid = GetTemplateChild("PART_BarGrid") as Grid;
 			_barRect = GetTemplateChild("PART_BarRect") as Border;
 			_valueText = GetTemplateChild("PART_ValueText") as TextBlock;
@@ -62,15 +81,15 @@ namespace NumericSelector
 
 			AttachTemplateParts();
 
-			// Estado inicial: el relleno y los cursores.
+			// Initial state: the fill and the cursors.
 			UpdateBarFill(Value);
 			UpdateCursors();
 		}
 
-		// Las partes de la plantilla son hijas del control, así que estas suscripciones no
-		// generan fugas (el ciclo control <-> hijos se recolecta junto). Por eso NO se
-		// desuscriben en Unloaded: hacerlo dejaría el control inerte si se lo vuelve a
-		// cargar (cambio de pestaña, por ejemplo) ya que OnApplyTemplate no se repite.
+		// The template parts are children of the control, so these subscriptions leak nothing
+		// (the control <-> children cycle is collected as a whole). That is why they are NOT
+		// unsubscribed on Unloaded: doing so would leave the control inert if it were loaded
+		// again (on a tab change, for example) since OnApplyTemplate does not run twice.
 		private void AttachTemplateParts()
 		{
 			if (_valueText != null)
@@ -80,7 +99,7 @@ namespace NumericSelector
 				_valueText.MouseLeftButtonUp += ValueText_MouseLeftButtonUp;
 			}
 
-			// El valor en la fila de detalle (descendió con ValueFollowsDetail) usa los mismos gestos.
+			// The value in the detail row (it dropped there with ValueFollowsDetail) uses the same gestures.
 			if (_valueDetail != null)
 			{
 				_valueDetail.MouseLeftButtonDown += ValueText_MouseLeftButtonDown;
@@ -88,8 +107,8 @@ namespace NumericSelector
 				_valueDetail.MouseLeftButtonUp += ValueText_MouseLeftButtonUp;
 			}
 
-			// Recalcular el relleno de la barra cuando cambie el espacio disponible,
-			// y habilitar la interaccion de mouse sobre la barra.
+			// Recompute the bar fill whenever the available room changes, and enable the
+			// mouse interaction on the bar.
 			if (_barGrid != null)
 			{
 				_barGrid.SizeChanged += BarGrid_SizeChanged;
@@ -126,10 +145,11 @@ namespace NumericSelector
 			}
 		}
 
-		// Reacciona a los cambios de estado que exigen redibujar cursores o soltar el foco.
-		// El ancho del control NO se recalcula acá: el piso y el crecimiento los resuelve
-		// la medición natural del contenido en MeasureOverride (el sizer oculto del casillero
-		// ya reserva el ancho del número más largo, y BaseWidth define el ancho base).
+		// Reacts to the state changes that call for redrawing cursors or releasing the focus.
+		// The width of the control is NOT recomputed here: the floor and the growth are
+		// resolved by the natural measurement of the content in MeasureOverride (the hidden
+		// sizer of the value box already reserves the width of the longest number, and
+		// BaseWidth defines the base width).
 		protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
 		{
 			base.OnPropertyChanged(e);
@@ -139,83 +159,86 @@ namespace NumericSelector
 				UpdateCursors();
 			}
 
-			// IsEnabled=false impide GANAR el foco, pero no suelta el que ya estuviera
-			// puesto (ver ReleaseKeyboardFocusIfHeld). Sin esto, deshabilitar un control
-			// enfocado lo dejaba respondiendo al teclado y con el marco de foco encendido.
+			// IsEnabled=false prevents GAINING the focus, but it does not release one that was
+			// already taken (see ReleaseKeyboardFocusIfHeld). Without this, disabling a focused
+			// control left it responding to the keyboard and with the focus frame lit up.
 			if (e.Property == IsEnabledProperty && !IsEnabled)
 			{
 				ReleaseKeyboardFocusIfHeld();
 			}
 		}
 
-// --- Medición ---
+		// --- Measurement ---
 
-// margen de seguridad ("yapa") sobre el ancho medido de los textos. El redondeo de
-		// WPF sobre los glifos (UseLayoutRounding + las mediciones fraccionarias de
-		// FormattedText) hace que el ancho "natural" que reporta la plantilla no alcance por
-		// un pelín al ancho que el render pide en unos pocos píxeles: el resultado es el
-		// Caption/Detail con CharacterEllipsis a un tamaño de fuente y sin ella un peldaño
-		// más arriba, aunque el control tenga hueco de sobra. Si el control crece desde
-		// BaseWidth o del contenido, pedirle algunos píxeles extra al layout (que sólo se
-		// conceden cuando el contenedor tiene espacio) aleja el texto del límite de la
-		// elipsis. Cuando el hueco es escaso el clamp de abajo sigue recortando igual.
+		// Safety margin on top of the measured width of the texts. WPF's rounding of the
+		// glyphs (UseLayoutRounding plus the fractional measurements of FormattedText) makes
+		// the "natural" width reported by the template fall a hair short of the width the
+		// render asks for, by a few pixels: the result is MainText/DetailText showing
+		// CharacterEllipsis at one font size and not showing it one step further up, even
+		// though the control has room to spare. When the control grows from BaseWidth or from
+		// the content, asking the layout for a few extra pixels (which are only granted when
+		// the container has room) keeps the text away from the ellipsis threshold. When the
+		// slot is tight, the clamp below still cuts it down all the same.
 		private const double MeasureSlack = 3.0;
 
-		// El control crece desde BaseWidth (o desde el ancho natural del contenido si es NaN)
-		// para acomodar su texto, pero NUNCA pide más ancho que el hueco que le da el panel:
-		// así su marco (los bordes) no se sale del contenedor y no se recorta. Si el texto no
-		// cabe en ese hueco, la CharacterEllipsis de la leyenda entra a tallar. BaseWidth no
-		// es un constraint duro de WPF (no fuerza el tamaño, sólo es un piso).
+		// The control grows from BaseWidth (or from the natural width of the content if that
+		// is NaN) to fit its text, but it NEVER asks for more width than the slot the panel
+		// gives it: that way its frame (the borders) does not fall outside the container and
+		// is not clipped. If the text does not fit in that slot, the CharacterEllipsis of the
+		// main text takes over. BaseWidth is not a hard WPF constraint (it does not force the
+		// size, it is only a floor).
 		protected override Size MeasureOverride(Size constraint)
 		{
-			// Ancho natural del contenido. Se mide con ancho infinito a propósito: la barra
-			// vive en una columna '*', que ante un ancho finito se estiraría a todo lo
-			// disponible y daría como "necesario" el ancho del contenedor entero. Con ancho
-			// infinito las columnas '*' se comportan como Auto.
+			// Natural width of the content. It is measured with infinite width on purpose: the
+			// bar lives in a '*' column, which against a finite width would stretch to
+			// everything available and report the whole container's width as "needed". With
+			// infinite width, '*' columns behave like Auto.
 			Size natural = base.MeasureOverride(new Size(double.PositiveInfinity, constraint.Height));
 
-			// El ancho natural redondeado hacia arriba, más la yapa: así el largo que se
-			// reserva siempre alcanza para el texto medido por el render, y un cambio
-			// de un píxel en la medición no decide solo.
+			// The natural width rounded up, plus the slack: that way the length being reserved
+			// is always enough for the text as the render measures it, and a one-pixel change
+			// in the measurement does not decide on its own.
 			double reserved = Math.Ceiling(natural.Width) + MeasureSlack;
 
-			// Piso = BaseWidth si el consumidor lo fijó; el crecimiento nunca reduce el
-			// contenido, así que también vale el ancho natural si es más grande.
+			// Floor = BaseWidth if the consumer set it; growth never shrinks the content, so
+			// the natural width also counts if it is the larger one.
 			double width = Math.Max(
 				double.IsNaN(BaseWidth) ? 0 : BaseWidth,
 				reserved);
 
-			// No crecer más de lo que el contenedor ofrece: si hay hueco crece (desde el
-			// piso BaseWidth); si no, el marco queda a lo disponible y la leyenda se trunca
-			// con elipsis. Vacío o infinito en la restricción de ancho se deja pasar tal cual.
+			// Do not grow beyond what the container offers: if there is room it grows (from
+			// the BaseWidth floor); if there is not, the frame stays within what is available
+			// and the main text truncates with an ellipsis. An empty or infinite width
+			// constraint is let through as is.
 			if (!double.IsPositiveInfinity(constraint.Width) && !double.IsNaN(constraint.Width)
 				&& width > constraint.Width)
 			{
 				width = constraint.Width;
 			}
 
-			// Se vuelve a medir con el ancho definido por el piso para que la plantilla
-			// distribuya las columnas (la barra '*' llena y la leyenda trunca con elipsis si
-			// falta espacio), pero el DesiredSize devuelto es el MAYOR entre el piso pedido
-			// y lo que la plantilla midió: la columna '*' no reporta ancho en el DesiredSize
-			// del Grid, así que sin este máximo el piso de BaseWidth sería invisible para un
-			// StackPanel y el control se encogería a su contenido pese a tener hueco.
+			// It is measured again with the width settled by the floor so that the template
+			// distributes the columns (the '*' bar fills up and the main text truncates with
+			// an ellipsis if room is missing), but the DesiredSize returned is the LARGER of
+			// the floor asked for and what the template measured: the '*' column reports no
+			// width in the Grid's DesiredSize, so without this maximum the BaseWidth floor
+			// would be invisible to a StackPanel and the control would shrink to its content
+			// despite having room.
 			Size measured = base.MeasureOverride(new Size(width, constraint.Height));
 			return new Size(Math.Max(width, measured.Width), Math.Max(measured.Height, natural.Height));
 		}
 
-		// --- Manejo de Eventos de Interfaz de Usuario (de instancia) ---
+		// --- User interface event handling (instance level) ---
 
-		// Lógica específica de la instancia para el manejo de teclas.
+		// Instance-specific logic for key handling.
 		protected override void OnPreviewKeyDown(KeyEventArgs e)
 		{
 			base.OnPreviewKeyDown(e);
 
-			// Ni en solo-visualizacion ni deshabilitado deberia llegar tecla alguna, porque
-			// en ambos casos se suelta el foco y sin foco no hay teclado. La guarda es de una
-			// linea y cierra el caso de un foco que llegue por algun otro camino.
-			// El modo MustFocusFirst NO entra aca: es una regla de mouse. Si el control
-			// tiene el foco para recibir la tecla, el requisito ya esta cumplido.
+			// Neither in display-only mode nor disabled should any key arrive, because in both
+			// cases the focus is released and without focus there is no keyboard. The guard is
+			// one line long and closes the case of a focus arriving by some other path.
+			// The MustFocusFirst mode does NOT come in here: it is a mouse rule. If the control
+			// has the focus to receive the key, that requirement is already met.
 			if (InteractionMode == UserInteractionMode.ReadOnly || !IsEnabled)
 				return;
 
@@ -264,10 +287,10 @@ namespace NumericSelector
 			UpdateBarFill(Value);
 		}
 
-		// --- Interacción de mouse ---
+		// --- Mouse interaction ---
 
-		// Convierte una posicion del mouse (dentro de la barra) al valor entero
-		// correspondiente, a lo largo del eje horizontal (0 = izquierda, 1 = derecha).
+		// Turns a mouse position (inside the bar) into the matching integer value, along the
+		// horizontal axis (0 = left, 1 = right).
 		private int ValueFromPosition(Point p)
 		{
 			if (_barGrid == null)
@@ -281,7 +304,7 @@ namespace NumericSelector
 		private int RatioToValue(double ratio)
 		{
 			ratio = Math.Clamp(ratio, 0, 1);
-			// El rango se calcula en long para que un Minimum/Maximum extremo no desborde.
+			// The range is computed in long so that an extreme Minimum/Maximum does not overflow.
 			long range = (long)Maximum - Minimum;
 			long value = Minimum + (long)Math.Round(ratio * range);
 			return (int)Math.Clamp(value, Minimum, Maximum);
@@ -289,8 +312,8 @@ namespace NumericSelector
 
 		private void BarGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
-			// Sin captura: si el gesto no esta habilitado tampoco debe poder arrastrarse
-			// sin soltar el boton desde ese primer click.
+			// No capture: if the gesture is not enabled it must not be possible to drag from
+			// that first click either, without ever releasing the button.
 			if (!MouseGesturesAllowed)
 				return;
 
@@ -301,8 +324,8 @@ namespace NumericSelector
 
 		private void BarGrid_MouseMove(object sender, MouseEventArgs e)
 		{
-			// La captura ya implica que el gesto arranco habilitado; se revalida por si el
-			// modo cambio por codigo en medio del arrastre.
+			// The capture already implies the gesture started out enabled; it is re-checked in
+			// case the mode was changed from code in the middle of the drag.
 			if (!MouseGesturesAllowed)
 				return;
 
@@ -316,7 +339,7 @@ namespace NumericSelector
 				_barGrid.ReleaseMouseCapture();
 		}
 
-		// Click derecho por zonas: izquierda -> Minimum, centro -> ResetValue, derecha -> Maximum.
+		// Right click by zones: left -> Minimum, centre -> ResetValue, right -> Maximum.
 		private void BarGrid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
 		{
 			if (!MouseGesturesAllowed)
@@ -338,8 +361,8 @@ namespace NumericSelector
 			e.Handled = true;
 		}
 
-		// Doble-click en el numero -> ResetValue.
-		// Un solo click y arrastre vertical -> ajusta el valor de a SmallChange.
+		// Double click on the number -> ResetValue.
+		// A single click plus a vertical drag -> adjusts the value by SmallChange.
 		private void ValueText_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
 			if (!MouseGesturesAllowed)
@@ -369,7 +392,7 @@ namespace NumericSelector
 				return;
 
 			Point current = e.GetPosition(el);
-			double delta = _valueDragStart.Y - current.Y; // arrastrar hacia arriba sube el valor
+			double delta = _valueDragStart.Y - current.Y; // dragging upwards raises the value
 
 			if (delta >= 1) { Value += SmallChange; _valueDragStart = current; }
 			else if (delta <= -1) { Value -= SmallChange; _valueDragStart = current; }
@@ -381,19 +404,20 @@ namespace NumericSelector
 				el.ReleaseMouseCapture();
 		}
 
-		// Rueda del mouse -> +/- SmallChange, con dos recaudos para no "comerse" el scroll
-		// de un ScrollViewer contenedor (MouseWheel es un evento de burbuja: si lo marcamos
-		// como manejado, el ScrollViewer nunca se entera y la lista no se desplaza):
-		//   1) Solo actuamos si el control tiene el foco. Asi, pasar el mouse por encima
-		//      mientras se scrollea una lista no altera valores por accidente.
-		//   2) Solo marcamos Handled si el valor realmente cambio. En los topes la rueda
-		//      sigue sirviendo para scrollear en vez de quedar muerta.
+		// Mouse wheel -> +/- SmallChange, with two precautions so as not to swallow the scroll
+		// of a containing ScrollViewer (MouseWheel is a bubbling event: if we mark it as
+		// handled, the ScrollViewer never hears about it and the list does not scroll):
+		//   1) We only act if the control has the focus. That way, passing the mouse over it
+		//      while scrolling a list does not alter values by accident.
+		//   2) We only mark Handled if the value actually changed. At the ends the wheel goes
+		//      on being useful for scrolling instead of going dead.
 		protected override void OnMouseWheel(MouseWheelEventArgs e)
 		{
 			base.OnMouseWheel(e);
 
-			// La rueda ya exigia foco en los dos modos, asi que MustFocusFirst no le agrega
-			// nada. InteractionMode=ReadOnly si: sin él, un foco heredado la dejaria viva.
+			// The wheel already demanded focus in both modes, so MustFocusFirst adds nothing to
+			// it. InteractionMode=ReadOnly does: without it, an inherited focus would leave the
+			// wheel alive.
 			if (InteractionMode == UserInteractionMode.ReadOnly || !IsKeyboardFocused)
 				return;
 
@@ -402,14 +426,14 @@ namespace NumericSelector
 			e.Handled = Value != before;
 		}
 
-		// Cualquier click (izquierdo, derecho o central) en cualquier parte del control
-		// le da el foco. Usa el evento tunel para adelantarse a los handlers hijos.
+		// Any click (left, right or middle) anywhere on the control gives it the focus. It
+		// uses the tunnel event to get ahead of the child handlers.
 		protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
 		{
 			base.OnPreviewMouseDown(e);
 
-			// Antes de enfocar: los handlers de la fase burbuja necesitan saber si el foco
-			// ya estaba puesto ANTES de esta pulsacion (ver _hadFocusOnPress).
+			// Before focusing: the handlers of the bubble phase need to know whether the focus
+			// was already taken BEFORE this press (see _hadFocusOnPress).
 			_hadFocusOnPress = IsKeyboardFocused;
 
 			if (InteractionMode == UserInteractionMode.ReadOnly)
@@ -418,8 +442,8 @@ namespace NumericSelector
 			Focus();
 		}
 
-		// El foco entra en la decision del cursor (ver UpdateCursors), asi que hay que
-		// repintarlo cuando llega y cuando se va.
+		// The focus takes part in the cursor decision (see UpdateCursors), so the cursor has
+		// to be repainted both when it arrives and when it leaves.
 		protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
 		{
 			base.OnGotKeyboardFocus(e);
@@ -432,75 +456,76 @@ namespace NumericSelector
 			UpdateCursors();
 		}
 
-		// Soltar el foco de teclado si el control lo tiene puesto.
-		// Ni quitar Focusable (InteractionMode.ReadOnly) ni IsEnabled=false lo sueltan por
-		// su cuenta: verificado en los dos casos, IsKeyboardFocused seguía en true. Y mientras el
-		// control lo conserve el teclado le SIGUE llegando, porque las teclas se rutean al
-		// elemento enfocado y no al que está bajo el puntero: medido, una flecha movía el
-		// valor de un control deshabilitado. Además el marco de foco queda encendido, que
-		// en un control deshabilitado es directamente mentira.
-		// El mouse no necesita este cuidado: con IsEnabled=false el hit-test de entrada ya
-		// deja de devolver partes del control (verificado con InputHitTest), y como la rueda
-		// también se rutea desde el elemento bajo el puntero, queda cubierta por lo mismo.
+		// Releases the keyboard focus if the control is holding it.
+		// Neither removing Focusable (InteractionMode.ReadOnly) nor IsEnabled=false releases it
+		// on their own: verified in both cases, IsKeyboardFocused stayed true. And as long as
+		// the control holds it the keyboard KEEPS arriving, because keys are routed to the
+		// focused element and not to the one under the pointer: measured, an arrow key moved
+		// the value of a disabled control. On top of that the focus frame stays lit, which on a
+		// disabled control is plainly a lie.
+		// The mouse needs no such care: with IsEnabled=false the input hit-test already stops
+		// returning parts of the control (verified with InputHitTest), and since the wheel is
+		// also routed from the element under the pointer, the same mechanism covers it.
 		private void ReleaseKeyboardFocusIfHeld()
 		{
 			if (!IsKeyboardFocused)
 				return;
 
-			// Al ancestro enfocable: el foco tiene que ir a algún lado, y devolvérselo
-			// a la ventana lo saca del control sin robárselo a otro control concreto.
+			// To the focusable ancestor: the focus has to go somewhere, and handing it back to
+			// the window takes it out of the control without stealing it from another concrete
+			// control.
 			var scope = FocusManager.GetFocusScope(this);
 			FocusManager.SetFocusedElement(scope, null);
 			Keyboard.ClearFocus();
 		}
 
-		// --- Cursores ---
+		// --- Cursors ---
 
-		// El cursor dice la verdad sobre si el gesto va a hacer algo:
-		//   InteractionMode.ReadOnly        -> Arrow (gana sobre todo lo demas)
-		//   MustFocusFirst y sin foco      -> Arrow (el proximo click solo va a enfocar)
-		//   resto                           -> el cursor del gesto
-		// En ChangeOnClick NO depende del foco: ahi el gesto funciona igual sin el, y
-		// mostrar Arrow seria mentir.
+		// The cursor tells the truth about whether the gesture is going to do anything:
+		//   InteractionMode.ReadOnly   -> Arrow (wins over everything else)
+		//   MustFocusFirst and no focus -> Arrow (the next click is only going to focus)
+		//   anything else               -> the cursor of the gesture
+		// In ChangeOnClick it does NOT depend on the focus: there the gesture works just the
+		// same without it, and showing an Arrow would be lying.
 		private void UpdateCursors()
 		{
 			bool gestures = InteractionMode != UserInteractionMode.ReadOnly &&
 				(MouseBehavior == MouseInteractionBehavior.ChangeOnClick || IsKeyboardFocused);
 
-			// Arrastre horizontal sobre la barra.
+			// Horizontal drag on the bar.
 			if (_barGrid != null)
 				_barGrid.Cursor = gestures ? Cursors.SizeWE : Cursors.Arrow;
 
-			// El casillero del valor se arrastra en vertical.
+			// The value box is dragged vertically.
 			var valueCursor = gestures ? Cursors.SizeNS : Cursors.Arrow;
 			if (_valueText != null) _valueText.Cursor = valueCursor;
 			if (_valueDetail is FrameworkElement fed) fed.Cursor = valueCursor;
 
-			// WPF resuelve el cursor durante el movimiento del mouse. Este cambio ocurre
-			// con el puntero QUIETO (se hace click, llega el foco, la mano no se movio),
-			// asi que hay que pedir la reevaluacion a mano o el cursor nuevo no se veria
-			// hasta el proximo movimiento, justo cuando el aviso mas importa.
+			// WPF resolves the cursor during mouse movement. This change happens with the
+			// pointer STILL (a click is made, the focus arrives, the hand did not move), so the
+			// re-evaluation has to be requested by hand or the new cursor would not be seen
+			// until the next movement, exactly when the hint matters most.
 			if (IsMouseOver)
 				Mouse.UpdateCursor();
 		}
 
-		// --- Habilitación de los gestos ---
+		// --- Gesture enablement ---
 
-		// Unico punto de decision para todos los gestos de mouse: en solo-visualizacion no
-		// actua ninguno, y en MustFocusFirst sólo actuan si el control ya tenia el foco al
-		// empezar la pulsacion (asi el click que enfoca no cambia ademas el valor).
-		// Quitar Focusable NO alcanza para frenar el mouse: verificado, los handlers de las
-		// partes siguen corriendo igual y el valor cambiaba.
+		// The single decision point for every mouse gesture: in display-only mode none of them
+		// act, and in MustFocusFirst they only act if the control already had the focus when
+		// the press started (so the click that focuses does not change the value as well).
+		// Removing Focusable is NOT enough to stop the mouse: verified, the handlers of the
+		// parts went on running and the value did change.
 		private bool MouseGesturesAllowed =>
 			InteractionMode != UserInteractionMode.ReadOnly &&
 			(MouseBehavior == MouseInteractionBehavior.ChangeOnClick || _hadFocusOnPress);
 
-		// Actualiza el tamaño del rectangulo de relleno para que represente
-		// la proporcion del valor actual dentro del rango [Minimum, Maximum].
+		// Updates the size of the fill rectangle so that it represents the proportion of the
+		// current value within the [Minimum, Maximum] range.
 		private void OnValueChangedHandler(int newValue)
 		{
 			UpdateBarFill(newValue);
-			// El texto del valor se actualiza automaticamente por binding a Value.
+			// The value text updates itself through its binding to Value.
 		}
 
 		private void UpdateBarFill(int value)
@@ -508,13 +533,13 @@ namespace NumericSelector
 			if (_barRect == null || _barGrid == null)
 				return;
 
-			// El rango se calcula en long para que un Minimum/Maximum extremo no desborde.
+			// The range is computed in long so that an extreme Minimum/Maximum does not overflow.
 			long range = (long)Maximum - Minimum;
 			double ratio = (range > 0) ? Math.Clamp((double)(value - (long)Minimum) / range, 0, 1) : 0;
 
-			// El relleno crece hacia la derecha en proporcion al valor.
-			// El alto se fija por codigo porque el rectangulo vive dentro de un Canvas
-			// (ver Generic.xaml), que no estira a sus hijos.
+			// The fill grows towards the right in proportion to the value.
+			// The height is set from code because the rectangle lives inside a Canvas
+			// (see Generic.xaml), which does not stretch its children.
 			_barRect.Width = _barGrid.ActualWidth * ratio;
 			_barRect.Height = _barGrid.ActualHeight;
 		}

@@ -9,52 +9,52 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:BoundedNumericSelector}">
-                    <!-- MEDIDORES OCULTOS ("sizers"): los TextBlock con Visibility="Hidden"
-                         no se dibujan pero SÍ ocupan lugar en el layout (a diferencia de
-                         Collapsed). Poniendo uno con el texto de Minimum y otro con el de
-                         Maximum en la misma celda que el valor visible, la celda mide el
-                         MÁXIMO de los tres: WPF calcula el max() por nosotros y el ancho
-                         queda reservado para el número más largo posible, sin depender del
-                         valor actual (si no, la columna temblaría al pasar de 99 a 100). -->
+                    <!-- HIDDEN SIZERS: TextBlocks with Visibility="Hidden" are not drawn but
+                         DO take up room in the layout (unlike Collapsed). By putting one with
+                         the text of Minimum and another with the text of Maximum in the same
+                         cell as the visible value, the cell measures the LARGEST of the three:
+                         WPF computes the max() for us and the width ends up reserved for the
+                         longest possible number, without depending on the current value (if it
+                         did, the column would flinch when going from 99 to 100). -->
 
-                    <!-- EL CONTROL SON CELDAS INDEPENDIENTES, cada una con su marco:
-                         (fila superior) la barra con su Caption y el casillero del valor,
-                         y (fila inferior, opcional) la de detalle. Ninguna está anidada
-                         dentro de otra, y ésa es la clave: si una celda viviera dentro de
-                         un marco que la envuelve, su borde se apilaría con el de afuera,
-                         sumando grosor y corriendo los filos.
-                         QUÉ lados dibuja cada celda lo resuelve ValueBorderResolver (la
-                         "matriz de costuras"): un MultiBinding que devuelve el Thickness por
-                         celda según ShowDetail, ValueFollowsDetail y ValueBoxDock, para que
-                         ningún filo se dibuje dos veces. -->
+                    <!-- THE CONTROL IS INDEPENDENT CELLS, each one with its own frame:
+                         (upper row) the bar with its MainText and the value box, and
+                         (bottom row, optional) the detail one. None of them is nested inside
+                         another, and that is the key: if a cell lived inside a frame wrapping
+                         it, its border would stack with the outer one, adding thickness and
+                         shifting the edges.
+                         WHICH sides each cell draws is resolved by ValueBorderResolver (the
+                         "seam matrix"): a MultiBinding returning the Thickness per cell out of
+                         ShowDetail, ValueFollowsDetail and ValueBoxDock, so that no edge is
+                         drawn twice. -->
                     <Grid x:Name="PART_RootGrid">
                         <Grid.RowDefinitions>
-                            <!-- La fila de la barra (superior) absorbe el alto sobrante: si
-                                 el consumidor fija un Height mayor que el contenido, la barra
-                                 se estira y el borde inferior queda en el borde del control,
-                                 no a media altura. -->
+                            <!-- The bar row (upper) absorbs the leftover height: if the
+                                 consumer sets a Height larger than the content, the bar
+                                 stretches and the bottom border ends up at the edge of the
+                                 control, not halfway up. -->
                             <RowDefinition Height="*" x:Name="PART_BarRowDef"/>
-                            <!-- Fila de detalle: opcional, auto-posicionada abajo. -->
+                            <!-- Detail row: optional, auto-positioned at the bottom. -->
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Fila superior: la barra con su Caption y el casillero del valor a
-                             un lado. Es la fila siempre presente, el eje del control. -->
+                        <!-- Upper row: the bar with its MainText and the value box to one side.
+                             It is the row that is always present, the axis of the control. -->
                         <Grid x:Name="PART_BarAndValueGrid" Grid.Row="0">
                             <Grid.ColumnDefinitions>
-                                <!-- Los nombres son POSICIONALES a propósito: con
-                                     ValueBoxDock=Left las celdas intercambian de columna, así
-                                     que ninguna de las dos pertenece a la barra ni al valor.
-                                     Llamarlas por su ocupante habitual haría leer el trigger
-                                     de más abajo como el error que justamente evita. -->
+                                <!-- The names are POSITIONAL on purpose: with ValueBoxDock=Left
+                                     the cells swap columns, so neither of the two belongs to
+                                     the bar or to the value. Naming them after their usual
+                                     occupant would make the trigger further below read as the
+                                     very mistake it avoids. -->
                                 <ColumnDefinition x:Name="PART_Column0" Width="*"/>
                                 <ColumnDefinition x:Name="PART_Column1" Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Celda de la barra: marco base, lleva siempre los cuatro
-                                 lados; su borde inferior dibuja además la costura con la
-                                 fila de detalle cuando existe. Sobre su relleno se dibuja la
-                                 Caption (el texto identificador permanente). -->
+                            <!-- Bar cell: the base frame, it always carries its four sides; its
+                                 bottom border also draws the seam with the detail row when
+                                 that row exists. MainText (the permanent identifying text) is
+                                 drawn over its fill. -->
                             <Border x:Name="PART_BarCell" Grid.Column="0"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}">
@@ -70,11 +70,11 @@
                                       VerticalAlignment="Stretch"
                                       Background="Transparent"
                                       ClipToBounds="True">
-                                    <!-- (1) Relleno: en un Canvas a propósito, porque el Canvas
-                                         mide 0 sin importar sus hijos y así el ancho del
-                                         rectángulo (que el code-behind calcula a partir del ancho
-                                         de la barra) NO entra en la medición del contenido. El
-                                         relleno es decoración: no debe dimensionar nada. -->
+                                    <!-- (1) Fill: inside a Canvas on purpose, because the Canvas
+                                         measures 0 no matter what its children are, and that way
+                                         the width of the rectangle (which the code-behind computes
+                                         out of the bar width) does NOT take part in measuring the
+                                         content. The fill is decoration: it must size nothing. -->
                                     <Canvas ClipToBounds="True">
                                         <Border x:Name="PART_BarRect"
                                                 Background="{TemplateBinding BarFill}"
@@ -83,8 +83,8 @@
                                                 Width="0"/>
                                     </Canvas>
 
-                                    <!-- (2) Caption: el texto identificador del control, sobre
-                                         el relleno de la barra y centrado en ella. -->
+                                    <!-- (2) MainText: the identifying text of the control, over
+                                         the bar fill and centred on it. -->
                                     <TextBlock x:Name="PART_MainText"
                                                Text="{TemplateBinding MainText}"
                                                Foreground="{TemplateBinding Foreground}"
@@ -101,11 +101,10 @@
                                 </Grid>
                             </Border>
 
-                            <!-- Casillero del valor junto a la barra, debajo de la Caption.
-                                 Cede el lado que mira a la barra —ese filo lo dibuja la barra,
-                                 que es el marco base— y lleva los otros tres lados. Su columna
-                                 se colapsa y su texto se oculta cuando el valor desciende a la
-                                 fila de detalle. -->
+                            <!-- Value box next to the bar, below MainText. It gives up the side
+                                 facing the bar —that edge is drawn by the bar, which is the base
+                                 frame— and carries the other three sides. Its column collapses
+                                 and its text is hidden when the value drops to the detail row. -->
                             <Border x:Name="PART_ValueCell" Grid.Column="1"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}">
@@ -117,16 +116,16 @@
                                         <Binding Path="ValueBoxDock" RelativeSource="{RelativeSource TemplatedParent}"/>
                                     </MultiBinding>
                                 </Border.BorderThickness>
-                                <!-- PADDING "3,0,4,1": LA ASIMETRÍA ES DELIBERADA, NO EMPAREJARLA.
-                                     El píxel de más a la derecha se decidió MIRANDO la pantalla:
-                                     con el padding simétrico "3,0,3,1" el número se veía corrido
-                                     del centro, y este lo devuelve a su lugar. No lo respalda una
-                                     fórmula, así que si alguien lo "normaliza" a simétrico el
-                                     defecto vuelve sin que nada falle ni ninguna prueba se queje.
-                                     Los TRES TextBlock —el visible y los dos medidores ocultos—
-                                     tienen que compartir el mismo valor: los medidores son los que
-                                     fijan el ancho de la columna Auto, y si difirieran, la columna
-                                     mediría distinto de lo que se dibuja. -->
+                                <!-- PADDING "3,0,4,1": THE ASYMMETRY IS DELIBERATE, DO NOT EVEN IT OUT.
+                                     The extra pixel on the right was decided by LOOKING at the screen:
+                                     with the symmetric padding "3,0,3,1" the number looked shifted off
+                                     centre, and this one puts it back in place. No formula backs it, so
+                                     if someone "normalizes" it to symmetric the defect comes back with
+                                     nothing failing and no test complaining.
+                                     The THREE TextBlocks —the visible one and the two hidden sizers—
+                                     have to share the same value: the sizers are what set the width of
+                                     the Auto column, and if they differed, the column would measure
+                                     something other than what is drawn. -->
                                 <Grid>
                                     <TextBlock x:Name="PART_ValueSizerMin" Visibility="Hidden"
                                                Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
@@ -158,19 +157,19 @@
                             </Border>
                         </Grid>
 
-                        <!-- Fila de detalle: debajo de la barra, opcional (ShowDetail), con el
-                             texto de DetailText y, cuando el valor desciende, su casillero a
-                             un lado. Arranca colapsada; la muestra ShowDetail. -->
+                        <!-- Detail row: below the bar, optional (ShowDetail), with the text of
+                             DetailText and, when the value drops, its value box to one side. It
+                             starts out collapsed; ShowDetail is what shows it. -->
                         <Grid x:Name="PART_DetailRow" Grid.Row="1" Visibility="Collapsed">
                             <Grid.ColumnDefinitions>
-                                <!-- Posicionales, igual que las de la fila de arriba. -->
+                                <!-- Positional, just like the ones in the row above. -->
                                 <ColumnDefinition x:Name="PART_DetailColumn0" Width="*"/>
                                 <ColumnDefinition x:Name="PART_DetailColumn1" Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Celda de la fila del detalle. Marco fijo que cede el lado
-                                 superior (la costura con la barra la dibuja el borde inferior
-                                 de la barra). -->
+                            <!-- Cell of the detail row. A fixed frame that gives up its top side
+                                 (the seam with the bar is drawn by the bottom border of the
+                                 bar). -->
                             <Border x:Name="PART_DetailCell" Grid.Column="0"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}">
@@ -197,17 +196,17 @@
                                            Margin="5,0,5,0"/>
                             </Border>
 
-                            <!-- Casillero del valor en la fila de detalle. Sin borde, colapsado
-                                 por defecto; sólo lo enciende el trigger de valor en detalle,
-                                 para que donde esta celda no muestra nada no quede ni trazo
-                                 suelto ni un hueco vacío. -->
+                            <!-- Value box in the detail row. No border, collapsed by default;
+                                 only the value-in-detail trigger lights it up, so that where
+                                 this cell shows nothing there is neither a loose stroke nor an
+                                 empty gap. -->
                             <Border x:Name="PART_ValueDetailCell" Grid.Column="1"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="0"
                                     Visibility="Collapsed">
-                                <!-- Mismo padding asimétrico "3,0,4,1" que el casillero de arriba,
-                                     por el mismo motivo y con la misma advertencia (ver allá). -->
+                                <!-- Same asymmetric padding "3,0,4,1" as the value box above, for
+                                     the same reason and with the same warning (see it there). -->
                                 <Grid>
                                     <TextBlock x:Name="PART_DetailSizerMin" Visibility="Hidden"
                                                Text="{Binding Minimum, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:N0}}"
@@ -241,15 +240,15 @@
                     </Grid>
 
                     <ControlTemplate.Triggers>
-                        <!-- ShowDetail: se muestra la fila de detalle debajo de la barra. -->
+                        <!-- ShowDetail: the detail row is shown below the bar. -->
                         <Trigger Property="ShowDetail" Value="True">
                             <Setter TargetName="PART_DetailRow" Property="Visibility" Value="Visible"/>
                         </Trigger>
 
-                        <!-- Valor en detalle := ShowDetail y ValueFollowsDetail: la caja del
-                             valor desciende a la fila de detalle. Arriba la barra queda sola,
-                             siempre con sus cuatro lados; la caja de arriba se oculta y apaga
-                             su marco para no dejar un trazo suelto donde ya no hay nada. -->
+                        <!-- Value in detail := ShowDetail and ValueFollowsDetail: the value box
+                             drops to the detail row. Up top the bar is left alone, always with
+                             its four sides; the upper box is hidden and turns its frame off so
+                             as not to leave a loose stroke where there is nothing any more. -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="ShowDetail" Value="True"/>
@@ -272,12 +271,12 @@
                             <Setter TargetName="PART_ValueCell" Property="BorderThickness" Value="0"/>
                         </MultiTrigger>
 
-                        <!-- ValueBoxDock=Left: la caja del valor va a la izquierda de su
-                             compañero de fila, tanto arriba (junto a la barra) como abajo
-                             (junto al detalle). Se reordenan las celdas Y los anchos de
-                             columna, porque la columna "*" tiene que seguir a la barra:
-                             si sólo se movieran las celdas, la barra caería en la columna
-                             "Auto" y se encogería a su contenido, despegándose del borde. -->
+                        <!-- ValueBoxDock=Left: the value box goes to the left of its row
+                             partner, both above (next to the bar) and below (next to the
+                             detail). The cells AND the column widths are reordered, because the
+                             "*" column has to follow the bar: if only the cells moved, the bar
+                             would land in the "Auto" column and shrink to its content, coming
+                             away from the edge. -->
                         <Trigger Property="ValueBoxDock" Value="Left">
                             <Setter TargetName="PART_BarCell" Property="Grid.Column" Value="1"/>
                             <Setter TargetName="PART_ValueCell" Property="Grid.Column" Value="0"/>
@@ -289,9 +288,9 @@
                             <Setter TargetName="PART_DetailColumn1" Property="Width" Value="*"/>
                         </Trigger>
 
-                        <!-- Foco: el contorno completo se tiñe del color de foco. No hay caja
-                             "frameless" que apagar, así que el cambio aplica a las celdas
-                             siempre. -->
+                        <!-- Focus: the whole outline is tinted with the focus color. There is no
+                             "frameless" box to turn off, so the change always applies to every
+                             cell. -->
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="PART_BarCell" Property="BorderBrush" Value="{Binding FocusBorderBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
                             <Setter TargetName="PART_ValueCell" Property="BorderBrush" Value="{Binding FocusBorderBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
@@ -304,20 +303,21 @@
         </Setter>
 
         <Setter Property="BaseWidth" Value="300" />
-        <!-- Sin Height fijo: el control se auto-dimensiona a su contenido (compacto). -->
-        <!-- BaseWidth (no Width): es un piso desde el que crece, no un ancho duro. Si el
-             contenedor da menos, el control se queda dentro (bordes sin recorte) y la
-             leyenda trunca con elipsis. Width/MinWidth de WPF desbordarían en ese caso. -->
+        <!-- No fixed Height: the control sizes itself to its content (compact). -->
+        <!-- BaseWidth (not Width): it is a floor it grows from, not a hard width. If the
+             container gives less, the control stays within it (borders not clipped) and
+             MainText truncates with an ellipsis. WPF's Width/MinWidth would overflow in that
+             case. -->
         <Setter Property="Focusable" Value="True" />
-        <!-- Sin el recuadro punteado por defecto de WPF: el foco lo indica el borde. -->
+        <!-- Without WPF's default dotted rectangle: focus is signalled by the border. -->
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="UseLayoutRounding" Value="True" />
         <Setter Property="Background" Value="White"/>
-        <!-- MainText y DetailText NO se fijan acá: su texto de relleno —que es el nombre
-             de cada propiedad— viene de la metadata de la DP, que es la única fuente. Un
-             Setter le ganaría a la metadata y el default se perdería con cualquier plantilla
-             de reemplazo. -->
+        <!-- MainText and DetailText are NOT set here: their placeholder text —which is the name
+             of each property— comes from the metadata of the DP, which is the single source. A
+             Setter would win over the metadata and the default would be lost with any
+             replacement template. -->
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>

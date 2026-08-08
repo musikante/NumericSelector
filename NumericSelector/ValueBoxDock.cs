@@ -1,18 +1,18 @@
 namespace NumericSelector
 {
 	/// <summary>
-	/// Lado (anclaje) de la caja del valor respecto de la caja con la que comparte fila:
-	/// la barra cuando se queda arriba, o el detalle cuando desciende a la fila inferior.
+	/// Side (dock) the value box takes relative to the box it shares its row with:
+	/// the bar when it stays on top, or the detail when it drops to the bottom row.
 	/// </summary>
 	public enum ValueBoxDock
 	{
 		/// <summary>
-		/// La caja del valor queda a la derecha de su compañero de fila (predeterminado).
+		/// The value box sits to the right of its row partner (default).
 		/// </summary>
 		Right,
 
 		/// <summary>
-		/// La caja del valor queda a la izquierda de su compañero de fila.
+		/// The value box sits to the left of its row partner.
 		/// </summary>
 		Left
 	}
