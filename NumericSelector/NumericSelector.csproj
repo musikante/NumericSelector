@@ -25,7 +25,7 @@
 	<!-- NuGet package metadata. -->
 	<PropertyGroup>
 		<PackageId>NumericSelector</PackageId>
-		<Version>0.1.0</Version>
+		<Version>0.1.1</Version>
 		<Authors>Jorge Rogelio Zir</Authors>
 		<Copyright>Copyright (c) 2026 Jorge Rogelio Zir</Copyright>
 		<Description>WPF control for entering an integer value bounded to a range: there is no way to get a value outside [Minimum, Maximum], so the input never has to be validated.</Description>

@@ -6,7 +6,7 @@ Fixes are made on the `main` branch and reach the published package as a new ver
 
 | Version | Receives security fixes |
 | --- | --- |
-| `0.1.0` (latest published) | Yes |
+| Latest published version | Yes |
 | `main` (development) | Yes |
 | Earlier `0.x` versions | No — upgrade to the latest one |
 

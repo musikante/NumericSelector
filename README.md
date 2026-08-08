@@ -6,7 +6,7 @@
 
 The control is called **`BoundedNumericSelector`** and lives in the `NumericSelector` assembly.
 
-> Status: version `0.1.0` published on nuget.org. The API is settled; the `0.x` numbering says it has had no use in the field yet, not that it is unfinished.
+> Status: published on nuget.org. The API is settled; the `0.x` numbering says it has had no use in the field yet, not that it is unfinished.
 
 <!-- The image is referenced by absolute URL, not by relative path: this same README is what
      nuget.org renders as the package page, and there relative paths do not resolve — the

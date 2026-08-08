@@ -2,6 +2,21 @@
 
 This project follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format and, once versions are published, will apply [semantic versioning](https://semver.org/).
 
+## 0.1.1 — 2026-08-08
+
+Documentation only. The control, its API and its behavior are untouched: the compiled code is
+the same one as in `0.1.0`, and all that changes in the assembly is the version stamped on it.
+
+### Changed
+
+- The README —which is also the package page on nuget.org— described a package that "is
+  planned, but not published yet". It was written before the first release and got baked into
+  it, because a published version cannot be replaced. It now gives the `dotnet add package`
+  command and says what the package carries.
+- Its screenshot and its links use absolute URLs. nuget.org does not resolve relative paths, so
+  on the package page the picture was broken and the links led nowhere.
+- `SECURITY.md` states which versions receive fixes, now that there are published versions.
+
 ## 0.1.0 — 2026-08-08
 
 First published version. The development that came before it is not recorded here: none of it ever reached a consumer, the API was renamed several times before it settled, and that road is of no use to anyone picking up the control now. **The full history is in the commits.**
