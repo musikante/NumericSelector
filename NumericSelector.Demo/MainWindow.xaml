@@ -66,11 +66,18 @@
                 BorderBrush="#FFBFD4E6" BorderThickness="1"
                 Background="#FFF6FAFD"
                 Padding="5">
-            <local:BoundedNumericSelector x:Name="MasterNumericSelector"
+            <!-- El rótulo va acá, FUERA del selector, y no dentro de su CaptionText: los
+                 textos que el Master muestra son los nombres de sus propias propiedades,
+                 tal cual se escriben en código, para que se aprendan de tanto verlos. -->
+            <Grid>
+                <TextBlock Text="Master — interact here"
+                           VerticalAlignment="Top" HorizontalAlignment="Center"
+                           FontWeight="Bold" Foreground="#FF20507A"/>
+                <local:BoundedNumericSelector x:Name="MasterNumericSelector"
                                           ValueChanged="Master_ValueChanged"
                                           ShowDetail="True"
-                                          CaptionText="CaptionText (Interact here)"
-                                          DetailText="Detail Text Ñ j |"
+                                          CaptionText="CaptionText"
+                                          DetailText="DetailText"
                                           Minimum="0"
                                           Maximum="100"
                                           Value="50"
@@ -78,6 +85,7 @@
                                           BorderThickness="2"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"/>
+            </Grid>
         </Border>
 
         <!-- ============ CONTROLES DE PRUEBA ============ -->
@@ -165,7 +173,7 @@
                     <!-- El BaseWidth, debajo de ValueBoxDock (misma sección Disposition). -->
                     <local:BoundedNumericSelector Style="{StaticResource Auxiliar}" CaptionText="BaseWidth"
                                                   ShowDetail="True"
-                                                  DetailText="Control Minimum Width"
+                                                  DetailText="Base Width It Grows From"
                                                   Minimum="30" Maximum="800"
                                                   Value="{Binding BaseWidth, ElementName=MasterNumericSelector, Mode=TwoWay}"/>
                 </StackPanel>
