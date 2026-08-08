@@ -27,7 +27,7 @@
                          "matriz de costuras"): un MultiBinding que devuelve el Thickness por
                          celda según ShowDetail, ValueFollowsDetail y ValueBoxDock, para que
                          ningún filo se dibuje dos veces. -->
-                    <Grid x:Name="PART_MainGrid">
+                    <Grid x:Name="PART_RootGrid">
                         <Grid.RowDefinitions>
                             <!-- La fila de la barra (superior) absorbe el alto sobrante: si
                                  el consumidor fija un Height mayor que el contenido, la barra

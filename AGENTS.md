@@ -66,7 +66,7 @@ La caja del valor está declarada en las dos filas, pero sólo una es visible a 
 El code-behind resuelve **cuatro** por nombre, en `OnApplyTemplate`: `PART_BarGrid`, `PART_BarRect`, `PART_ValueText` y `PART_ValueDetailText`. El resto de los nombres existe para que los triggers de la plantilla los apunten con `TargetName`; nadie los busca desde C#.
 
 Partes que define la plantilla:
-- `PART_MainGrid`, `PART_DetailRow`
+- `PART_RootGrid` (la raíz de la plantilla; se llama así y no `PART_MainGrid` para no confundirse con `PART_MainText`, que es otra cosa), `PART_DetailRow`
 - `PART_BarAndValueGrid`, `PART_BarCell`, `PART_BarGrid`, `PART_BarRect`, `PART_BarRowDef`
 - `PART_MainText`, `PART_ValueCell`, `PART_ValueText`, `PART_ValueSizerMin/Max`
 - La fila de detalle, con su caja de valor propia: `PART_DetailCell`, `PART_DetailText`, `PART_ValueDetailCell`, `PART_ValueDetailText`, `PART_DetailSizerMin/Max`
