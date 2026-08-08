@@ -11,7 +11,4 @@
 		<Description>Control WPF para ingresar un valor entero acotado a un rango: no hay forma de obtener un valor fuera de [Minimum, Maximum], así que no hace falta validar la entrada.</Description>
 		<Version>0.1.0</Version>
 	</PropertyGroup>
-	<ItemGroup>
-	  <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-	</ItemGroup>
 </Project>
