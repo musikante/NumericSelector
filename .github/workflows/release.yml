@@ -29,10 +29,10 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up the .NET SDK pinned in global.json
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
@@ -83,7 +83,7 @@ jobs:
 
       # Keeps a copy of exactly what was published, attached to the run.
       - name: Attach the package to the run
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nuget-package
           path: artifacts/*
